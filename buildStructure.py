@@ -10,6 +10,13 @@ import math
 #Check the new coordinate against the keys. If it is filled, pick a new cube and try again.
 
 polycube = {}
+polycube[(0,0,0)] = []
 
-def Add_Cube():
+def Add_Cube(numCubes):
 
+    if (numCubes > len(polycube)):
+
+        direction = random.randint(0, 1)*2 - 1
+        coord = random.randint(0,2)
+
+        
