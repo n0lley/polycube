@@ -11,3 +11,4 @@ sim = pyrosim.Simulator( play_paused=True )
 
 sim.start()
 
+sim.wait_to_finish()
