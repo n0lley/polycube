@@ -1,0 +1,2 @@
+SCALE = .1
+NUMCUBES = 10
