@@ -30,7 +30,7 @@ class AGGREGATE:
             child = tuple(child)
 
             #if child's coordinates are already occupied, do that again
-            while(child in self.polycube.keys() or child[coord] > numCubes/2):
+            while(child in self.polycube.keys()):
 
                 parent = random.choice(list(self.polycube.keys()))
                 
@@ -44,3 +44,5 @@ class AGGREGATE:
 
             self.Build_Structure(numCubes)
 
+#Add_Cube(30)
+# print(self.polycube)
