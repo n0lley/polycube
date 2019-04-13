@@ -7,13 +7,13 @@ class AGGREGATE:
     def __init__(self, numCubes):
         self.polycube = {}
         self.polycube[(0,0,0)] = []
-        Build_Structure(numCubes)
+        self.Build_Structure(numCubes)
 
     #Takes numcubes as an integer argument for the size of the desired polycube
     #Will randomly generate a polycube of desired size recursively
-    def Build_Structure(numCubes):
+    def Build_Structure(self, numCubes):
 
-        if(numCubes > len(polycube)):
+        if(numCubes > len(self.polycube)):
 
             #select whether to move + or -
             direction = random.randint(0, 1)*2 - 1
@@ -30,7 +30,7 @@ class AGGREGATE:
             child = tuple(child)
 
             #if child's coordinates are already occupied, do that again
-            while(child in polycube.keys()):
+            while(child in self.polycube.keys() or child[coord] > numCubes/2):
 
                 parent = random.choice(list(self.polycube.keys()))
                 
@@ -42,7 +42,5 @@ class AGGREGATE:
             self.polycube[parent].append(child)
             self.polycube[child] = []
 
-            Add_Cube(numCubes)
+            self.Build_Structure(numCubes)
 
-#Add_Cube(30)
-# print(polycube)
