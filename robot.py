@@ -4,26 +4,20 @@ import math
 import pyrosim
 import constants as c
 from aggregate import AGGREGATE
-
-polybot = AGGREGATE(15)
-print (polybot.polycube)
+from element import ELEMENT
 
 sim = pyrosim.Simulator( play_paused=True )
 
-lowest = 0
-for coord in polybot.polycube:
-    if(coord[2] < lowest):
-        lowest = coord[2]
+sensors = {}
+motors = {}
 
-cubes = {}
+element = ELEMENT(sensors, motors)
+polybot = AGGREGATE(sim, [element], 15)
+print (polybot.tree)
 
-for coord in polybot.polycube:
-    cubes[coord] = sim.send_box(
-                 x=coord[0]*c.SCALE, y=coord[1]*c.SCALE, z=(coord[2] - lowest + .5)*c.SCALE,
-                 length=c.SCALE, width=c.SCALE, height=c.SCALE,
-                 r=random.random(), g=random.random(), b=random.random()
-                 )
-
+sim.start()
+sim.wait_to_finish()
+"""
 joints1 = {}
 joints2 = {}
 joints3 = {}
@@ -58,7 +52,4 @@ for coord in polybot.polycube:
                         n1=0, n2=0, n3=1,
                         lo=-math.pi/2., hi=math.pi/2.
                         )
-
-sim.start()
-
-sim.wait_to_finish()
+"""
