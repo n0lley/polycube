@@ -7,20 +7,21 @@ import numpy as np
 
 
 from aggregate import AGGREGATE
+import pyrosim
 
 debug = False
 
 def get_neighbor_counts(node_count):
     # generate aggregate
-    aggregate = AGGREGATE(node_count)
-    structure = aggregate.polycube
+    aggregate = AGGREGATE(None, [None], node_count, no_sim=True)
+    structure = aggregate.tree
 
     # remove the origin. Each node has 1 parent except the origin which has none.
     origin = structure.pop((0, 0, 0))
 
     # calculate neighbor counts
     neighbor_counts = [len(d) + 1 for d in
-                       aggregate.polycube.values()]  # each node has 1 parent with the exception of the origin which has 0 parents.
+                       aggregate.tree.values()]  # each node has 1 parent with the exception of the origin which has 0 parents.
     # add the origin back in
     neighbor_counts.append(len(origin))
 

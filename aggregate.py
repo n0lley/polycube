@@ -5,14 +5,15 @@ import constants as c
 
 class AGGREGATE:
     
-    def __init__(self, sim, elements, numCubes):
+    def __init__(self, sim, elements, numCubes, no_sim=False):
         self.tree = {}
         self.tree[(0,0,0)] = []
         
         self.Build_Tree(numCubes)
-    
-        self.body = {}
-        self.Build_Body(sim, elements)
+
+        if not no_sim:
+            self.body = {}
+            self.Build_Body(sim, elements)
 
     #Takes numcubes as an integer argument for the size of the desired polycube
     #Will randomly generate a polycube of desired size recursively
