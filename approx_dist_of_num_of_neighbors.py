@@ -100,6 +100,7 @@ def compute_interior_nodes(node_cnt):
         matrix[node] = (BLOCK, tmp)
         node_queue_1.put(node)  # used to construct neighboring air search space
         node_queue_2.put(tmp)  # used to determine interior nodes
+    # print(matrix)
 
     # Add air nodes to matrix + fill air_queue
     while not node_queue_1.empty():
@@ -108,59 +109,49 @@ def compute_interior_nodes(node_cnt):
 
         # add neighboring cells to air queue if they are empty and valid cells.
         # x neighbors
-        for i in [-1, 0, 1]:
-            if x + i < 0 or x + i >= x_size:
-                continue
-            if matrix[x + i, y, z] != 0:
-                continue
-            # create new Air Object + add to queue and matrix
-            tmp_air = Air((x+i, y, z))
-            air_queue.put(tmp_air)
-            matrix[(x+i, y, z)] = (AIR, tmp_air)
+        for i in range(-1, 2):
+            for j in range(-1, 2):
+                for k in range(-1, 2):
+                    if x + i < 0 or x + i >= x_size:
+                        continue
+                    if y + j < 0 or y + j >= y_size:
+                        continue
+                    if z + k < 0 or z + k >= z_size:
+                        continue
+                    if matrix[x + i, y + j, z + k] != 0:
+                        continue
+                    # create new Air Object + add to queue and matrix
+                    tmp_air = Air((x + i, y + j, z + k))
+                    air_queue.put(tmp_air)
+                    matrix[(x + i, y + j, z + k)] = (AIR, tmp_air)
 
-        # y neighbors
-        for i in [-1, 0, 1]:
-            if y + i < 0 or y + i >= y_size:
-                continue
-            if matrix[x, y + i, z] != 0:
-                continue
-            # create new Air Object + add to queue and matrix
-            tmp_air = Air((x, y + i, z))
-            air_queue.put(tmp_air)
-            matrix[(x, y + i, z)] = (AIR, tmp_air)
-
-        # z neighbors
-        for i in [-1, 0, 1]:
-            if z + i < 0 or z + i >= z_size:
-                continue
-            if matrix[x, y, z + i] != 0:
-                continue
-            # create new Air Object + add to queue and matrix
-            tmp_air = Air((x, y, z + i))
-            air_queue.put(tmp_air)
-            matrix[(x, y, z + i)] = (AIR, tmp_air)
 
     # determine which node is guarenteed to be an exterior node. Start here
     x, y, z = x_max_node
     node = (x + x_offset+1, y + y_offset, z + z_offset)
     # print("shape", matrix.shape)
     # print(x_max_node)
-    # print(node)
+    # print("Priming: %s to be AIR_EXTERNAL"%str(node))
     tmp_air = matrix[node]
     tmp_air[1].type = Air.AIR_EXTERNAL
     to_evaluate_queue.put(tmp_air[1])
 
+    continue_looping = not to_evaluate_queue.empty()
     # flood local air to determine which cells are external air
-    while not to_evaluate_queue.empty():
+    while continue_looping:
         curr_cell = to_evaluate_queue.get()
+        # print("evaluating: %s" %str(curr_cell.position))
         x, y, z = curr_cell.position
 
         # x neighbors
         for i in [-1, 1]:
             if x + i < 0 or x + i >= x_size:
+                # print("out of scope")
                 continue
             cell = matrix[x + i, y, z]
-            if cell == 0 or cell[0] == BLOCK:
+            if cell == 0 or cell[0] == BLOCK or cell[1].type == Air.AIR_EXTERNAL:
+                # print(cell)
+                # print("not unknown air.")
                 continue
             cell[1].type = Air.AIR_EXTERNAL
             to_evaluate_queue.put(cell[1])
@@ -168,9 +159,12 @@ def compute_interior_nodes(node_cnt):
         # y neighbors
         for i in [-1, 1]:
             if y + i < 0 or y + i >= y_size:
+                # print("out of scope")
                 continue
             cell = matrix[x, y + i, z]
-            if cell == 0 or cell[0] == BLOCK:
+            if cell == 0 or cell[0] == BLOCK or cell[1].type == Air.AIR_EXTERNAL:
+                # print(cell)
+                # print("not unknown air.")
                 continue
 
             cell[1].type = Air.AIR_EXTERNAL
@@ -178,19 +172,24 @@ def compute_interior_nodes(node_cnt):
 
         # z neighbors
         for i in [-1, 1]:
-            if z + i < 0 or z + i >= x_size:
+            if z + i < 0 or z + i >= z_size:
+                # print("out of scope")
                 continue
             cell = matrix[x, y, z + i]
-            if cell == 0 or cell[0] == BLOCK:
+            if cell == 0 or cell[0] == BLOCK or cell[1].type == Air.AIR_EXTERNAL:
+                # print(cell)
+                # print("not unknown air.")
                 continue
             cell[1].type = Air.AIR_EXTERNAL
 
             to_evaluate_queue.put(cell[1])
+        continue_looping = not to_evaluate_queue.empty()
 
     node_neighbor_cnt_queue = queue.Queue()
 
     while not node_queue_2.empty():
         curr_cell = node_queue_2.get()
+        # print("Considering:", curr_cell.position)
         x, y, z = curr_cell.position
 
         # x neighbors
@@ -201,6 +200,7 @@ def compute_interior_nodes(node_cnt):
             if debug:
                 assert cell != 1, "Invalid cell type."
             if cell[0] == AIR and cell[1].type != Air.AIR_EXTERNAL:
+                # print(cell[1].position, cell[1].type)
                 curr_cell.connection_count += 1
 
         # y neighbors
@@ -211,6 +211,7 @@ def compute_interior_nodes(node_cnt):
             if debug:
                 assert cell != 1, "Invalid cell type."
             if cell[0] == AIR and cell[1].type != Air.AIR_EXTERNAL:
+                # print(cell[1].position, cell[1].type)
                 curr_cell.connection_count += 1
 
         # z neighbors
@@ -221,6 +222,7 @@ def compute_interior_nodes(node_cnt):
             if debug:
                 assert cell != 1, "Invalid cell type."
             if cell[0] == AIR and cell[1].type != Air.AIR_EXTERNAL:
+                # print(cell[1].position, cell[1].type)
                 curr_cell.connection_count += 1
 
         node_neighbor_cnt_queue.put(curr_cell.connection_count)
@@ -279,6 +281,7 @@ def compute_work(node_cnt, iteration_number, ttl_iteration_cnt, seed_offset=0):
     # TODO: Decide if this seeding is good or not.
     random.seed(seed_offset + iteration_number + node_cnt * ttl_iteration_cnt)
     neighbor_frequencies = compute_interior_nodes(node_cnt)
+    neighbor_frequencies /= node_cnt
     return node_cnt, iteration_number, neighbor_frequencies
 
 
@@ -290,6 +293,9 @@ if __name__ == "__main__":
                         "<number of iterations for Monte-Carlo> <optional: starting seed>"
     num_iterations = int(sys.argv[2])
     ttl_node_count = int(sys.argv[1])
+
+    # num_iterations = 1
+    # ttl_node_count = 4
     if len(sys.argv) == 4:
         global_seed_offset = int(sys.argv[3])
     else:
@@ -304,15 +310,15 @@ if __name__ == "__main__":
     pool = Pool(processes=process_count)
 
     # compute the work
-    for j in range(1, ttl_node_count):
-        sys.stdout.write("%3d" % j)
+    for j in range( ttl_node_count):
+        sys.stdout.write("%3d" % (j+1))
         sys.stdout.flush()
         iterations_list = list(range(num_iterations))
-        res = [pool.apply_async(compute_work, args=(j, iter_num, num_iterations, global_seed_offset)) for iter_num in
+        res = [pool.apply_async(compute_work, args=((j+1), iter_num, num_iterations, global_seed_offset)) for iter_num in
                iterations_list]
         for r in res:
             node_count, iter_num, ret = r.get()
-            data[node_count, iter_num] = ret
+            data[j, iter_num] = ret
         sys.stdout.write("\n")
         sys.stdout.flush()
     pool.close()
