@@ -8,6 +8,7 @@ class AGGREGATE:
     def __init__(self, numCubes):
         self.tree = {}
         self.tree[(0,0,0)] = []
+        self.body = {}
         
         self.Build_Tree(numCubes)
 
@@ -49,28 +50,32 @@ class AGGREGATE:
     #Construct a body using the provided body tree and randomly choosing block types from the provided list of elements
     def send_to_sim(self, sim, elements):
         
-        self.body = {}
-        
         #establish what the lowest z-coordinate in the tree is so the robot can be shifted up accordingly
         lowest = 0
         for coord in self.tree:
             if(coord[2] < lowest):
                 lowest = coord[2]
 
-        #Iterate over each index of the tree, call Add_Cube to build a block there.
-        for coord in self.tree:
-            element = random.choice(elements)
-            
-            #add a block
-            self.body[coord] = [self.Add_Cube(sim, element, coord, lowest), element]
+        if(len(self.body) == 0):
+            #Iterate over each index of the tree, call Add_Cube to build a block there.
+            for coord in self.tree:
+                element = random.choice(elements)
+                
+                #add a block
+                self.body[coord] = [self.Add_Cube(sim, element, coord, lowest), element]
 
-        print(self.body)
+        else:
+            #draw existing values from self.body
+            for coord in self.body:
+                element = self.body[coord][1]
+                self.Add_Cube(sim, element, coord, lowest)
                 
         #add joints, motors, sensors to each box
-        for coord in self.tree:
-            joints = self.Build_Joints(sim, coord)
-            sensors, motors = self.Add_Neurons(sim, coord, joints)
-            self.Build_Network(sim, sensors, motors)
+        for parent in self.tree:
+            for child in self.tree[parent]:
+                joints = self.Build_Joints(sim, parent, child)
+                #sensors, motors = self.Add_Neurons(sim, child, joints)
+                #self.Build_Network(sim, child, sensors, motors)
 
 
     #Create a cube at the specified coordinate, with the specified element's properties
@@ -83,52 +88,49 @@ class AGGREGATE:
         return box
 
     #use child list from tree and corresponding boxes in body to attach joints
-    def Build_Joints(self, sim, coord):
+    #attach joint from child to parent, using child's specifications. Child's nn is attached to that joint
+    def Build_Joints(self, sim, parent, child):
 
-        box = self.body[coord][0]
-        children = self.tree[coord]
+        root = self.body[parent][0]
+        leaf = self.body[child][0]
         
+        #calculate joint's position
+        jx = (child[0] - parent[0])/2 + parent[0]
+        jy = (child[1] - parent[1])/2 + parent[1]
+        jz = (child[2] - parent[2])/2 + parent[2]
+
         joints = {}
         
-        j = 0
-        for child in children:
-            #box to be connected
-            box2 = self.body[child][0]
-            
-            #calculate joint's position
-            jx = (child[0] - coord[0])/2 + coord[0]
-            jy = (child[1] - coord[1])/2 + coord[1]
-            jz = (child[2] - coord[2])/2 + coord[2]
-
-            if( coord[0] == child[0] ):
-            #same x-coordinates, create joint with normal on x axis
-                joints[j] = sim.send_hinge_joint(
-                                                first_body_id = box, second_body_id = box2,
-                                                 x=jx, y=jy, z=jz,
-                                                 n1=1, n2=0, n3=0,
-                                                 lo=-1*math.pi/2., hi=math.pi/2.
-                                                 )
-                j+=1
-            
-            if( coord[1] == child[1] ):
-            #same y-coordinates, create joint with normal on y axis
-                joints[j] = sim.send_hinge_joint(
-                                                 first_body_id = box, second_body_id = box2,
-                                                 x=jx, y=jy, z=jz,
-                                                 n1=0, n2=1, n3=0,
-                                                 lo=-1*math.pi/2., hi=math.pi/2.
-                                                 )
-                j+=1
-            
-            if( coord[2] == child[2] ):
-            #same z-coordinates, create joint with normal on y axis
-                joints[j] = sim.send_hinge_joint(
-                                 first_body_id = box, second_body_id = box2,
-                                 x=jx, y=jy, z=jz,
-                                 n1=0, n2=0, n3=1,
-                                 lo=-1*math.pi/2., hi=math.pi/2.
-                                 )
-                j+=1
+        j=0
+        if( parent[0] == child[0] ):
+        #same x-coordinates, create joint with normal on x axis
+            joints[j] = sim.send_hinge_joint(
+                                            first_body_id = leaf, second_body_id = root,
+                                             x=jx, y=jy, z=jz,
+                                             n1=1, n2=0, n3=0,
+                                             lo=-1*math.pi/2., hi=math.pi/2.
+                                             )
+            j+=1
+        
+        if( parent[1] == child[1] ):
+        #same y-coordinates, create joint with normal on y axis
+            joints[j] = sim.send_hinge_joint(
+                                             first_body_id = leaf, second_body_id = root,
+                                             x=jx, y=jy, z=jz,
+                                             n1=0, n2=1, n3=0,
+                                             lo=-1*math.pi/2., hi=math.pi/2.
+                                             )
+            j+=1
+        
+        if( parent[2] == child[2] ):
+        #same z-coordinates, create joint with normal on y axis
+            joints[j] = sim.send_hinge_joint(
+                             first_body_id = leaf, second_body_id = root,
+                             x=jx, y=jy, z=jz,
+                             n1=0, n2=0, n3=1,
+                             lo=-1*math.pi/2., hi=math.pi/2.
+                             )
+            j+=1
 
         return joints
 
@@ -141,22 +143,24 @@ class AGGREGATE:
         sensors = {}
         i=0
         for s in element.sensors:
-            sensors[i] = s
+            sensors[i] = sim.send_touch_sensor(body_id = box)
             i+=1
         #placeholder until specifics of element's sensors are worked out
 
         motors = {}
         i=0
         for m in element.motors:
-            motors[i] = m
+            motors[i] = sim.send_motor_neuron(joint_id = joints[m])
             i+=1
         #placeholder until specifics of element's motors are worked out
 
         return sensors, motors
     
     #build the synapses using the element's Controller
-    def Build_Network(self, sim, sensors, motors):
+    def Build_Network(self, sim, coord, sensors, motors):
 
+        element = self.body[coord][1]
+        
         for s in sensors:
             for m in motors:
-                sim.send_synapse(source_neuron_id = sensors[s], target_neuron_id = motors[m])
+                sim.send_synapse(source_neuron_id = sensors[s], target_neuron_id = motors[m], weight = element.controller[s,m])
