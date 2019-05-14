@@ -16,7 +16,7 @@ class AGGREGATE:
     #Will randomly generate a polycube of desired size recursively
     def Build_Tree(self, numCubes):
 
-        if(numCubes > len(self.tree)):
+        while numCubes > len(self.tree):
 
             #select whether to move + or -
             direction = np.random.choice([-1, 1])
@@ -44,8 +44,6 @@ class AGGREGATE:
             #Point parent to child, add child to the structure
             self.tree[parent].append(child)
             self.tree[child] = []
-
-            self.Build_Tree(numCubes)
 
     #Construct a body using the provided body tree and randomly choosing block types from the provided list of elements
     def send_to_sim(self, sim, elements):
