@@ -18,11 +18,11 @@ class ELEMENT:
     
         self.controller = controller
     
-    def Mutate():
+    def mutate():
         exit
 
 class TouchSensorHingeJointElement(ELEMENT):
 
     def __init__(self, body):
 
-        self.sensors[0] = self.sim.send_touch_sensor(body_id = body)
+        self.sensors[0] = self.sim.send_touch_sensor(body_id=body)
