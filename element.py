@@ -2,7 +2,7 @@
     TODO: Create Element init which specifies the element's properties
     
     Mutate which changes the motor/sensors
-    """
+"""
 import constants as c
 import pyrosim
 

@@ -19,13 +19,13 @@ class AGGREGATE:
         if(numCubes > len(self.tree)):
 
             #select whether to move + or -
-            direction = random.randint(0, 1)*2 - 1
+            direction = np.random.choice([-1, 1])
 
             #coordinate to move in: 0->x, 1->y, 2->z
-            coord = random.randint(0,2)
+            coord = np.random.choice([0, 1, 2])
 
             #pick a random cube from the structure
-            parent = random.choice(list(self.tree.keys()))
+            parent = np.random.choice(list(self.tree.keys()))
 
             #convert parent to a list, change the selected coordinate, and convert back to tuple
             child = list(parent)
@@ -35,7 +35,7 @@ class AGGREGATE:
             #if child's coordinates are already occupied, do that again
             while(child in self.tree.keys()):
 
-                parent = random.choice(list(self.tree.keys()))
+                parent = np.random.choice(list(self.tree.keys()))
                 
                 child = list(parent)
                 child[coord] += direction
@@ -59,7 +59,7 @@ class AGGREGATE:
         if(len(self.body) == 0):
             #Iterate over each index of the tree, call Add_Cube to build a block there.
             for coord in self.tree:
-                element = random.choice(elements)
+                element = np.random.choice(elements)
                 
                 #add a block
                 self.body[coord] = [self.Add_Cube(sim, element, coord, lowest), element]
@@ -80,10 +80,13 @@ class AGGREGATE:
 
     #Create a cube at the specified coordinate, with the specified element's properties
     def Add_Cube(self, sim, element, coord, lowest):
+        
+        colors = np.random.random(size=3)
+        
         box = sim.send_box(
                            x=coord[0]*c.SCALE, y=coord[1]*c.SCALE, z=(coord[2] - lowest + .5)*c.SCALE,
                            length = element.size, width=element.size, height=element.size,
-                           r=random.random(), g=random.random(), b=random.random()
+                           r=colors[0]), g=colors[1], b=colors[2]
                            )
         return box
 
