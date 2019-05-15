@@ -17,6 +17,8 @@ class ELEMENT:
         self.motors = motors
     
         self.controller = controller
+        
+        self.fitness = 0
     
     def mutate():
         exit

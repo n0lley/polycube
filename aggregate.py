@@ -11,6 +11,8 @@ class AGGREGATE:
         self.tree[(0,0,0)] = []
         self.body = {}
         
+        self.fitness = 0
+        
         self.build_tree(numCubes)
 
     def build_tree(self, numCubes):
