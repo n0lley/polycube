@@ -16,7 +16,7 @@ class AGGREGATE:
     def build_tree(self, numCubes):
         '''
         Takes numcubes as an integer argument for the size of the desired polycube
-        Will randomly generate a polycube of desired size recursively
+        Will randomly generate a polycube of desired size
         '''
 
         while numCubes > len(self.tree):
@@ -28,8 +28,10 @@ class AGGREGATE:
             coord = np.random.choice([0, 1, 2])
 
             #pick a random cube from the structure
-            parent = np.random.choice(list(self.tree.keys()))
-
+            keys = list(self.tree.keys())
+            index = np.random.choice(len(keys))
+            parent = keys[index]
+            
             #convert parent to a list, change the selected coordinate, and convert back to tuple
             child = list(parent)
             child[coord] += direction
@@ -38,7 +40,8 @@ class AGGREGATE:
             #if child's coordinates are already occupied, do that again
             while child in self.tree.keys():
 
-                parent = np.random.choice(list(self.tree.keys()))
+                index = np.random.choice(len(keys))
+                parent = keys[index]
                 
                 child = list(parent)
                 child[coord] += direction
@@ -89,11 +92,10 @@ class AGGREGATE:
         
         colors = np.random.random(size=3)
         
-        box = sim.send_box(
-                           x=coord[0]*c.SCALE, y=coord[1]*c.SCALE, z=(coord[2] - lowest + .5)*c.SCALE,
+        box = sim.send_box(x=coord[0]*c.SCALE, y=coord[1]*c.SCALE, z=(coord[2] - lowest + .5)*c.SCALE,
                            length = element.size, width=element.size, height=element.size,
-                           r=colors[0]), g=colors[1], b=colors[2]
-                           )
+                           r=colors[0], g=colors[1], b=colors[2])
+        
         return box
 
     
@@ -181,5 +183,33 @@ class AGGREGATE:
             for m in motors:
                 sim.send_synapse(source_neuron_id=sensors[s], target_neuron_id=motors[m], weight=element.controller[s,m])
 
-                
+    def check_connections(self):
+        '''
+        prints distance matrix
+        if '1' is in each row/column, the tree is valid
+        '''
+        
+        cubes = list(self.tree.keys())
+        N = len(cubes)
+        dMatrix = np.zeros((N, N), dtype='int')
+        
+        for i in range(N):
+            for j in range(N):
+                x1, y1, z1 = cubes[i]
+                x2, y2, z2 = cubes[j]
+                dist = (x1-x2) + (y1-y2) + (z1-z2)
+                dMatrix[i, j] = dist
+        
+        dMatrix = np.abs(dMatrix)
+        cond = True
+        for i in range(N):
+            cond = cond and np.isin(1, dMatrix[i])
+        
+        print('Valid Tree:', cond)
+        
+        
+        
+        
+        
+        
                 
