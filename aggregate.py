@@ -65,19 +65,25 @@ class AGGREGATE:
                 lowest = coord[2]
 
         if len(self.body) == 0:
-            #Iterate over each index of the tree, call add_cube to build a block there.
+            #Iterate over each index of the tree, call add_cube to build a block there. Store that cube mapped to its real-space coordinates (modified z)
             for coord in self.tree:
-                self.body[coord] = self.add_cube(sim, coord, lowest)
-
+                box, z = self.add_cube(sim, coord, lowest)
+                newCoord = coord[:2] + (z,)
+                self.body[newCoord] = box
+                #print(newCoord)
+    
         else:
-            #draw existing values from self.body
-            for coord in self.body:
+            for coord in self.tree:
                 self.add_cube(sim, coord, lowest)
                 
         #Using the element's specifications, build the joints, neurons, and synapses
         for parent in self.tree:
+            #modify parent coordinates to match real-space
+            rparent = parent[:2] + (parent[2] - lowest + .5,)
             for child in self.tree[parent]:
-                element.send_element(sim, self.body[child], self.body[parent], [child, parent])
+                #modify child coordinates to match real-space
+                rchild = child[:2]+ (child[2] - lowest + .5,)
+                element.send_element(sim, self.body[rchild], self.body[rparent], [rchild, rparent])
 
     def add_cube(self, sim, coord, lowest):
         '''
@@ -90,7 +96,7 @@ class AGGREGATE:
                            length = c.SCALE, width=c.SCALE, height=c.SCALE,
                            r=colors[0], g=colors[1], b=colors[2])
         
-        return box
+        return box, coord[2] - lowest + .5
 
     def check_connections(self):
         '''

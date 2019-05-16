@@ -37,9 +37,9 @@ class ELEMENT:
         child = coord1
         
         #calculate joint's position
-        jx = (child[0] - parent[0])/2 + parent[0]
-        jy = (child[1] - parent[1])/2 + parent[1]
-        jz = (child[2] - parent[2])/2 + parent[2]
+        jx = format(((child[0] - parent[0])/2 + parent[0])*c.SCALE, '.2')
+        jy = format(((child[1] - parent[1])/2 + parent[1])*c.SCALE, '.2')
+        jz = format(((child[2] - parent[2])/2 + parent[2])*c.SCALE, '.2')
 
         return [jx, jy, jz]
 
@@ -62,9 +62,11 @@ class TouchSensorHingeJointElement(ELEMENT):
         #joint's position
         j = self.find_joint_position(coords[0], coords[1])
         
+        #print(j)
+        
         #intermediate block
-        jointBox = sim.send_box(x=j[0]*c.SCALE, y=j[1]*c.SCALE, z=j[2]*c.SCALE,
-                     length=c.SCALE*.00001, width=c.SCALE*.00001, height=c.SCALE*.00001)
+        jointBox = sim.send_box(x=j[0], y=j[1], z=j[2],
+                     length=c.SCALE*.001, width=c.SCALE*.001, height=c.SCALE*.001)
 
         #build the joints
         boxes = {0:box, 1:jointBox, 2:parent}
@@ -91,7 +93,7 @@ class TouchSensorHingeJointElement(ELEMENT):
             i+=1
 
         if coords[0][2] == coords[1][2]:
-            #same z-coordinates, create joint with normal on y axis
+            #same z-coordinates, create joint with normal on z axis
             joints[i] = sim.send_hinge_joint(
                                              first_body_id = boxes[i], second_body_id = boxes[i+1],
                                              x=j[0], y=j[1], z=j[2],
