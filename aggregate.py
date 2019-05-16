@@ -53,10 +53,9 @@ class AGGREGATE:
             self.tree[parent].append(child)
             self.tree[child] = []
 
-    def send_to_sim(self, sim, elements):
+    def send_to_sim(self, sim, element):
         '''
-        Construct a body using the provided body tree and randomly choosing 
-            block types from the provided list of elements
+        Construct a body using the provided body tree. Call the element's build function to add joints, neurons, and synapses.
         '''
         
         #establish what the lowest z-coordinate in the tree is so the robot can be shifted up accordingly
@@ -68,24 +67,17 @@ class AGGREGATE:
         if len(self.body) == 0:
             #Iterate over each index of the tree, call add_cube to build a block there.
             for coord in self.tree:
-                element = np.random.choice(elements)
-                
-                #add a block
-                self.body[coord] = [self.add_cube(sim, element, coord, lowest), element]
+                self.body[coord] = self.add_cube(sim, coord, lowest)
 
         else:
             #draw existing values from self.body
             for coord in self.body:
-                element = self.body[coord][1]
-                self.add_cube(sim, element, coord, lowest)
+                self.add_cube(sim, coord, lowest)
                 
-        #add joints, motors, sensors to each box
+        #Using the element's specifications, build the joints, neurons, and synapses
         for parent in self.tree:
             for child in self.tree[parent]:
-                joints = self.build_joints(sim, parent, child)
-                #sensors, motors = self.add_neurons(sim, child, joints)
-                #self.build_network(sim, child, sensors, motors)
-
+                element.send_element(self, sim, self.body[child], self.body[parent], [child, parent])
 
     def add_cube(self, sim, element, coord, lowest):
         '''

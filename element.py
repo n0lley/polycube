@@ -8,23 +8,31 @@ import pyrosim
 
 class ELEMENT:
 
-    def __init__(self, sensors, motors, controller):
+    def __init__(self, controller):
+        '''
+        Initialize class variables
+        '''
     
-        self.size = c.SCALE
+        self.sensors = {}
     
-        self.sensors = sensors
+        self.motors = {}
     
-        self.motors = motors
-    
-        self.controller = controller
+        self.controller = []
         
         self.fitness = 0
     
     def mutate():
         exit
 
+    def send_elements():
+        exit
+
 class TouchSensorHingeJointElement(ELEMENT):
 
     def __init__(self, body):
 
-        self.sensors[0] = self.sim.send_touch_sensor(body_id=body)
+        self.controller = controller
+
+    def send_element(self, sim, box, parent, coords):
+
+        sim.send
