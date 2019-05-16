@@ -5,6 +5,7 @@
 """
 import constants as c
 import pyrosim
+import math
 
 class ELEMENT:
 
@@ -17,23 +18,23 @@ class ELEMENT:
     
         self.motors = {}
     
-        self.controller = []
+        self.controller = controller
         
         self.fitness = 0
     
     def mutate():
         exit
 
-    def send_elements():
+    def send_element():
         exit
 
-    def find_joint_position(coord1, coord2):
+    def find_joint_position(self, coord1, coord2):
         '''
         For subclasses to call when building joints. coord1 is child's coordinates, coord2 is the parent.
         '''
 
-        root = coord2
-        leaf = coord1
+        parent = coord2
+        child = coord1
         
         #calculate joint's position
         jx = (child[0] - parent[0])/2 + parent[0]
@@ -44,11 +45,11 @@ class ELEMENT:
 
 class TouchSensorHingeJointElement(ELEMENT):
 
-    def __init__(self, body):
+    def __init__(self, controller):
         '''
-        Create an element with specified controller.
+        Create an element. Initialization does not differ from superclass.
         '''
-        self.controller = controller
+        super().__init__(controller)
 
     def send_element(self, sim, box, parent, coords):
         '''
@@ -59,20 +60,20 @@ class TouchSensorHingeJointElement(ELEMENT):
         #add hinge joints. Adds a very small intermediate block to make 2 joints
         
         #joint's position
-        j = self.find_joint_position
+        j = self.find_joint_position(coords[0], coords[1])
         
         #intermediate block
         jointBox = sim.send_box(x=j[0]*c.SCALE, y=j[1]*c.SCALE, z=j[2]*c.SCALE,
                      length=c.SCALE*.00001, width=c.SCALE*.00001, height=c.SCALE*.00001)
 
         #build the joints
-        boxes = [box, jointBox, parent]
+        boxes = {0:box, 1:jointBox, 2:parent}
         joints = {}
         i=0
         if coords[0][0] == coords[1][0]:
             #same x-coordinates, create joint with normal on x axis
             joints[i] = sim.send_hinge_joint(
-                                             first_body_id=boxes[i], second_body_id=[i+1],
+                                             first_body_id=boxes[i], second_body_id=boxes[i+1],
                                              x=j[0], y=j[1], z=j[2],
                                              n1=1, n2=0, n3=0,
                                              lo=-1*math.pi/2., hi=math.pi/2.
@@ -109,4 +110,4 @@ class TouchSensorHingeJointElement(ELEMENT):
         #add synapses
         for s in self.sensors:
             for m in self.motors:
-                sim.send_synapse(source_neuron_id = sensors[s], target_neuron_id=motors[m], weight=self.controller[s,m])
+                sim.send_synapse(source_neuron_id = self.sensors[s], target_neuron_id=self.motors[m], weight=self.controller[s,m])

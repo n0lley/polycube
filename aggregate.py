@@ -77,9 +77,9 @@ class AGGREGATE:
         #Using the element's specifications, build the joints, neurons, and synapses
         for parent in self.tree:
             for child in self.tree[parent]:
-                element.send_element(self, sim, self.body[child], self.body[parent], [child, parent])
+                element.send_element(sim, self.body[child], self.body[parent], [child, parent])
 
-    def add_cube(self, sim, element, coord, lowest):
+    def add_cube(self, sim, coord, lowest):
         '''
         Create a cube at the specified coordinate, with the specified element's properties
         '''

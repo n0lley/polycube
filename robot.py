@@ -4,18 +4,16 @@ import math
 import pyrosim
 import constants as c
 from aggregate import AGGREGATE
-from element import ELEMENT
+from element import ELEMENT, TouchSensorHingeJointElement
 
-sensors = {0:0}
-motors = {0:0,1:0}
-controller = np.random.random((1, 12))
+controller = np.random.random((1, 2))
 
-element = ELEMENT(sensors, motors, controller)
+element = TouchSensorHingeJointElement(controller)
 polybot = AGGREGATE(30)
 
-sim = pyrosim.Simulator( play_paused=True )
+sim = pyrosim.Simulator( play_paused=True, eval_time = 300 )
 
-polybot.send_to_sim(sim, [element])
+polybot.send_to_sim(sim, element)
 
 sim.start()
 sim.wait_to_finish()
