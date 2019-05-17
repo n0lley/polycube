@@ -14,10 +14,6 @@ class ELEMENT:
         Initialize class variables
         '''
     
-        self.sensors = {}
-    
-        self.motors = {}
-    
         self.controller = controller
         
         self.fitness = 0
@@ -62,8 +58,6 @@ class TouchSensorHingeJointElement(ELEMENT):
         #joint's position
         j = self.find_joint_position(coords[0], coords[1])
         
-        #print(j)
-        
         #intermediate block
         jointBox = sim.send_box(x=j[0], y=j[1], z=j[2],
                      length=c.SCALE*.001, width=c.SCALE*.001, height=c.SCALE*.001)
@@ -103,13 +97,15 @@ class TouchSensorHingeJointElement(ELEMENT):
             i+=1
 
         #build the sensors
-        self.sensors[0] = sim.send_touch_sensor(body_id = box)
+        sensors = {}
+        sensors[0] = sim.send_touch_sensor(body_id = box)
 
         #build the motors
+        motors = {}
         for joint in joints:
-            self.motors[joint] = sim.send_motor_neuron(joint_id=joints[joint])
+            motors[joint] = sim.send_motor_neuron(joint_id=joints[joint], tau=5)
 
         #add synapses
-        for s in self.sensors:
-            for m in self.motors:
-                sim.send_synapse(source_neuron_id = self.sensors[s], target_neuron_id=self.motors[m], weight=self.controller[s,m])
+        for s in sensors:
+            for m in motors:
+                sim.send_synapse(source_neuron_id = sensors[s], target_neuron_id=motors[m], weight=self.controller[s,m])
