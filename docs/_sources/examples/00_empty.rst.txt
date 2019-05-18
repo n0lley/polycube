@@ -1,9 +1,0 @@
-.. _simulator:
-
-Simulator Settings
-==================
-
-Empty Simulator
----------------
-
-The smallest amount of code to get a simulator up and running
