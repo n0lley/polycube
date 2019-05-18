@@ -39,7 +39,7 @@ class ELEMENT:
 
         return [jx, jy, jz]
 
-class TouchSensorHingeJointElement(ELEMENT):
+class TouchSensorUniversalHingeJointElement(ELEMENT):
 
     def __init__(self, controller):
         '''
@@ -57,55 +57,44 @@ class TouchSensorHingeJointElement(ELEMENT):
         
         #joint's position
         j = self.find_joint_position(coords[0], coords[1])
-        
-        #intermediate block
-        jointBox = sim.send_box(x=j[0], y=j[1], z=j[2],
-                     length=c.SCALE*.001, width=c.SCALE*.001, height=c.SCALE*.001)
-
+    
         #build the joints
-        boxes = {0:box, 1:jointBox, 2:parent}
         joints = {}
-        i=0
-        if coords[0][0] == coords[1][0]:
-            #same x-coordinates, create joint with normal on x axis
-            joints[i] = sim.send_hinge_joint(
-                                             first_body_id=boxes[i], second_body_id=boxes[i+1],
-                                             x=j[0], y=j[1], z=j[2],
-                                             n1=1, n2=0, n3=0,
-                                             lo=-1*math.pi/2., hi=math.pi/2.
-                                             )
-            i+=1
+        if coords[0][0] != coords[1][0]:
+            #Different x-coordinates, create joint with normal on y and z axes
+            joint = sim.send_universal_joint(body1=box, body2=parent,
+                                                 anchor=(j[0],j[1],j[2]),
+                                                 axis1=(0, 0, 1), axis2=(0, 1, 0))
+            joints[0] = sim.send_rotary_actuator(joint_id=joint)
 
-        if coords[0][1] == coords[1][1]:
-            #same y-coordinates, create joint with normal on y axis
-            joints[i] = sim.send_hinge_joint(
-                                             first_body_id = boxes[i], second_body_id = boxes[i+1],
-                                             x=j[0], y=j[1], z=j[2],
-                                             n1=0, n2=1, n3=0,
-                                             lo=-1*math.pi/2., hi=math.pi/2.
-                                             )
-            i+=1
+        if coords[0][1] != coords[1][1]:
+            #Different y-coordinates, create joint with normal on x and z axes
+            joint = sim.send_universal_joint(body1=box, body2=parent,
+                                                 anchor=(j[0],j[1],j[2]),
+                                                 axis1=(0, 0, 1), axis2=(1, 0, 0))
+            joints[0] = sim.send_rotary_actuator(joint_id=joint)
 
-        if coords[0][2] == coords[1][2]:
-            #same z-coordinates, create joint with normal on z axis
-            joints[i] = sim.send_hinge_joint(
-                                             first_body_id = boxes[i], second_body_id = boxes[i+1],
-                                             x=j[0], y=j[1], z=j[2],
-                                             n1=0, n2=0, n3=1,
-                                             lo=-1*math.pi/2., hi=math.pi/2.
-                                             )
-            i+=1
+        if coords[0][2] != coords[1][2]:
+            #Different z-coordinates, create joint with normal on x and y axes
+            joint = sim.send_universal_joint(body1=box, body2=parent,
+                                             anchor=(j[0],j[1],j[2]),
+                                             axis1=(1, 0, 0), axis2=(0, 1, 0))
+            joints[0] = sim.send_rotary_actuator(joint_id=joint)
 
         #build the sensors
         sensors = {}
-        sensors[0] = sim.send_touch_sensor(body_id = box)
+        sensors[0] = T1 = sim.send_touch_sensor(body_id = box)
+        
+        SN = {}
+        for s in sensors:
+            SN[s] = sim.send_sensor_neuron(sensor_id = sensors[s])
 
         #build the motors
-        motors = {}
+        MN = {}
         for joint in joints:
-            motors[joint] = sim.send_motor_neuron(joint_id=joints[joint], tau=5)
+            MN[joint] = sim.send_motor_neuron(motor_id=joints[joint])
 
         #add synapses
-        for s in sensors:
-            for m in motors:
-                sim.send_synapse(source_neuron_id = sensors[s], target_neuron_id=motors[m], weight=self.controller[s,m])
+        for s in SN:
+            for m in MN:
+                sim.send_synapse(source_neuron_id = SN[s], target_neuron_id=MN[m], weight=self.controller[s,m])
