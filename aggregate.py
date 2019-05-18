@@ -70,12 +70,10 @@ class AGGREGATE:
                 box, z = self.add_cube(sim, coord, lowest)
                 newCoord = coord[:2] + (z,)
                 self.body[newCoord] = box
-                #print(newCoord)
     
         else:
             for coord in self.tree:
                 self.add_cube(sim, coord, lowest)
-                
         #Using the element's specifications, build the joints, neurons, and synapses
         for parent in self.tree:
             #modify parent coordinates to match real-space
@@ -84,7 +82,6 @@ class AGGREGATE:
                 #modify child coordinates to match real-space
                 rchild = child[:2]+ (child[2] - lowest + .5,)
                 element.send_element(sim, self.body[rchild], self.body[rparent], [rchild, rparent])
-
     def add_cube(self, sim, coord, lowest):
         '''
         Create a cube at the specified coordinate, with the specified element's properties

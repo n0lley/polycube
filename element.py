@@ -57,29 +57,41 @@ class TouchSensorUniversalHingeJointElement(ELEMENT):
         
         #joint's position
         j = self.find_joint_position(coords[0], coords[1])
-    
+        
+        b2 = sim.send_box(position=(j[0], j[1], j[2]),
+                          sides=(c.SCALE*.001, c.SCALE*.001, c.SCALE*.001))
+        
         #build the joints
         joints = {}
-        if coords[0][0] != coords[1][0]:
-            #Different x-coordinates, create joint with normal on y and z axes
-            joint = sim.send_universal_joint(body1=box, body2=parent,
+        actuators = {}
+        bodies = {0:box, 1:b2, 2:parent}
+        i = 0
+        if coords[0][0] == coords[1][0]:
+            #Same x-coordinates, create joint with normal on x axis
+            joints[i] = sim.send_hinge_joint(body1=bodies[i], body2=bodies[i+1],
                                                  anchor=(j[0],j[1],j[2]),
-                                                 axis1=(0, 0, 1), axis2=(0, 1, 0))
-            joints[0] = sim.send_rotary_actuator(joint_id=joint)
-
-        if coords[0][1] != coords[1][1]:
-            #Different y-coordinates, create joint with normal on x and z axes
-            joint = sim.send_universal_joint(body1=box, body2=parent,
-                                                 anchor=(j[0],j[1],j[2]),
-                                                 axis1=(0, 0, 1), axis2=(1, 0, 0))
-            joints[0] = sim.send_rotary_actuator(joint_id=joint)
-
-        if coords[0][2] != coords[1][2]:
-            #Different z-coordinates, create joint with normal on x and y axes
-            joint = sim.send_universal_joint(body1=box, body2=parent,
+                                                 axis=(1, 0, 0),
+                                                 joint_range = math.pi/2.)
+            i+=1
+        
+        if coords[0][1] == coords[1][1]:
+            #Same y-coordinates, create joint with normal on y axis
+            joints[i] = sim.send_hinge_joint(body1=bodies[i], body2=bodies[i+1],
                                              anchor=(j[0],j[1],j[2]),
-                                             axis1=(1, 0, 0), axis2=(0, 1, 0))
-            joints[0] = sim.send_rotary_actuator(joint_id=joint)
+                                             axis=(0, 1, 0),
+                                             joint_range = math.pi/2.)
+            i+=1
+
+        if coords[0][2] == coords[1][2]:
+            #Same z-coordinates, create joint with normal on z axis
+            joints[i] = sim.send_hinge_joint(body1=bodies[i], body2=bodies[i+1],
+                                                 anchor=(j[0],j[1],j[2]),
+                                                 axis=(0, 0, 1),
+                                                 joint_range = math.pi/2.)
+            i+=1
+        
+        for j in joints:
+            actuators[j] = sim.send_rotary_actuator(joint_id = joints[j])
 
         #build the sensors
         sensors = {}
@@ -91,8 +103,8 @@ class TouchSensorUniversalHingeJointElement(ELEMENT):
 
         #build the motors
         MN = {}
-        for joint in joints:
-            MN[joint] = sim.send_motor_neuron(motor_id=joints[joint])
+        for a in actuators:
+            MN[a] = sim.send_motor_neuron(motor_id=actuators[a], tau=.3)
 
         #add synapses
         for s in SN:

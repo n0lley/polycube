@@ -9,11 +9,12 @@ from element import ELEMENT, TouchSensorUniversalHingeJointElement
 controller = np.random.random((1, 2))
 
 element = TouchSensorUniversalHingeJointElement(controller)
-polybot = AGGREGATE(2)
+polybot = AGGREGATE(5)
 
-sim = pyrosim.Simulator(eval_steps=500, dt = .01, play_paused=True, draw_joints=True)
+sim = pyrosim.Simulator(eval_steps = 500, play_paused=True, dt=.01)
 
 polybot.send_to_sim(sim, element)
 
 sim.start()
 sim.wait_to_finish()
+print(sim.get_debug_output())
