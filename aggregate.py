@@ -22,6 +22,8 @@ class AGGREGATE:
         '''
 
         while numCubes > len(self.tree):
+            
+            np.random.seed(0)
 
             #select whether to move + or -
             direction = np.random.choice([-1, 1])

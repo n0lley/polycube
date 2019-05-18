@@ -1,11 +1,11 @@
 import numpy as np
-import random
 import math
 import pyrosim
 import constants as c
 from aggregate import AGGREGATE
 from element import ELEMENT, TouchSensorUniversalHingeJointElement
 
+np.random.seed(0)
 controller = np.random.random((1, 2))
 
 element = TouchSensorUniversalHingeJointElement(controller)
