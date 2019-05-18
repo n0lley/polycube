@@ -92,9 +92,9 @@ class AGGREGATE:
         
         colors = np.random.random(size=3)
         
-        box = sim.send_box(x=coord[0]*c.SCALE, y=coord[1]*c.SCALE, z=(coord[2] - lowest + .5)*c.SCALE,
-                           length = c.SCALE, width=c.SCALE, height=c.SCALE,
-                           r=colors[0], g=colors[1], b=colors[2])
+        box = sim.send_box(position=(coord[0]*c.SCALE, coord[1]*c.SCALE, (coord[2] - lowest + .5)*c.SCALE),
+                 sides=(c.SCALE, c.SCALE, c.SCALE),
+                 color=(colors[0], colors[1], colors[2]))
         
         return box, coord[2] - lowest + .5
 
