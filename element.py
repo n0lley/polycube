@@ -59,7 +59,7 @@ class TouchSensorUniversalHingeJointElement(ELEMENT):
         j = self.find_joint_position(coords[0], coords[1])
         
         b2 = sim.send_box(position=(j[0], j[1], j[2]),
-                          sides=(c.SCALE*.001, c.SCALE*.001, c.SCALE*.001))
+                          sides=(c.SCALE*.01, c.SCALE*.01, c.SCALE*.01))
         
         #build the joints
         joints = {}

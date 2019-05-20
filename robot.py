@@ -5,13 +5,13 @@ import constants as c
 from aggregate import AGGREGATE
 from element import ELEMENT, TouchSensorUniversalHingeJointElement
 
-np.random.seed(0)
+#np.random.seed(0)
 controller = np.random.random((1, 2))
 
 element = TouchSensorUniversalHingeJointElement(controller)
-polybot = AGGREGATE(5)
+polybot = AGGREGATE(25)
 
-sim = pyrosim.Simulator(eval_steps = 500, play_paused=True, dt=.01)
+sim = pyrosim.Simulator(eval_steps = 1000, play_paused=True, dt=.01)
 
 polybot.send_to_sim(sim, element)
 
