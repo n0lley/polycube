@@ -3,26 +3,40 @@
 
 class POPULATION:
     '''
-    POPULATION class that handles evolutionary methods
-        for the given object
+    Handles evolutionary methods for the given object
+    
+    Attributes
+    ----------
+    ind     : class
+        the individual type that composes the population
+   n         : int
+        the population size
+    unique  : bool
+        defines how the initial population is created
+    p       : dict
+        holds the individuals in the population
+    fits    : dict
+        holds each individual's fitness values
+    
+    Methods
+    -------
+    initialize()
+        generates the initial, random population
+    evaluate()
+        evaluates each individual
     '''
     
-    def __init__(self, object, n=10, unique=True):
+    def __init__(self, ind, n=10, unique=True):
         '''
         initializes the population of n objects
-        
-        object: (class) individual class to be evolved
-        n: (int) population size
-        unique: (bool) if True, initializes n independent individuals
-                       if False, generates random mutants of 1 individual
         '''
 
         assert hasattr(object, 'mutate'), print('ERROR: Object needs method .mutate()')
         assert hasattr(object, 'evaluate'), print('ERROR: Object needs method .evaluate()')
         assert hasattr(object, 'generate_random'), print('ERROR: Object needs method .generate_random()')
         
-        self.ind = object
-        self.popSize = n
+        self.ind = ind
+        self.n = n
         self.unique = unique
         
         self.p = {}
@@ -46,17 +60,15 @@ class POPULATION:
             else:
                 self.p[i] = self.p[0].mutate()
                 
-            
-        
-       
-    
-        
         
     def evaluate(self):
         '''
         evaluates each individual in the population
         '''
         
-        pass
+        for i in self.p:
+            self.p[i].evaluate()
+    
+    
     
     
