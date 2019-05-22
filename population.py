@@ -7,9 +7,9 @@ class POPULATION:
     
     Attributes
     ----------
-    ind     : class instance
+    ind     : class
         the individual type that composes the population
-   n        : int
+    n       : int
         the population size
     unique  : bool
         defines how the initial population is created
@@ -54,7 +54,7 @@ class POPULATION:
         
         assert hasattr(self.p[0], 'fitness'), print('ERROR: Object needs field .fitness')
         
-        for i in range(1, self.popSize):
+        for i in range(1, self.n):
             if self.unique:
                 self.p[i] = self.ind()
             else:
@@ -68,6 +68,7 @@ class POPULATION:
         
         for i in self.p:
             self.p[i].evaluate()
+            self.fits[i] = self.p[i].fitness
     
     
     
