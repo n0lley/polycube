@@ -3,19 +3,31 @@ import numpy as np
 
 class COEVOLVE:
     '''
-    COEVOLVE class that handles co-evolutionary methods
-        for AGGREGATE and ELEMENT classes
+    handles co-evolutionary methods for AGGREGATE and ELEMENT classes
         
-    To be used with population class in ./population.py
+    Attributes
+    ----------
+    aggrs    : POPULATION instance
+        Population of aggregate objects
+    elmts    : POPULATION instance
+        Population of element objects
+        
+    Methods
+    -------
+    exhaustive()
+        Evaluates with every combination of aggregate and element
+    random_subset(p=0.5, q=0.5)
+        Evaluates every combination within given subsets, with size
+        determined by the given proportions
     '''
     
-    def __init__(self, pop1, pop2):
+    def __init__(self, aggrs, elmts):
         '''
         initializes the two populations 
         '''
         
-        self.aggrs = pop1
-        self.elmts = pop2
+        self.aggrs = aggrs
+        self.elmts = elmts
         
     def exhaustive(self):
         '''
@@ -29,7 +41,7 @@ class COEVOLVE:
                 aggr = self.aggrs.p[j]
                 aggr.send_to_sim(sim, elmt)
                 
-    def random_subset(self, p, q):
+    def random_subset(self, p=0.5, q=0.5):
         '''
         Selects subsets of proportion p from aggregate 
             and proportion q from elements for evaluation
