@@ -19,10 +19,16 @@ class ELEMENT:
         self.fitness = 0
     
     def mutate():
-        exit
+        '''
+        
+        '''
+        pass
 
     def send_element():
-        exit
+        '''
+        
+        '''
+        pass
 
     def find_joint_position(self, coord1, coord2):
         '''
