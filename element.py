@@ -39,6 +39,27 @@ class ELEMENT:
 
         return [jx, jy, jz]
 
+    def build_neural_network(self, sim, sensors, actuators, hidden=None):
+        '''
+        For subclasses to call when building their neural networks. Additional functionality for hidden neurons TBA.
+        '''
+        
+        #add sensor neurons
+        SN = {}
+        for s in sensors:
+            SN[s] = sim.send_sensor_neuron(sensor_id = sensors[s])
+            
+        #build the motors
+        MN = {}
+        for a in actuators:
+            MN[a] = sim.send_motor_neuron(motor_id=actuators[a], tau=.3)
+
+        #add synapses
+        if hidden==None:
+            for s in SN:
+                for m in MN:
+                    sim.send_synapse(source_neuron_id = SN[s], target_neuron_id=MN[m], weight=self.controller[s,m])
+
 class TouchSensorUniversalHingeJointElement(ELEMENT):
 
     def __init__(self, controller):
@@ -95,18 +116,38 @@ class TouchSensorUniversalHingeJointElement(ELEMENT):
 
         #build the sensors
         sensors = {}
-        sensors[0] = T1 = sim.send_touch_sensor(body_id = box)
+        sensors[0] = sim.send_touch_sensor(body_id = box)
         
-        SN = {}
-        for s in sensors:
-            SN[s] = sim.send_sensor_neuron(sensor_id = sensors[s])
+        self.build_neural_network(sim, sensors, actuators)
 
-        #build the motors
-        MN = {}
-        for a in actuators:
-            MN[a] = sim.send_motor_neuron(motor_id=actuators[a], tau=.3)
+class TouchAndLightSensorYAxisHingeJointElement(ELEMENT):
 
-        #add synapses
-        for s in SN:
-            for m in MN:
-                sim.send_synapse(source_neuron_id = SN[s], target_neuron_id=MN[m], weight=self.controller[s,m])
+    def __init__(self, controller):
+        '''
+            Create an element. Initialization does not differ from superclass.
+            '''
+        super().__init__(controller)
+
+    def send_element(self, sim, box, parent, coords):
+        '''
+            Use the current box being modified, the box it's being attached to, and the coordinates of those boxes (in that order) to build class-specific  joints, sensors, motors, etc on box.
+            Attach controller to that network.
+        '''
+
+        j = self.find_joint_position(coords[0], coords[1])
+        joints = {}
+
+        joints[0] = sim.send_hinge_joint(body1 = box, body2 = parent,
+                                         anchor=(j[0],j[1],j[2]),
+                                         axis=(0, 1, 0),
+                                         joint_range = math.pi/2.)
+
+        actuators = {}
+        for j in joints:
+            actuators[j] = sim.send_rotary_actuator(joint_id = joints[j])
+
+        sensors = {}
+        sensors[0] = sim.send_touch_sensor(body_id = box)
+        sensors[1] = sim.send_light_sensor(body_id = box)
+
+        self.build_neural_network(sim, sensors, actuators)
