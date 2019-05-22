@@ -41,8 +41,8 @@ class COEVOLVE:
         n1 = self.aggrs.popSize
         n2 = self.elmts.popSize
         
-        aggrSub = np.random.choice(n1, size=p*n1)
-        elmtSub = np.random.choice(n2, size=q*n2)
+        aggrSub = np.random.choice(n1, size=int(np.ceil(p*n1)))
+        elmtSub = np.random.choice(n2, size=int(np.ceil(q*n2)))
         
         for i in elmtSub:
             elmt = self.elmts.p[i]
