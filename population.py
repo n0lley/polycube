@@ -7,9 +7,9 @@ class POPULATION:
     
     Attributes
     ----------
-    ind     : class
+    ind     : class instance
         the individual type that composes the population
-   n         : int
+   n        : int
         the population size
     unique  : bool
         defines how the initial population is created
