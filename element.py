@@ -157,3 +157,35 @@ class TouchAndLightSensorYAxisHingeJointElement(ELEMENT):
         sensors[1] = sim.send_light_sensor(body_id = box)
 
         self.build_neural_network(sim, sensors, actuators)
+
+class TouchAndLightSensorXAxisHingeJointElement(ELEMENT):
+    
+    def __init__(self, controller):
+        '''
+            Create an element. Initialization does not differ from superclass.
+            '''
+        super().__init__(controller)
+    
+    def send_element(self, sim, box, parent, coords):
+        '''
+            Use the current box being modified, the box it's being attached to, and the coordinates of those boxes (in that order) to build class-specific  joints, sensors, motors, etc on box.
+            Attach controller to that network.
+            '''
+        
+        j = self.find_joint_position(coords[0], coords[1])
+        joints = {}
+        
+        joints[0] = sim.send_hinge_joint(body1 = box, body2 = parent,
+                                         anchor=(j[0],j[1],j[2]),
+                                         axis=(1, 0, 0),
+                                         joint_range = math.pi/2.)
+            
+        actuators = {}
+        for j in joints:
+            actuators[j] = sim.send_rotary_actuator(joint_id = joints[j])
+         
+        sensors = {}
+        sensors[0] = sim.send_touch_sensor(body_id = box)
+        sensors[1] = sim.send_light_sensor(body_id = box)
+                 
+        self.build_neural_network(sim, sensors, actuators)
