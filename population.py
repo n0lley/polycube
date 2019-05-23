@@ -31,9 +31,8 @@ class POPULATION:
         initializes the population of n objects
         '''
 
-        assert hasattr(object, 'mutate'), print('ERROR: Object needs method .mutate()')
-        assert hasattr(object, 'evaluate'), print('ERROR: Object needs method .evaluate()')
-        assert hasattr(object, 'generate_random'), print('ERROR: Object needs method .generate_random()')
+        assert hasattr(ind, 'mutate'), print('ERROR: Object needs method .mutate()')
+        assert hasattr(ind, 'evaluate'), print('ERROR: Object needs method .evaluate()')
         
         self.ind = ind
         self.n = n
