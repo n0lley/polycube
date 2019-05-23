@@ -25,38 +25,71 @@ class AGGREGATE:
 
         while numCubes > len(self.tree):
             
-            #np.random.seed(0)
+            self.add_cube()
+    
+    
+    def mutate(self):
+        '''
+        
+        '''
+        
+        if np.random.random() < MU: #mu is mutation hyperparameter 
+            N = len(self.tree)
+            cList = [] #list of coordinates
+            pList = np.zeros(N) #list of probabilities
+            for v, (node, children) in enumerate(self.tree.items()):
+                k = 0
+                #k = number of nodes in subtree rooted at node
+                probDelete = (N-k)/N 
+                cList.append(node)
+                pList[v] = probDelete
+            pList /= np.sum(pList)
+            i = np.random.choice(range(N), p=pList)
+            nodeToDeleteCoordinates = cList[i]
+            # *delete subtree rooted at node chosen
+            
+        else:
+            
+            self.add_cube()
+        
+    def add_cube(self):
+        '''
+        adds a cube to the tree
+        '''
+        #np.random.seed(0)
 
-            #select whether to move + or -
-            direction = np.random.choice([-1, 1])
+        #select whether to move + or -
+        direction = np.random.choice([-1, 1])
 
-            #coordinate to move in: 0->x, 1->y, 2->z
-            coord = np.random.choice([0, 1, 2])
+        #coordinate to move in: 0->x, 1->y, 2->z
+        coord = np.random.choice([0, 1, 2])
 
-            #pick a random cube from the structure
-            keys = list(self.tree.keys())
+        #pick a random cube from the structure
+        keys = list(self.tree.keys())
+        index = np.random.choice(len(keys))
+        parent = keys[index]
+
+        #convert parent to a list, change the selected coordinate, and convert back to tuple
+        child = list(parent)
+        child[coord] += direction
+        child = tuple(child)
+
+        #if child's coordinates are already occupied, do that again
+        while child in self.tree.keys():
+
             index = np.random.choice(len(keys))
             parent = keys[index]
-            
-            #convert parent to a list, change the selected coordinate, and convert back to tuple
+
             child = list(parent)
             child[coord] += direction
             child = tuple(child)
 
-            #if child's coordinates are already occupied, do that again
-            while child in self.tree.keys():
-
-                index = np.random.choice(len(keys))
-                parent = keys[index]
-                
-                child = list(parent)
-                child[coord] += direction
-                child = tuple(child)
-            
-            #Point parent to child, add child to the structure
-            self.tree[parent].append(child)
-            self.tree[child] = []
-
+        #Point parent to child, add child to the structure
+        self.tree[parent].append(child)
+        self.tree[child] = []
+        
+        
+    
     def send_to_sim(self, sim, element):
         '''
         Construct a body using the provided body tree. Call the element's build function to add joints, neurons, and synapses.
@@ -69,15 +102,15 @@ class AGGREGATE:
                 lowest = coord[2]
 
         if len(self.body) == 0:
-            #Iterate over each index of the tree, call add_cube to build a block there. Store that cube mapped to its real-space coordinates (modified z)
+            #Iterate over each index of the tree, call send_cube to build a block there. Store that cube mapped to its real-space coordinates (modified z)
             for coord in self.tree:
-                box, z = self.add_cube(sim, coord, lowest)
+                box, z = self.send_cube(sim, coord, lowest)
                 newCoord = coord[:2] + (z,)
                 self.body[newCoord] = box
     
         else:
             for coord in self.tree:
-                self.add_cube(sim, coord, lowest)
+                self.send_cube(sim, coord, lowest)
         #Using the element's specifications, build the joints, neurons, and synapses
         for parent in self.tree:
             #modify parent coordinates to match real-space
@@ -86,9 +119,12 @@ class AGGREGATE:
                 #modify child coordinates to match real-space
                 rchild = child[:2]+ (child[2] - lowest + .5,)
                 element.send_element(sim, self.body[rchild], self.body[rparent], [rchild, rparent])
-    def add_cube(self, sim, coord, lowest):
+    
+    
+    def send_cube(self, sim, coord, lowest):
         '''
-        Create a cube at the specified coordinate, with the specified element's properties
+        Sends cube to the simulator at the specified coordinate, 
+            with the specified element's properties
         '''
         
         colors = np.random.random(size=3)
@@ -99,6 +135,7 @@ class AGGREGATE:
         
         return box, coord[2] - lowest + .5
 
+    
     def check_connections(self):
         '''
         prints distance matrix
