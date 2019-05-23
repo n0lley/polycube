@@ -4,6 +4,7 @@
     Mutate which changes the motor/sensors
 """
 import constants as c
+import numpy as np
 import pyrosim
 import math
 
@@ -18,11 +19,22 @@ class ELEMENT:
         
         self.fitness = 0
     
-    def mutate():
+    def mutate(self):
         '''
+        Randomly modify a weight in the element's genome
+        '''
+        row = np.random.randint(0, len(self.controller)-1)
+        col = np.random.randint(0, len(self.controller[row])-1)
         
-        '''
-        pass
+        gene = self.controller[row][col]
+        gene = np.random.normal(gene)
+        
+        if gene > 1:
+            gene = 1
+        elif gene < -1:
+            gene = -1
+        
+        self.controller[row][col] = gene
 
     def send_element():
         '''
