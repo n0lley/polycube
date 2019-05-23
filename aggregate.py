@@ -46,7 +46,7 @@ class AGGREGATE:
             pList /= np.sum(pList)
             i = np.random.choice(range(N), p=pList)
             nodeToDeleteCoordinates = cList[i]
-            # *delete subtree rooted at node chosen
+            #TODO: delete subtree rooted at node chosen
             
         else:
             
