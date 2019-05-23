@@ -6,10 +6,9 @@ from aggregate import AGGREGATE
 from element import ELEMENT, TouchSensorUniversalHingeJointElement,                    TouchAndLightSensorYAxisHingeJointElement,                    TouchAndLightSensorXAxisHingeJointElement
 
 #np.random.seed(0)
-controller = np.random.random((2, 2))
 
-element = TouchAndLightSensorXAxisHingeJointElement(controller)
-polybot = AGGREGATE(25)
+element = TouchAndLightSensorXAxisHingeJointElement()
+polybot = AGGREGATE()
 
 sim = pyrosim.Simulator(eval_steps = 1000, play_paused=True, dt=.01)
 

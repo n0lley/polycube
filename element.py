@@ -10,20 +10,20 @@ import math
 
 class ELEMENT:
 
-    def __init__(self):
+    def __init__(self, c1, c2):
         '''
         Initialize class variables
         '''
     
         self.controller = None
         
-        self.generate_random()
+        self.generate_random(c1, c2)
         
         self.fitness = 0
     
-    def generate_random(self):
+    def generate_random(self, c1, c2):
         
-        self.controller = np.random.random((2, 2))
+        self.controller = np.random.random((c1, c2))
     
     def mutate(self):
         '''
@@ -86,11 +86,11 @@ class ELEMENT:
 
 class TouchSensorUniversalHingeJointElement(ELEMENT):
 
-    def __init__(self, controller):
+    def __init__(self):
         '''
         Create an element. Initialization does not differ from superclass.
         '''
-        super().__init__(controller)
+        super().__init__(1, 2)
 
     def send_element(self, sim, box, parent, coords):
         '''
@@ -146,11 +146,11 @@ class TouchSensorUniversalHingeJointElement(ELEMENT):
 
 class TouchAndLightSensorYAxisHingeJointElement(ELEMENT):
 
-    def __init__(self, controller):
+    def __init__(self):
         '''
             Create an element. Initialization does not differ from superclass.
             '''
-        super().__init__(controller)
+        super().__init__(2, 1)
 
     def send_element(self, sim, box, parent, coords):
         '''
@@ -178,11 +178,11 @@ class TouchAndLightSensorYAxisHingeJointElement(ELEMENT):
 
 class TouchAndLightSensorXAxisHingeJointElement(ELEMENT):
     
-    def __init__(self, controller):
+    def __init__(self):
         '''
             Create an element. Initialization does not differ from superclass.
             '''
-        super().__init__(controller)
+        super().__init__(2, 1)
     
     def send_element(self, sim, box, parent, coords):
         '''
