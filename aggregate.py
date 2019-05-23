@@ -33,7 +33,7 @@ class AGGREGATE:
         
         '''
         
-        if np.random.random() < MU: #mu is mutation hyperparameter 
+        if np.random.random() < c.MU: #mu is mutation hyperparameter
             N = len(self.tree)
             cList = [] #list of coordinates
             pList = np.zeros(N) #list of probabilities

@@ -1,2 +1,3 @@
 SCALE = .1
 NUMCUBES = 10
+MU = 0.5
