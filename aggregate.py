@@ -5,13 +5,15 @@ import constants as c
 
 class AGGREGATE:
     
-    def __init__(self, numCubes):
+    def __init__(self):
         
         self.tree = {}
         self.tree[(0,0,0)] = []
         self.body = {}
         
         self.fitness = 0
+        
+        numCubes = np.random.choice(range(1, 10))
         
         self.generate_random(numCubes)
 
