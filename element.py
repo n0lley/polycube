@@ -17,22 +17,25 @@ class ELEMENT:
     
         self.controller = None
         
-        self.generate_random(c1, c2)
+        self.contDim1 = c1
+        self.contDim2 = c2
+        
+        self.generate_random()
         
         self.fitness = 0
     
-    def generate_random(self, c1, c2):
+    def generate_random(self):
         
-        self.controller = np.random.random((c1, c2))
+        self.controller = np.random.random((self.contDim1, self.contDim2))
     
     def mutate(self):
         '''
         Randomly modify a weight in the element's genome
         '''
-        row = np.random.randint(0, len(self.controller)-1)
-        col = np.random.randint(0, len(self.controller[row])-1)
+        row = np.random.randint(0, self.contDim1)
+        col = np.random.randint(0, self.contDim2)
         
-        gene = self.controller[row][col]
+        gene = self.controller[row, col]
         gene = np.random.normal(gene)
         
         if gene > 1:
@@ -40,13 +43,13 @@ class ELEMENT:
         elif gene < -1:
             gene = -1
         
-        self.controller[row][col] = gene
+        self.controller[row, col] = gene
 
-    def send_element():
+    def send_element(self):
         '''
         
         '''
-        pass
+        raise NotImplementedError("send_element function is not written")
 
     def find_joint_position(self, coord1, coord2):
         '''
