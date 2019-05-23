@@ -10,14 +10,20 @@ import math
 
 class ELEMENT:
 
-    def __init__(self, controller):
+    def __init__(self):
         '''
         Initialize class variables
         '''
     
-        self.controller = controller
+        self.controller = None
+        
+        self.generate_random()
         
         self.fitness = 0
+    
+    def generate_random(self):
+        
+        self.controller = np.random.random((2, 2))
     
     def mutate(self):
         '''

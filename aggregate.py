@@ -13,9 +13,9 @@ class AGGREGATE:
         
         self.fitness = 0
         
-        self.build_tree(numCubes)
+        self.generate_random(numCubes)
 
-    def build_tree(self, numCubes):
+    def generate_random(self, numCubes):
         '''
         Takes numcubes as an integer argument for the size of the desired polycube
         Will randomly generate a polycube of desired size
