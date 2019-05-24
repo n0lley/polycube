@@ -30,7 +30,8 @@ class AGGREGATE:
     
     def mutate(self):
         '''
-        
+        Choose between adding a new node or deleting a subtree. If adding, call add_cube.
+        If deleting, find the length of the subtree, ensure the root of the subtree is not the polycube's root node, then delete every node in the subtree.
         '''
         
         if np.random.random() < c.MU: #mu is mutation hyperparameter
@@ -160,9 +161,27 @@ class AGGREGATE:
         
         print('Valid Tree:', cond)
         
+    def update_subtree_sizes(self):
+        '''
+        Returns a dict mapping each node in tree with the size of its subtree. Leaves have a value of 1.
+        '''
         
-        
-        
-        
-        
-                
+        self.subtreeLength = {}
+        print(self.tree)
+        self.get_subtree_length((0,0,0))
+        print(self.subtreeLength)
+
+    def get_subtree_length(self, coord):
+        '''
+        Returns the length of the subtree located at the specified node by recursively summing the sizes of its children's subtrees
+        '''
+        if self.tree[coord] == []:
+            self.subtreeLength[coord] = 1
+            return 1
+
+        else:
+            sum = 1
+            for child in self.tree[coord]:
+                sum += self.get_subtree_length(child)
+            self.subtreeLength[coord] = sum
+            return self.subtreeLength[coord]
