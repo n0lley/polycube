@@ -16,6 +16,7 @@ class AGGREGATE:
             numCubes = np.random.choice(range(1, c.NUMCUBES))
         
         self.generate_random(numCubes)
+        self.update_subtree_sizes()
 
     def generate_random(self, numCubes):
         '''
@@ -39,8 +40,7 @@ class AGGREGATE:
             cList = [] #list of coordinates
             pList = np.zeros(N) #list of probabilities
             for v, (node, children) in enumerate(self.tree.items()):
-                k = 0
-                #k = number of nodes in subtree rooted at node
+                k = self.subtreeLength[node]
                 probDelete = (N-k)/N 
                 cList.append(node)
                 pList[v] = probDelete
@@ -48,10 +48,13 @@ class AGGREGATE:
             i = np.random.choice(range(N), p=pList)
             nodeToDeleteCoordinates = cList[i]
             #TODO: delete subtree rooted at node chosen
+            self.remove_subtree(nodeToDeleteCoordinates)
             
         else:
             
             self.add_cube()
+
+        self.update_subtree_sizes()
         
     def add_cube(self):
         '''
@@ -163,13 +166,13 @@ class AGGREGATE:
         
     def update_subtree_sizes(self):
         '''
-        Returns a dict mapping each node in tree with the size of its subtree. Leaves have a value of 1.
+        Creates a dict mapping each node in tree with the size of its subtree. Leaves have a value of 1.
         '''
         
         self.subtreeLength = {}
-        print(self.tree)
+        #print(self.tree)
         self.get_subtree_length((0,0,0))
-        print(self.subtreeLength)
+        #print(self.subtreeLength)
 
     def get_subtree_length(self, coord):
         '''
@@ -185,3 +188,18 @@ class AGGREGATE:
                 sum += self.get_subtree_length(child)
             self.subtreeLength[coord] = sum
             return self.subtreeLength[coord]
+
+    def remove_subtree(self, root):
+        '''
+        Remove the specified node (root) and the subtree it is the root of. Also remove reference to the root from its parent
+            '''
+        print("Pruning node", root)
+        
+        for child in self.tree[root]:
+            self.remove_subtree(child)
+
+        for node in self.tree:
+            if root in self.tree[node]:
+                self.tree[node].remove(root)
+                    
+        self.tree.pop(root)
