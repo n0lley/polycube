@@ -9,6 +9,7 @@ class AGGREGATE:
         self.tree = {}
         self.tree[(0,0,0)] = []
         self.body = {}
+        self.positions = {}
         
         self.fitness = 0
 
@@ -137,6 +138,10 @@ class AGGREGATE:
                  sides=(c.SCALE, c.SCALE, c.SCALE),
                  color=(colors[0], colors[1], colors[2]))
         
+        self.positions[coord] = [sim.send_position_x_sensor(body_id = box),
+                                 sim.send_position_y_sensor(body_id = box),
+                                 sim.send_position_z_sensor(body_id = box)]
+        
         return box, coord[2] - lowest + .5
 
     
@@ -201,5 +206,22 @@ class AGGREGATE:
         for node in self.tree:
             if root in self.tree[node]:
                 self.tree[node].remove(root)
-                    
+    
+        self.positions.pop(root)
         self.tree.pop(root)
+
+    def calculate_displacement(self, sim):
+        '''
+        Get the average displacement using the positional sensors of each node
+        '''
+        delta = 0
+        
+        for coord in self.positions:
+            p = self.positions[coord]
+            dx = sim.get_sensor_data(sensor_id = p[0])[-1] - coord[0]
+            dy = sim.get_sensor_data(sensor_id = p[1])[-1] - coord[1]
+            dz = sim.get_sensor_data(sensor_id = p[2])[-1] - coord[2]
+            d = dx**2 + dy**2 + dz**2
+            delta += d**0.5
+
+        return delta/len(self.positions)
