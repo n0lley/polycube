@@ -19,6 +19,7 @@ class AGGREGATE:
         
         self.generate_random(numCubes)
         self.update_subtree_sizes()
+        print("Tree built")
 
     def generate_random(self, numCubes):
         '''
@@ -93,6 +94,8 @@ class AGGREGATE:
         #Point parent to child, add child to the structure
         self.tree[parent].append(child)
         self.tree[child] = []
+        
+        print("Cube added at", child)
         
     def evaluate(self, sim, elmt):
         '''
@@ -216,7 +219,12 @@ class AGGREGATE:
             '''
         print("Pruning node", root)
         
+        todel = []
+        
         for child in self.tree[root]:
+            todel.append(child)
+
+        for child in todel:
             self.remove_subtree(child)
 
         for node in self.tree:
