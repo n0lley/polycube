@@ -22,7 +22,15 @@ class ELEMENT:
         
         self.generate_random()
         
+        self.scores = []
         self.fitness = 0
+    
+    def reset(self):
+        '''
+        reset fitness list
+        '''
+        
+        self.scores = []
     
     def generate_random(self):
         

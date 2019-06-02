@@ -1,4 +1,5 @@
-
+from copy import deepcopy
+import numpy as np
 
 
 class POPULATION:
@@ -32,7 +33,7 @@ class POPULATION:
         '''
 
         assert hasattr(ind, 'mutate'), print('ERROR: Object needs method .mutate()')
-        assert hasattr(ind, 'evaluate'), print('ERROR: Object needs method .evaluate()')
+        #assert hasattr(ind, 'evaluate'), print('ERROR: Object needs method .evaluate()')
         
         self.ind = ind
         self.n = n
@@ -66,6 +67,48 @@ class POPULATION:
         for i in self.p:
             self.p[i].evaluate()
             self.fits[i] = self.p[i].fitness
+            
+    def reset(self):
+        '''
+        resets all fitness values
+        '''
+        
+        for i in self.p:
+            self.p[i].reset()
+            self.p[i].fitness = 0
+            
+    def selection(self):
+        '''
+        standard GA selection with mutation
+        '''
+        
+        newPop = {}
+        
+        #find best and copy over
+        bestP = self.p[0]
+        for i in self.p:
+            if self.p[i].fitness > bestP.fitness:
+                bestP = self.p[i] 
+        
+        newPop[0] = deepcopy(bestP)
+        
+        #random tournament to fill population
+        for i in range(1, self.n):
+            
+            x, y = np.random.choice(self.n, size=2, replace=False)
+            
+            ind1 = self.p[x]
+            ind2 = self.p[y]
+            
+            if ind1.fitness > ind2.fitness:
+                newPop[i] = deepcopy(ind1)
+            else:
+                newPop[i] = deepcopy(ind2)
+                
+            newPop[i].mutate()
+                
+        self.p = deepcopy(newPop)
+        
     
     
     

@@ -11,6 +11,7 @@ class AGGREGATE:
         self.body = {}
         self.positions = {}
         
+        self.scores = []
         self.fitness = 0
 
         if numCubes == None:
@@ -93,7 +94,22 @@ class AGGREGATE:
         self.tree[parent].append(child)
         self.tree[child] = []
         
+    def evaluate(self, sim, elmt):
+        '''
+        calls send_to_sim and
+            calculate_displacement
+        '''
+        self.send_to_sim(sim, elmt)
+        sim.start()
+        sim.wait_to_finish()
+        return self.calculate_displacement(sim)
         
+    def reset(self):
+        '''
+        reset fitness list
+        '''
+        
+        self.scores = []
     
     def send_to_sim(self, sim, element):
         '''

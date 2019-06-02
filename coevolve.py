@@ -1,5 +1,5 @@
 import numpy as np
-
+import pyrosim
 
 class COEVOLVE:
     '''
@@ -34,12 +34,20 @@ class COEVOLVE:
         Evaluates every single aggregate composed with 
             every single element 
         '''
+        for j in self.aggrs.p:
+            aggr = self.aggrs.p[j]
+            for i in self.elmts.p:
+                elmt = self.elmts.p[i]
+                sim = pyrosim.Simulator(eval_steps=100, play_blind=True, play_paused=False, dt=.01)
+                fit = aggr.evaluate(sim, elmt)
+                self.aggrs.p[j].scores.append(fit)
+                self.elmts.p[i].scores.append(fit)
+        
+        for j in self.aggrs.p:
+            self.aggrs.p[j].fitness = np.mean(self.aggrs.p[j].scores)
 
         for i in self.elmts.p:
-            elmt = self.elmts.p[i]
-            for j in self.aggrs.p:
-                aggr = self.aggrs.p[j]
-                aggr.send_to_sim(sim, elmt)
+            self.elmts.p[j].fitness = np.mean(self.elmts.p[j].scores)
                 
     def random_subset(self, p=0.5, q=0.5):
         '''
@@ -61,6 +69,42 @@ class COEVOLVE:
             for j in aggrSub:
                 aggr = self.aggrs.p[j]
                 aggr.send_to_sim(sim, elmt)
+                
+    def print_fitness(self, g):
+        '''
+        prints aggrs and elmts fitness values
+        '''
+        
+        output = 'FITNESS: GENERATION %d \n'%g
+        
+        output += 'AGGREGATES: '
+        
+        for i in self.aggrs.p:
+            output += '%0.3f '%self.aggrs.p[i].fitness
+            
+        output += '\nELEMENTS: '
+        
+        for i in self.elmts.p:
+            output += '%0.3f '%self.elmts.p[i].fitness
+            
+        print(output)
+    
+    def reset(self):
+        '''
+        calls reset on both populations
+        '''
+        
+        self.aggrs.reset()
+        self.elmts.reset()
+        
+    def selection(self):
+        '''
+        calls selection on both populations
+        '''
+        
+        self.aggrs.selection()
+        self.elmts.selection()
+        
         
         
         
