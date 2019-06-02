@@ -119,6 +119,8 @@ class AGGREGATE:
         Construct a body using the provided body tree. Call the element's build function to add joints, neurons, and synapses.
         '''
         
+        self.body = {}
+        
         #establish what the lowest z-coordinate in the tree is so the robot can be shifted up accordingly
         lowest = 0
         for coord in self.tree:
