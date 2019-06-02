@@ -41,8 +41,6 @@ class POPULATION:
         self.p = {}
         self.fits = {}
         
-        self.initialize()
-        
     
     def initialize(self):
         '''
