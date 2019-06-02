@@ -10,7 +10,7 @@ import math
 
 class ELEMENT:
 
-    def __init__(self, c1, c2):
+    def __init__(self, c1=2, c2=2):
         '''
         Initialize class variables
         '''
