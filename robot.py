@@ -3,7 +3,7 @@ import math
 import pyrosim
 import constants as c
 from aggregate import AGGREGATE
-from element import ELEMENT, TouchSensorUniversalHingeJointElement,                    TouchAndLightSensorYAxisHingeJointElement,                    TouchAndLightSensorXAxisHingeJointElement
+from element import ELEMENT, TouchSensorUniversalHingeJointElement, TouchAndLightSensorYAxisHingeJointElement,                    TouchAndLightSensorXAxisHingeJointElement
 
 #np.random.seed(0)
 

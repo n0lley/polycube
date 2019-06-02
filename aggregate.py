@@ -19,7 +19,9 @@ class AGGREGATE:
         
         self.generate_random(numCubes)
         self.update_subtree_sizes()
-        print("Tree built")
+        
+        if c.DEBUG:
+            print("Tree built")
 
     def generate_random(self, numCubes):
         '''
@@ -38,7 +40,7 @@ class AGGREGATE:
         If deleting, find the length of the subtree, ensure the root of the subtree is not the polycube's root node, then delete every node in the subtree.
         '''
         
-        if np.random.random() < c.MU: #mu is mutation hyperparameter
+        if np.random.random() < c.MU and len(self.tree) > 1: #mu is mutation hyperparameter
             N = len(self.tree)
             cList = [] #list of coordinates
             pList = np.zeros(N) #list of probabilities
@@ -50,8 +52,13 @@ class AGGREGATE:
             pList /= np.sum(pList)
             i = np.random.choice(range(N), p=pList)
             nodeToDeleteCoordinates = cList[i]
-            #TODO: delete subtree rooted at node chosen
+            
+            if c.DEBUG:
+                print(self.tree)
+                print("Removing subtree rooted at", nodeToDeleteCoordinates)
+            
             self.remove_subtree(nodeToDeleteCoordinates)
+    
             
         else:
             
@@ -95,7 +102,8 @@ class AGGREGATE:
         self.tree[parent].append(child)
         self.tree[child] = []
         
-        print("Cube added at", child)
+        if c.DEBUG:
+            print("Cube added at", child)
         
     def evaluate(self, sim, elmt):
         '''
