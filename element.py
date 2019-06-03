@@ -68,9 +68,9 @@ class ELEMENT:
         child = coord1
         
         #calculate joint's position
-        jx = format(((child[0] - parent[0])/2 + parent[0])*c.SCALE, '.2')
-        jy = format(((child[1] - parent[1])/2 + parent[1])*c.SCALE, '.2')
-        jz = format(((child[2] - parent[2])/2 + parent[2])*c.SCALE, '.2')
+        jx = format(((child[0] - parent[0])/2 + parent[0])*c.SCALE, '.3')
+        jy = format(((child[1] - parent[1])/2 + parent[1])*c.SCALE, '.3')
+        jz = format(((child[2] - parent[2])/2 + parent[2])*c.SCALE, '.3')
 
         return [jx, jy, jz]
 

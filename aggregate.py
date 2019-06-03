@@ -110,10 +110,13 @@ class AGGREGATE:
         calls send_to_sim and
             calculate_displacement
         '''
-        self.send_to_sim(sim, elmt)
-        sim.start()
-        sim.wait_to_finish()
-        return self.calculate_displacement(sim)
+        try:
+            self.send_to_sim(sim, elmt)
+            sim.start()
+            sim.wait_to_finish()
+            return self.calculate_displacement(sim)
+        except:
+            return 0
         
     def reset(self):
         '''
@@ -148,10 +151,11 @@ class AGGREGATE:
         #Using the element's specifications, build the joints, neurons, and synapses
         for parent in self.tree:
             #modify parent coordinates to match real-space
-            rparent = parent[:2] + (parent[2] - lowest + .5,)
+            rparent = parent[:2] + (float(format(parent[2] - lowest + .5, '.2f')),)
             for child in self.tree[parent]:
                 #modify child coordinates to match real-space
-                rchild = child[:2]+ (child[2] - lowest + .5,)
+                rchild = child[:2]+ (float(format(child[2] - lowest + .5, '.2f')),)
+                print(self.body)
                 element.send_element(sim, self.body[rchild], self.body[rparent], [rchild, rparent])
     
     
@@ -163,7 +167,11 @@ class AGGREGATE:
         
         colors = np.random.random(size=3)
         
-        box = sim.send_box(position=(coord[0]*c.SCALE, coord[1]*c.SCALE, (coord[2] - lowest + .5)*c.SCALE),
+        x = format(coord[0]*c.SCALE, '.2f')
+        y = format(coord[1]*c.SCALE, '.2f')
+        z = format((coord[2] - lowest + .5)*c.SCALE, '.2f')
+        
+        box = sim.send_box( position = (x, y, z),
                  sides=(c.SCALE, c.SCALE, c.SCALE),
                  color=(colors[0], colors[1], colors[2]))
         
@@ -171,7 +179,7 @@ class AGGREGATE:
                                  sim.send_position_y_sensor(body_id = box),
                                  sim.send_position_z_sensor(body_id = box)]
         
-        return box, coord[2] - lowest + .5
+        return box, float(format(coord[2] - lowest + .5, '.2f'))
 
     
     def check_connections(self):
@@ -248,11 +256,18 @@ class AGGREGATE:
         '''
         Get the average displacement using the positional sensors of each node
         '''
+        
         delta = 0
+        
+        if c.DEBUG:
+            print(self.positions.keys())
         
         for coord in self.positions:
             p = self.positions[coord]
-            dx = sim.get_sensor_data(sensor_id = p[0])[-1] - coord[0]
+            sensorID = p[0]
+            dx = sim.get_sensor_data(sensor_id = sensorID)
+            dx = dx[-1]
+            dx -= coord[0]
             dy = sim.get_sensor_data(sensor_id = p[1])[-1] - coord[1]
             dz = sim.get_sensor_data(sensor_id = p[2])[-1] - coord[2]
             d = dx**2 + dy**2 + dz**2
