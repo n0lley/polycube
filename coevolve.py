@@ -105,13 +105,16 @@ class COEVOLVE:
         self.aggrs.selection()
         self.elmts.selection()
         
-        
-        
-        
-        
-        
-        
-        
+    def playback(self):
+        '''
+        for review purposes, plays the population with play_blind off
+        '''
+
+        for j in self.aggrs.p:
+            aggr = self.aggrs.p[j]
+            elmt = self.elmts.p[0]
+            sim = pyrosim.Simulator(eval_steps=100, play_blind=False, play_paused=False, dt=.01)
+            aggr.evaluate(sim, elmt)
         
         
         
