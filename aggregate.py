@@ -258,10 +258,10 @@ class AGGREGATE:
 
     def calculate_displacement(self, sim):
         '''
-        Get the average displacement using the positional sensors of each node
+        Get the displacement of the cube which displaced the least
         '''
         
-        delta = 0
+        minDelta = 0
         
         if c.DEBUG:
             print(self.positions.keys())
@@ -275,6 +275,7 @@ class AGGREGATE:
             dy = sim.get_sensor_data(sensor_id = p[1])[-1] - coord[1]
             dz = sim.get_sensor_data(sensor_id = p[2])[-1] - coord[2]
             d = dx**2 + dy**2 + dz**2
-            delta += d**0.5
+            if minDelta > d**0.5:
+                minDelta = d**0.5
 
-        return delta/len(self.positions)
+        return minDelta
