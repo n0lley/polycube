@@ -47,7 +47,7 @@ class COEVOLVE:
             self.aggrs.p[j].fitness = np.mean(self.aggrs.p[j].scores)
 
         for i in self.elmts.p:
-            self.elmts.p[j].fitness = np.mean(self.elmts.p[j].scores)
+            self.elmts.p[i].fitness = np.mean(self.elmts.p[i].scores)
                 
     def random_subset(self, p=0.5, q=0.5):
         '''
