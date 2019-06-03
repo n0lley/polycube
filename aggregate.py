@@ -238,7 +238,8 @@ class AGGREGATE:
         '''
         Remove the specified node (root) and the subtree it is the root of. Also remove reference to the root from its parent
             '''
-        print("Pruning node", root)
+        if c.DEBUG:
+            print("Pruning node", root)
         
         todel = []
         
