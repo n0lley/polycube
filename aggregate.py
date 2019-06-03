@@ -148,6 +148,10 @@ class AGGREGATE:
         else:
             for coord in self.tree:
                 self.send_cube(sim, coord, lowest)
+        
+        if c.DEBUG:
+            print(self.body)
+        
         #Using the element's specifications, build the joints, neurons, and synapses
         for parent in self.tree:
             #modify parent coordinates to match real-space
@@ -155,7 +159,6 @@ class AGGREGATE:
             for child in self.tree[parent]:
                 #modify child coordinates to match real-space
                 rchild = child[:2]+ (float(format(child[2] - lowest + .5, '.2f')),)
-                print(self.body)
                 element.send_element(sim, self.body[rchild], self.body[rparent], [rchild, rparent])
     
     
