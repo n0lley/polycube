@@ -18,6 +18,7 @@ class AGGREGATE:
             numCubes = np.random.choice(range(1, c.NUMCUBES))
         
         self.generate_random(numCubes)
+        
         self.update_subtree_sizes()
         
         if c.DEBUG:
@@ -138,16 +139,11 @@ class AGGREGATE:
             if coord[2] < lowest:
                 lowest = coord[2]
 
-        if len(self.body) == 0:
-            #Iterate over each index of the tree, call send_cube to build a block there. Store that cube mapped to its real-space coordinates (modified z)
-            for coord in self.tree:
-                box, z = self.send_cube(sim, coord, lowest)
-                newCoord = coord[:2] + (z,)
-                self.body[newCoord] = box
-    
-        else:
-            for coord in self.tree:
-                self.send_cube(sim, coord, lowest)
+        #Iterate over each index of the tree, call send_cube to build a block there. Store that cube mapped to its real-space coordinates (modified z)=
+        for coord in self.tree:
+            box, z = self.send_cube(sim, coord, lowest)
+            newCoord = coord[:2] + (z,)
+            self.body[newCoord] = box
         
         if c.DEBUG:
             print(self.body)
@@ -162,13 +158,15 @@ class AGGREGATE:
                 element.send_element(sim, self.body[rchild], self.body[rparent], [rchild, rparent])
     
     
-    def send_cube(self, sim, coord, lowest):
+    def send_cube(self, sim, coord, lowest, rgb=(0,0,0)):
         '''
         Sends cube to the simulator at the specified coordinate, 
             with the specified element's properties
         '''
-        
-        colors = np.random.random(size=3)
+        if rgb == (0,0,0):
+            colors = np.random.random(size=3)
+        else:
+            colors = rgb
         
         x = format(coord[0]*c.SCALE, '.2f')
         y = format(coord[1]*c.SCALE, '.2f')
@@ -176,7 +174,8 @@ class AGGREGATE:
         
         box = sim.send_box( position = (x, y, z),
                  sides=(c.SCALE, c.SCALE, c.SCALE),
-                 color=(colors[0], colors[1], colors[2]))
+                 color=(colors[0], colors[1], colors[2]),
+                 collision_group = "body")
         
         self.positions[coord] = [sim.send_position_x_sensor(body_id = box),
                                  sim.send_position_y_sensor(body_id = box),
@@ -261,7 +260,7 @@ class AGGREGATE:
         Get the displacement of the cube which displaced the least
         '''
         
-        minDelta = 0
+        delta = 0
         
         if c.DEBUG:
             print(self.positions.keys())
@@ -275,7 +274,8 @@ class AGGREGATE:
             dy = sim.get_sensor_data(sensor_id = p[1])[-1] - coord[1]
             dz = sim.get_sensor_data(sensor_id = p[2])[-1] - coord[2]
             d = dx**2 + dy**2 + dz**2
-            if minDelta > d**0.5:
-                minDelta = d**0.5
+            #if minDelta > d**0.5:
+            delta += d**0.5
+        delta /= len(self.positions)
 
-        return minDelta
+        return delta
