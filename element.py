@@ -95,6 +95,50 @@ class ELEMENT:
                 for m in MN:
                     sim.send_synapse(source_neuron_id = SN[s], target_neuron_id=MN[m], weight=self.controller[s,m])
 
+    def build_universal_hinge(self, sim, box, parent, coords):
+        '''
+        Creates two joints normal to each other to serve as a universal hinge, with a small
+        intermediate box object to allow two joints
+        '''
+
+        #get joint position
+        j = self.find_joint_position(coords[0], coords[1])
+        
+        #build intermediate box
+        b2 = sim.send_box(position=(j[0], j[1], j[2]),
+                          sides=(c.SCALE*.01, c.SCALE*.01, c.SCALE*.01),
+                          collision_group = "body")
+
+        #build the joints
+        joints = {}
+        bodies = {0:box, 1:b2, 2:parent}
+        i = 0
+        if coords[0][0] == coords[1][0]:
+        #Same x-coordinates, create joint with normal on x axis
+            joints[i] = sim.send_hinge_joint(body1=bodies[i], body2=bodies[i+1],
+                                             anchor=(j[0],j[1],j[2]),
+                                             axis=(1, 0, 0),
+                                             joint_range = math.pi/2.)
+            i+=1
+        
+        if coords[0][1] == coords[1][1]:
+        #Same y-coordinates, create joint with normal on y axis
+            joints[i] = sim.send_hinge_joint(body1=bodies[i], body2=bodies[i+1],
+                                             anchor=(j[0],j[1],j[2]),
+                                             axis=(0, 1, 0),
+                                             joint_range = math.pi/2.)
+            i+=1
+        
+        if coords[0][2] == coords[1][2]:
+        #Same z-coordinates, create joint with normal on z axis
+            joints[i] = sim.send_hinge_joint(body1=bodies[i], body2=bodies[i+1],
+                                            anchor=(j[0],j[1],j[2]),
+                                            axis=(0, 0, 1),
+                                            joint_range = math.pi/2.)
+            i+=1
+
+        return joints
+
 class TouchSensorUniversalHingeJointElement(ELEMENT):
 
     def __init__(self):
@@ -109,43 +153,10 @@ class TouchSensorUniversalHingeJointElement(ELEMENT):
         Attach controller to that network.
         '''
 
-        #add hinge joints. Adds a very small intermediate block to make 2 joints
+        #add hinge joints
+        joints = self.build_universal_hinge(sim, box, parent, coords)
         
-        #joint's position
-        j = self.find_joint_position(coords[0], coords[1])
-        
-        b2 = sim.send_box(position=(j[0], j[1], j[2]),
-                          sides=(c.SCALE*.01, c.SCALE*.01, c.SCALE*.01))
-        
-        #build the joints
-        joints = {}
         actuators = {}
-        bodies = {0:box, 1:b2, 2:parent}
-        i = 0
-        if coords[0][0] == coords[1][0]:
-            #Same x-coordinates, create joint with normal on x axis
-            joints[i] = sim.send_hinge_joint(body1=bodies[i], body2=bodies[i+1],
-                                                 anchor=(j[0],j[1],j[2]),
-                                                 axis=(1, 0, 0),
-                                                 joint_range = math.pi/2.)
-            i+=1
-        
-        if coords[0][1] == coords[1][1]:
-            #Same y-coordinates, create joint with normal on y axis
-            joints[i] = sim.send_hinge_joint(body1=bodies[i], body2=bodies[i+1],
-                                             anchor=(j[0],j[1],j[2]),
-                                             axis=(0, 1, 0),
-                                             joint_range = math.pi/2.)
-            i+=1
-
-        if coords[0][2] == coords[1][2]:
-            #Same z-coordinates, create joint with normal on z axis
-            joints[i] = sim.send_hinge_joint(body1=bodies[i], body2=bodies[i+1],
-                                                 anchor=(j[0],j[1],j[2]),
-                                                 axis=(0, 0, 1),
-                                                 joint_range = math.pi/2.)
-            i+=1
-        
         for j in joints:
             actuators[j] = sim.send_rotary_actuator(joint_id = joints[j])
 
@@ -159,14 +170,14 @@ class TouchAndLightSensorYAxisHingeJointElement(ELEMENT):
 
     def __init__(self):
         '''
-            Create an element. Initialization does not differ from superclass.
-            '''
+        Create an element. Initialization does not differ from superclass.
+        '''
         super().__init__(2, 1)
 
     def send_element(self, sim, box, parent, coords):
         '''
-            Use the current box being modified, the box it's being attached to, and the coordinates of those boxes (in that order) to build class-specific  joints, sensors, motors, etc on box.
-            Attach controller to that network.
+        Use the current box being modified, the box it's being attached to, and the coordinates of those boxes (in that order) to build class-specific  joints, sensors, motors, etc on box.
+        Attach controller to that network.
         '''
 
         j = self.find_joint_position(coords[0], coords[1])
@@ -191,15 +202,15 @@ class TouchAndLightSensorXAxisHingeJointElement(ELEMENT):
     
     def __init__(self):
         '''
-            Create an element. Initialization does not differ from superclass.
-            '''
+        Create an element. Initialization does not differ from superclass.
+        '''
         super().__init__(2, 1)
     
     def send_element(self, sim, box, parent, coords):
         '''
-            Use the current box being modified, the box it's being attached to, and the coordinates of those boxes (in that order) to build class-specific  joints, sensors, motors, etc on box.
-            Attach controller to that network.
-            '''
+        Use the current box being modified, the box it's being attached to, and the coordinates of those boxes (in that order) to build class-specific  joints, sensors, motors, etc on box.
+        Attach controller to that network.
+        '''
         
         j = self.find_joint_position(coords[0], coords[1])
         joints = {}
@@ -218,3 +229,30 @@ class TouchAndLightSensorXAxisHingeJointElement(ELEMENT):
         sensors[1] = sim.send_light_sensor(body_id = box)
                  
         self.build_neural_network(sim, sensors, actuators)
+
+class TouchSensorUniversalHingeJointCPGElement(ELEMENT):
+
+    def __init__(self):
+        '''
+        Create an element. Initialization does not differ from superclass.
+        '''
+        super().__init__(2,2)
+
+    def send_element(self, sim, box, parent, coords):
+        '''
+        Use the current box being modified, the box it's being attached to, and the coordinates of those boxes (in that order) to build class-specific  joints, sensors, motors, etc on box.
+        Attach controller to that network.
+        '''
+
+        joints = self.build_universal_hinge(sim, box, parent, coords)
+
+        actuators = {}
+        for j in joints:
+            actuators[j] = sim.send_rotary_actuator(joint_id = joints[j])
+
+        sensors = {}
+        sensors[0] = sim.send_user_neuron()
+        sensors[1] = sim.send_touch_sensor(body_id = box)
+
+        self.build_neural_network(sim, sensors, actuators)
+

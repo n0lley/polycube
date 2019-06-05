@@ -6,9 +6,7 @@ import constants as c
 class AGGREGATE:
     def __init__(self, numCubes=None):
         
-        self.tree = {}
-        self.tree[(0,0,0)] = []
-        self.body = {}
+        self.tree = {(0, 0, 0): []}
         self.positions = {}
         
         self.scores = []
@@ -140,10 +138,13 @@ class AGGREGATE:
                 lowest = coord[2]
 
         #Iterate over each index of the tree, call send_cube to build a block there. Store that cube mapped to its real-space coordinates (modified z)=
+        i=0
+        rgb = (0,0,0)
         for coord in self.tree:
-            box, z = self.send_cube(sim, coord, lowest)
+            box, z = self.send_cube(sim, coord, lowest, rgb)
             newCoord = coord[:2] + (z,)
             self.body[newCoord] = box
+            i += 1
         
         if c.DEBUG:
             print(self.body)
