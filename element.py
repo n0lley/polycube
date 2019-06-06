@@ -251,8 +251,24 @@ class TouchSensorUniversalHingeJointCPGElement(ELEMENT):
             actuators[j] = sim.send_rotary_actuator(joint_id = joints[j])
 
         sensors = {}
-        sensors[0] = sim.send_user_neuron()
-        sensors[1] = sim.send_touch_sensor(body_id = box)
+        sin = np.linspace(0, 2*math.pi, 100)
+        sin = np.sin(sin)
+        cpg = sim.send_user_neuron(input_values = sin)
+        sensors[0] = sim.send_touch_sensor(body_id = box)
 
-        self.build_neural_network(sim, sensors, actuators)
-
+        #manually build network
+        #add sensor neurons
+        SN = {}
+        for s in sensors:
+            SN[s] = sim.send_sensor_neuron(sensor_id = sensors[s])
+        SN[1] = cpg
+        
+        #build the motors
+        MN = {}
+        for a in actuators:
+            MN[a] = sim.send_motor_neuron(motor_id=actuators[a], tau=.3)
+        
+        #add synapses
+        for s in SN:
+            for m in MN:
+                sim.send_synapse(source_neuron_id = SN[s], target_neuron_id=MN[m], weight=self.controller[s,m])
