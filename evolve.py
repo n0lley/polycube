@@ -5,12 +5,14 @@ from element import ELEMENT
 from element import TouchSensorUniversalHingeJointElement
 from element import TouchAndLightSensorYAxisHingeJointElement
 from element import TouchAndLightSensorXAxisHingeJointElement
+from element import TouchSensorUniversalHingeJointCPGElement
 import pickle
 import os
 
 elementTypes = [TouchSensorUniversalHingeJointElement,
                 TouchAndLightSensorYAxisHingeJointElement,
-                TouchAndLightSensorXAxisHingeJointElement]
+                TouchAndLightSensorXAxisHingeJointElement,
+                TouchSensorUniversalHingeJointCPGElement]
 
 N = 15
 GENS = 100
@@ -22,7 +24,7 @@ aggregates.initialize()
 elements.initialize()
 
 for i in range(N):
-    elements.p[i] = elementTypes[i%3]()
+    elements.p[i] = elementTypes[i%len(elementTypes)]()
     
 coevolve = COEVOLVE(aggregates, elements)
 
