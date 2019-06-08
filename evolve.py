@@ -8,9 +8,11 @@ from element import TouchAndLightSensorXAxisHingeJointElement
 from element import TouchSensorUniversalHingeJointCPGElement
 
 from parallelpy import parallel_evaluate
-
+import numpy as np
+import random
 import pickle
 import os
+import sys
 
 from time import time
 
@@ -21,6 +23,14 @@ elementTypes = [TouchSensorUniversalHingeJointElement,
 
 N = 15
 GENS = 100
+
+assert len(sys.argv) > 1, "Please run as python evolve.py <SEED>"
+try:
+    seed = int(sys.argv[1])
+    np.random.seed(seed)
+    random.seed(seed)
+except:
+    raise Exception("Please give a seed as an int.")
 
 parallel_evaluate.setup(parallel_evaluate.PARALLEL_MODE_MPI_INTER)
 
