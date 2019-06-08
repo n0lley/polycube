@@ -38,7 +38,6 @@ class AGGREGATE:
         Choose between adding a new node or deleting a subtree. If adding, call add_cube.
         If deleting, find the length of the subtree, ensure the root of the subtree is not the polycube's root node, then delete every node in the subtree.
         '''
-        
         if np.random.random() < c.MU and len(self.tree) > 1: #mu is mutation hyperparameter
             N = len(self.tree)
             cList = [] #list of coordinates
@@ -123,7 +122,7 @@ class AGGREGATE:
         '''
         
         self.scores = []
-    
+
     def send_to_sim(self, sim, element):
         '''
         Construct a body using the provided body tree. Call the element's build function to add joints, neurons, and synapses.
@@ -252,8 +251,7 @@ class AGGREGATE:
         for node in self.tree:
             if root in self.tree[node]:
                 self.tree[node].remove(root)
-    
-        self.positions.pop(root)
+
         self.tree.pop(root)
 
     def calculate_displacement(self, sim):

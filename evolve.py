@@ -6,8 +6,13 @@ from element import TouchSensorUniversalHingeJointElement
 from element import TouchAndLightSensorYAxisHingeJointElement
 from element import TouchAndLightSensorXAxisHingeJointElement
 from element import TouchSensorUniversalHingeJointCPGElement
+
+from parallelpy import parallel_evaluate
+
 import pickle
 import os
+
+from time import time
 
 elementTypes = [TouchSensorUniversalHingeJointElement,
                 TouchAndLightSensorYAxisHingeJointElement,
@@ -16,6 +21,8 @@ elementTypes = [TouchSensorUniversalHingeJointElement,
 
 N = 15
 GENS = 100
+
+parallel_evaluate.setup(parallel_evaluate.PARALLEL_MODE_MPI_INTER)
 
 aggregates = POPULATION(AGGREGATE, n=N, unique=True)
 elements = POPULATION(ELEMENT, n=N, unique=True)
@@ -39,9 +46,12 @@ for g in range(1, GENS+1):
     
     #resets all fitness values
     coevolve.reset()
-    
+
+    t0 = time()
     #evaluation
     coevolve.exhaustive()
+    t1 = time()
+    print("Simulation took: %.2f"%(t1-t0))
     
     #report fitness values
     coevolve.print_fitness(g)
@@ -56,3 +66,5 @@ for g in range(1, GENS+1):
         
     except:
         print ("Error saving generation", g, "to file.")
+
+parallel_evaluate.cleanup()

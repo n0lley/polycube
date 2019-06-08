@@ -1,5 +1,36 @@
+from parallelpy.utils import Work, Letter
+from parallelpy import parallel_evaluate
+
 import numpy as np
 import pyrosim
+
+class SIM(Work):
+    """
+    Wrapper for a simulation instance which allows us to parallelize the simulation of aggregates and elements
+    across a cluster of computers.
+    """
+    def __init__(self, aggregate, aggregate_key, element, element_key):
+        """
+        :param aggregate: The instance of the aggregate
+        :param aggregate_key: The key of the aggregate in the dict of elements.
+        :param element: The instance of the element
+        :param element_key: The key of the element in the dict of elements
+        """
+        self.aggregate = aggregate
+        self.aggregate_key = aggregate_key
+        self.element = element
+        self.element_key = element_key
+        self.fitness = None
+
+    def compute_work(self, serial=False):
+        sim = pyrosim.Simulator(eval_steps=500, play_blind=True, play_paused=False, dt=.01)
+        self.fitness = self.aggregate.evaluate(sim, self.element)
+
+    def write_letter(self):
+        return Letter((self.fitness, self.aggregate_key, self.element_key), None)
+
+    def open_letter(self, letter):
+        self.fitness, _, _ = letter.get_data()
 
 class COEVOLVE:
     '''
@@ -34,15 +65,24 @@ class COEVOLVE:
         Evaluates every single aggregate composed with 
             every single element 
         '''
+
+        # pre allocate work_array to avoid need to expand array upon append.
+        work_to_complete = [None]*(len(self.aggrs.p)*len(self.elmts.p))
+        work_index = 0 # keep track of which index in the array we are at.
         for j in self.aggrs.p:
             aggr = self.aggrs.p[j]
             for i in self.elmts.p:
-                elmt = self.elmts.p[i]
-                sim = pyrosim.Simulator(eval_steps=500, play_blind=True, play_paused=False, dt=.01)
-                fit = aggr.evaluate(sim, elmt)
-                self.aggrs.p[j].scores.append(fit)
-                self.elmts.p[i].scores.append(fit)
-        
+                work_to_complete[work_index] = SIM(aggr, j, self.elmts.p[i], i)
+                work_index += 1
+        parallel_evaluate.batch_complete_work(work_to_complete)
+        for work in work_to_complete:
+            aggr_key = work.aggregate_key
+            elmt_key = work.element_key
+            fit = work.fitness
+
+            self.aggrs.p[aggr_key].scores.append(fit)
+            self.elmts.p[elmt_key].scores.append(fit)
+
         for j in self.aggrs.p:
             self.aggrs.p[j].fitness = np.mean(self.aggrs.p[j].scores)
 
