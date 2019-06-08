@@ -45,3 +45,6 @@ docs/_build
 
 # ignore PyCharm IDE
 *.idea
+
+# Code generated files
+saved_generations/
