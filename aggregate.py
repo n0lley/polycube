@@ -38,7 +38,11 @@ class AGGREGATE:
         Choose between adding a new node or deleting a subtree. If adding, call add_cube.
         If deleting, find the length of the subtree, ensure the root of the subtree is not the polycube's root node, then delete every node in the subtree.
         '''
-        if np.random.random() < c.MU and len(self.tree) > 1: #mu is mutation hyperparameter
+        
+        mu = len(self.tree)/c.MAXCUBES
+        print(mu)
+        
+        if np.random.random() < mu and len(self.tree) > 1: #mu is mutation hyperparameter
             N = len(self.tree)
             cList = [] #list of coordinates
             pList = np.zeros(N) #list of probabilities
