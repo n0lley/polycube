@@ -1,4 +1,4 @@
-SCALE = .1
+SCALE = .3
 NUMCUBES = 10
 MU = 0.5
 DEBUG = False
