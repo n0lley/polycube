@@ -23,7 +23,7 @@ class SIM(Work):
         self.fitness = None
 
     def compute_work(self, serial=False):
-        sim = pyrosim.Simulator(eval_steps=500, play_blind=True, play_paused=False, dt=.01)
+        sim = pyrosim.Simulator(eval_steps=1500, play_blind=True, play_paused=False, dt=.01)
         self.fitness = self.aggregate.evaluate(sim, self.element)
 
     def write_letter(self):
