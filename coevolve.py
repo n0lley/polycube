@@ -153,7 +153,7 @@ class COEVOLVE:
         for j in self.aggrs.p:
             aggr = self.aggrs.p[j]
             elmt = self.elmts.p[0]
-            sim = pyrosim.Simulator(eval_steps=300, play_blind=False, play_paused=False, dt=.01)
+            sim = pyrosim.Simulator(eval_steps=1000, play_blind=False, play_paused=False, dt=.01)
             aggr.evaluate(sim, elmt)
         
         
