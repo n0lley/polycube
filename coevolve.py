@@ -118,9 +118,13 @@ class COEVOLVE:
 
         for j in range(len(self.aggrs.p)):
             self.aggrs.p[j].fitness = np.mean(self.aggrs.p[j].scores)
-
+            
+        #fitness of 0 if not selected at all (unlikely)    
         for i in range(len(self.elmts.p)):
-            self.elmts.p[i].fitness = np.mean(self.elmts.p[i].scores)
+            try:
+                self.elmts.p[i].fitness = np.mean(self.elmts.p[i].scores)
+            except:
+                self.aggrs.p[j].fitness = 0    
                 
     def print_fitness(self):
         '''
