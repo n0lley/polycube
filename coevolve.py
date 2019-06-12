@@ -147,17 +147,31 @@ class COEVOLVE:
         
     def playback(self):
         '''
-        for review purposes, plays the population with play_blind off
+        for review purposes, plays the best aggregate and element, with play_blind off
         '''
 
+        fit = 0
+        aindex = 0
         for j in self.aggrs.p:
-            aggr = self.aggrs.p[j]
-            elmt = self.elmts.p[0]
-            sim = pyrosim.Simulator(eval_steps=1000, play_blind=False, play_paused=False, dt=.01)
-            aggr.evaluate(sim, elmt)
+            if self.aggrs.p[j].fitness > fit:
+                fit = self.aggrs.p[j].fitness
+                aindex = j
+            
+        fit = 0
+        for e in self.elmts.p:
+            index = 0
+            if self.elmts.p[e].fitness > fit:
+                fit = self.elmts.p[j].fitness
+                index = e
         
+        aggr = self.aggrs.p[j]
+        elmt = self.elmts.p[e]
+        sim = pyrosim.Simulator(eval_steps=1000, play_blind=False, play_paused=True, dt=.01)
+        aggr.evaluate(sim, elmt)
+
         
-        
+
+
         
                 
                 
