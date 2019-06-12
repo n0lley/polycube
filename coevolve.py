@@ -47,9 +47,8 @@ class COEVOLVE:
     -------
     exhaustive()
         Evaluates with every combination of aggregate and element
-    random_subset(p=0.5, q=0.5)
-        Evaluates every combination within given subsets, with size
-        determined by the given proportions
+    random_subset(p=0.5)
+        Evaluates every aggregate with p proportion of elements
     '''
     
     def __init__(self, aggrs, elmts):
@@ -90,35 +89,22 @@ class COEVOLVE:
         for i in range(len(self.elmts.p)):
             self.elmts.p[i].fitness = np.mean(self.elmts.p[i].scores)
                 
-    def random_subset(self, p=0.5, q=0.5):
+    def random_subset(self, p=0.1):
         '''
         Selects subsets of proportion p from aggregate 
             and proportion q from elements for evaluation
         '''
-        raise NotImplementedError ("This needs work! It does not work yet.")
-
-        assert 0 <= p <= 1, print('First input needs to be a valid proportion')
-        assert 0 <= q <= 1, print('Second input needs to be a valid proportion')
+        assert 0 <= p <= 1, print('Input needs to be a valid proportion')
         
-        numAggrs = self.aggrs.popSize
-        numElmts = self.elmts.popSize
+        N = len(self.elmts.p)
         
-        aggrSub = np.random.choice(numAggrs, size=int(np.ceil(p*numAggrs)))
-        elmtSub = np.random.choice(numElmts, size=int(np.ceil(q*numElmts)))
-
-        work_to_complete = []
-        work_index = 0  # keep track of which index in the array we are at.
-
-        for j in range(numAggrs):
+        # pre allocate work_array to avoid need to expand array upon append.
+        work_to_complete = [None]*(len(self.aggrs.p)*N)
+        work_index = 0 # keep track of which index in the array we are at.
+        for j in range(len(self.aggrs.p)):
             aggr = self.aggrs.p[j]
-            for i in elmtSub:
-                work_to_complete.append(SIM(aggr, j, self.elmts.p[i], i))
-                work_index += 1
-
-        for j in aggrSub:
-            aggr = self.aggrs.p[j]
-            for i in range(numElmts):
-                work_to_complete.append(SIM(aggr, j, self.elmts.p[i], i))
+            for i in np.random.choice(range(N), size=int(N*p), replace=False):
+                work_to_complete[work_index] = SIM(aggr, j, self.elmts.p[i], i)
                 work_index += 1
         parallel_evaluate.batch_complete_work(work_to_complete)
 
