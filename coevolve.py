@@ -97,14 +97,16 @@ class COEVOLVE:
         assert 0 <= p <= 1, print('Input needs to be a valid proportion')
         
         N = len(self.elmts.p)
+        k = int(N*p)
         
         # pre allocate work_array to avoid need to expand array upon append.
-        work_to_complete = [None]*(len(self.aggrs.p)*N)
+        work_to_complete = [None]*(len(self.aggrs.p)*k)
         work_index = 0 # keep track of which index in the array we are at.
         for j in range(len(self.aggrs.p)):
             aggr = self.aggrs.p[j]
-            for i in np.random.choice(range(N), size=int(N*p), replace=False):
-                work_to_complete[work_index] = SIM(aggr, j, self.elmts.p[i], i)
+            for i in np.random.choice(range(N), size=k, replace=False):
+                elmt = self.elmts.p[i]
+                work_to_complete[work_index] = SIM(aggr, j, elmt, i)
                 work_index += 1
         parallel_evaluate.batch_complete_work(work_to_complete)
 
