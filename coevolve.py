@@ -23,7 +23,7 @@ class SIM(Work):
         self.fitness = None
 
     def compute_work(self, serial=False):
-        sim = pyrosim.Simulator(eval_steps=500, play_blind=True, play_paused=False, dt=.01)
+        sim = pyrosim.Simulator(eval_steps=COEVOLVE.TIME_STEPS, play_blind=True, play_paused=False, dt=COEVOLVE.DT)
         self.fitness = self.aggregate.evaluate(sim, self.element)
 
     def write_letter(self):
@@ -53,6 +53,8 @@ class COEVOLVE:
 
     COOPERATIVE_MODE = 0
     COMPETITIVE_MODE = 1
+    DT = 0.01
+    TIME_STEPS = 1500
     def __init__(self, aggrs, elmts, evolution_mode=COOPERATIVE_MODE):
         '''
         initializes the two populations 
@@ -87,13 +89,21 @@ class COEVOLVE:
             self.elmts.p[elmt_key].scores.append(fit)
 
         for j in range(len(self.aggrs.p)):
-            self.aggrs.p[j].fitness = np.mean(self.aggrs.p[j].scores)
+            fit = np.mean(self.aggrs.p[j].scores)
+            if (np.isnan(fit) or np.isinf(fit)):
+                fit = 0
+            self.aggrs.p[j].fitness = fit
 
         for i in range(len(self.elmts.p)):
+            fit = np.mean(self.elmts.p[i].scores)
             if self.evolution_mode == COEVOLVE.COOPERATIVE_MODE:
-                self.elmts.p[i].fitness = np.mean(self.elmts.p[i].scores)
+                pass
             elif self.evolution_mode == COEVOLVE.COMPETITIVE_MODE:
-                self.elmts.p[i].fitness = -1 * np.mean(self.elmts.p[i].scores)
+                fit *= -1
+            if (np.isnan(fit) or np.isinf(fit)):
+                fit = 0
+            self.elmts.p[i].fitness = fit
+
                 
     def random_subset(self, p=0.1):
         '''
@@ -125,14 +135,24 @@ class COEVOLVE:
             self.elmts.p[elmt_key].scores.append(fit)
 
         for j in range(len(self.aggrs.p)):
-            self.aggrs.p[j].fitness = np.mean(self.aggrs.p[j].scores)
+            fit = np.mean(self.aggrs.p[j].scores)
+            if (np.isnan(fit) or np.isinf(fit)):
+                fit = 0
+            self.aggrs.p[j].fitness = fit
             
         #fitness of 0 if not selected at all (unlikely)    
         for i in range(len(self.elmts.p)):
             try:
-                self.elmts.p[i].fitness = np.mean(self.elmts.p[i].scores)
+                fit = np.mean(self.elmts.p[i].scores)
+                if self.evolution_mode == COEVOLVE.COOPERATIVE_MODE:
+                    pass
+                elif self.evolution_mode == COEVOLVE.COMPETITIVE_MODE:
+                    fit *= -1
+                if (np.isnan(fit) or np.isinf(fit)):
+                    fit = 0
+                self.elmts.p[i].fitness = fit
             except:
-                self.aggrs.p[j].fitness = 0    
+                self.aggrs.p[i].fitness = 0
                 
     def print_fitness(self):
         '''
