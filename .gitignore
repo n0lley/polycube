@@ -48,4 +48,5 @@ docs/_build
 
 # Code generated files
 data/
+data
 saved_generations/

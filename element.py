@@ -8,13 +8,21 @@ import numpy as np
 import pyrosim
 import math
 
+global sequenceNumber
+sequenceNumber = 0
+
+def getSeqNumber():
+    global sequenceNumber
+    sequenceNumber += 1
+    return sequenceNumber
+
 class ELEMENT:
 
     def __init__(self, c1=2, c2=2):
         '''
         Initialize class variables
         '''
-    
+        self.id = getSeqNumber()
         self.controller = None
         
         self.contDim1 = c1
@@ -24,7 +32,11 @@ class ELEMENT:
         
         self.scores = []
         self.fitness = 0
-    
+        self.age = 0
+
+    def __str__(self):
+        return "Fit: %.3f, Age: %d" % (self.fitness, self.age)
+
     def reset(self):
         '''
         reset fitness list
@@ -33,13 +45,17 @@ class ELEMENT:
         self.scores = []
     
     def generate_random(self):
-        
+
         self.controller = np.random.random((self.contDim1, self.contDim2))
-    
+
+    def increment_age(self):
+        self.age += 1
+
     def mutate(self):
         '''
         Randomly modify a weight in the element's genome
         '''
+        self.id = getSeqNumber()
         row = np.random.randint(0, self.contDim1)
         col = np.random.randint(0, self.contDim2)
         

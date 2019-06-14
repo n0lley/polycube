@@ -21,10 +21,10 @@ elementTypes = [TouchSensorUniversalHingeJointElement,
                 TouchAndLightSensorXAxisHingeJointElement,
                 TouchSensorUniversalHingeJointCPGElement]
 
-N = 15
+N = 10
 GENS = 100
 
-assert len(sys.argv) > 1, "Please run as python evolve.py <SEED>"
+assert len(sys.argv) > 2, "Please run as python evolve.py <SEED> <NAME>"
 try:
     seed = int(sys.argv[1])
     np.random.seed(seed)
@@ -34,20 +34,34 @@ except:
 
 parallel_evaluate.setup(parallel_evaluate.PARALLEL_MODE_MPI_INTER)
 
-aggregates = POPULATION(AGGREGATE, n=N, unique=True)
-elements = POPULATION(ELEMENT, n=N, unique=True)
+aggregates = POPULATION(AGGREGATE, pop_size=N, unique=True)
+elements = POPULATION(ELEMENT, pop_size=N, unique=True)
 
 aggregates.initialize()
 elements.initialize()
 
 for i in range(N):
     elements.p[i] = elementTypes[i%len(elementTypes)]()
+
+if "COOP" in sys.argv[2]:
+    coevolve = COEVOLVE(aggregates, elements, evolution_mode=COEVOLVE.COOPERATIVE_MODE)
+    print("Evolving in Cooperative Mode.")
+
+elif "COMP" in sys.argv[2]:
+    coevolve = COEVOLVE(aggregates, elements, evolution_mode=COEVOLVE.COMPETITIVE_MODE)
+    print("Evolving in Competative Mode.")
     
-coevolve = COEVOLVE(aggregates, elements)
+else:
+    coevolve = COEVOLVE(aggregates, elements)
+    print("Evolution mode not understood. Using default.")
 
+print('GENERATION %d' % 0)
+t0 = time()
 coevolve.exhaustive()
+t1 = time()
+print("Simulation took: %.2f" % (t1 - t0))
 
-coevolve.print_fitness(0)
+coevolve.print_fitness()
 
 for g in range(1, GENS+1):
     
@@ -61,11 +75,12 @@ for g in range(1, GENS+1):
     #evaluation
     coevolve.exhaustive()
     t1 = time()
+    print('GENERATION %d' % g)
     print("Simulation took: %.2f"%(t1-t0))
     
     #report fitness values
-    coevolve.print_fitness(g)
-    
+    coevolve.print_fitness()
+
     try:
         if not os.path.exists('./saved_generations/'):
             os.makedirs('./saved_generations/')

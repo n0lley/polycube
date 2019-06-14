@@ -3,42 +3,63 @@ import random
 import math
 import constants as c
 
+global sequenceNumber
+sequenceNumber = 0
+
+def getSeqNumber():
+    global sequenceNumber
+    sequenceNumber += 1
+    return sequenceNumber
+
 class AGGREGATE:
     def __init__(self, numCubes=None):
+
+        self.id = getSeqNumber()
         
         self.tree = {(0, 0, 0): []}
         self.positions = {}
         
         self.scores = []
         self.fitness = 0
+        self.age = 0
 
         if numCubes == None:
             numCubes = np.random.choice(range(1, c.NUMCUBES))
         
-        self.generate_random(numCubes)
-        
-        self.update_subtree_sizes()
-        
+        self.generate_random(numCubes=numCubes)
+
         if c.DEBUG:
             print("Tree built")
 
-    def generate_random(self, numCubes):
+    def __str__(self):
+        return "Fit: %.3f, Age: %d" % (self.fitness, self.age)
+
+    def generate_random(self, numCubes=None):
         '''
         Takes numcubes as an integer argument for the size of the desired polycube
         Will randomly generate a polycube of desired size
         '''
+        if numCubes is None:
+            numCubes = np.random.choice(range(1, c.NUMCUBES))
 
         while numCubes > len(self.tree):
             
             self.add_cube()
+        self.update_subtree_sizes()
     
-    
+    def increment_age(self):
+        self.age += 1
+
     def mutate(self):
         '''
         Choose between adding a new node or deleting a subtree. If adding, call add_cube.
         If deleting, find the length of the subtree, ensure the root of the subtree is not the polycube's root node, then delete every node in the subtree.
         '''
-        if np.random.random() < c.MU and len(self.tree) > 1: #mu is mutation hyperparameter
+        self.id = getSeqNumber()
+        mu = len(self.tree)/c.MAXCUBES
+        # print(mu)
+        
+        if np.random.random() < mu and len(self.tree) > 1: #mu is mutation hyperparameter
             N = len(self.tree)
             cList = [] #list of coordinates
             pList = np.zeros(N) #list of probabilities
@@ -259,7 +280,7 @@ class AGGREGATE:
         Get the displacement of the cube which displaced the least
         '''
         
-        delta = 0
+        deltas = []
         
         if c.DEBUG:
             print(self.positions.keys())
@@ -273,8 +294,6 @@ class AGGREGATE:
             dy = sim.get_sensor_data(sensor_id = p[1])[-1] - coord[1]
             dz = sim.get_sensor_data(sensor_id = p[2])[-1] - coord[2]
             d = dx**2 + dy**2 + dz**2
-            #if minDelta > d**0.5:
-            delta += d**0.5
-        delta /= len(self.positions)
-
-        return delta
+            deltas.append(d**0.5)
+        
+        return min(deltas)

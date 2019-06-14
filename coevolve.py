@@ -47,18 +47,20 @@ class COEVOLVE:
     -------
     exhaustive()
         Evaluates with every combination of aggregate and element
-    random_subset(p=0.5, q=0.5)
-        Evaluates every combination within given subsets, with size
-        determined by the given proportions
+    random_subset(p=0.5)
+        Evaluates every aggregate with p proportion of elements
     '''
-    
-    def __init__(self, aggrs, elmts):
+
+    COOPERATIVE_MODE = 0
+    COMPETITIVE_MODE = 1
+    def __init__(self, aggrs, elmts, evolution_mode=COOPERATIVE_MODE):
         '''
         initializes the two populations 
         '''
         
         self.aggrs = aggrs
         self.elmts = elmts
+        self.evolution_mode = evolution_mode
         
     def exhaustive(self):
         '''
@@ -69,12 +71,13 @@ class COEVOLVE:
         # pre allocate work_array to avoid need to expand array upon append.
         work_to_complete = [None]*(len(self.aggrs.p)*len(self.elmts.p))
         work_index = 0 # keep track of which index in the array we are at.
-        for j in self.aggrs.p:
+        for j in range(len(self.aggrs.p)):
             aggr = self.aggrs.p[j]
-            for i in self.elmts.p:
+            for i in range(len(self.elmts.p)):
                 work_to_complete[work_index] = SIM(aggr, j, self.elmts.p[i], i)
                 work_index += 1
         parallel_evaluate.batch_complete_work(work_to_complete)
+
         for work in work_to_complete:
             aggr_key = work.aggregate_key
             elmt_key = work.element_key
@@ -83,52 +86,67 @@ class COEVOLVE:
             self.aggrs.p[aggr_key].scores.append(fit)
             self.elmts.p[elmt_key].scores.append(fit)
 
-        for j in self.aggrs.p:
+        for j in range(len(self.aggrs.p)):
             self.aggrs.p[j].fitness = np.mean(self.aggrs.p[j].scores)
 
-        for i in self.elmts.p:
-            self.elmts.p[i].fitness = np.mean(self.elmts.p[i].scores)
+        for i in range(len(self.elmts.p)):
+            if self.evolution_mode == COEVOLVE.COOPERATIVE_MODE:
+                self.elmts.p[i].fitness = np.mean(self.elmts.p[i].scores)
+            elif self.evolution_mode == COEVOLVE.COMPETITIVE_MODE:
+                self.elmts.p[i].fitness = -1 * np.mean(self.elmts.p[i].scores)
                 
-    def random_subset(self, p=0.5, q=0.5):
+    def random_subset(self, p=0.1):
         '''
         Selects subsets of proportion p from aggregate 
             and proportion q from elements for evaluation
         '''
+        assert 0 <= p <= 1, print('Input needs to be a valid proportion')
         
-        assert 0 <= p <= 1, print('First input needs to be a valid proportion')
-        assert 0 <= q <= 1, print('Second input needs to be a valid proportion')
+        N = len(self.elmts.p)
+        k = int(N*p)
         
-        n1 = self.aggrs.popSize
-        n2 = self.elmts.popSize
-        
-        aggrSub = np.random.choice(n1, size=int(np.ceil(p*n1)))
-        elmtSub = np.random.choice(n2, size=int(np.ceil(q*n2)))
-        
-        for i in elmtSub:
-            elmt = self.elmts.p[i]
-            for j in aggrSub:
-                aggr = self.aggrs.p[j]
-                aggr.send_to_sim(sim, elmt)
+        # pre allocate work_array to avoid need to expand array upon append.
+        work_to_complete = [None]*(len(self.aggrs.p)*k)
+        work_index = 0 # keep track of which index in the array we are at.
+        for j in range(len(self.aggrs.p)):
+            aggr = self.aggrs.p[j]
+            for i in np.random.choice(range(N), size=k, replace=False):
+                elmt = self.elmts.p[i]
+                work_to_complete[work_index] = SIM(aggr, j, elmt, i)
+                work_index += 1
+        parallel_evaluate.batch_complete_work(work_to_complete)
+
+        for work in work_to_complete:
+            aggr_key = work.aggregate_key
+            elmt_key = work.element_key
+            fit = work.fitness
+
+            self.aggrs.p[aggr_key].scores.append(fit)
+            self.elmts.p[elmt_key].scores.append(fit)
+
+        for j in range(len(self.aggrs.p)):
+            self.aggrs.p[j].fitness = np.mean(self.aggrs.p[j].scores)
+            
+        #fitness of 0 if not selected at all (unlikely)    
+        for i in range(len(self.elmts.p)):
+            try:
+                self.elmts.p[i].fitness = np.mean(self.elmts.p[i].scores)
+            except:
+                self.aggrs.p[j].fitness = 0    
                 
-    def print_fitness(self, g):
+    def print_fitness(self):
         '''
         prints aggrs and elmts fitness values
         '''
-        
-        output = 'FITNESS: GENERATION %d \n'%g
-        
-        output += 'AGGREGATES: '
-        
-        for i in self.aggrs.p:
-            output += '%0.3f '%self.aggrs.p[i].fitness
-            
-        output += '\nELEMENTS: '
-        
-        for i in self.elmts.p:
-            output += '%0.3f '%self.elmts.p[i].fitness
-            
-        print(output)
-    
+
+        print('AGGREGATES:', len(self.aggrs.p))
+        print('\n'.join(list([str(indv) for indv in self.aggrs.getNonDominated()])))
+        print()
+
+        print('ELEMENTS:',len(self.elmts.p))
+        print('\n'.join(list([str(indv) for indv in self.elmts.getNonDominated()])))
+        print()
+
     def reset(self):
         '''
         calls reset on both populations
@@ -147,17 +165,31 @@ class COEVOLVE:
         
     def playback(self):
         '''
-        for review purposes, plays the population with play_blind off
+        for review purposes, plays the best aggregate and element, with play_blind off
         '''
 
-        for j in self.aggrs.p:
-            aggr = self.aggrs.p[j]
-            elmt = self.elmts.p[0]
-            sim = pyrosim.Simulator(eval_steps=300, play_blind=False, play_paused=False, dt=.01)
-            aggr.evaluate(sim, elmt)
+        fit = 0
+        aindex = 0
+        for j in range(len(self.aggrs.p)):
+            if self.aggrs.p[j].fitness > fit:
+                fit = self.aggrs.p[j].fitness
+                aindex = j
+            
+        fit = 0
+        for e in range(len(self.elmts.p)):
+            index = 0
+            if self.elmts.p[e].fitness > fit:
+                fit = self.elmts.p[j].fitness
+                index = e
         
+        aggr = self.aggrs.p[j]
+        elmt = self.elmts.p[e]
+        sim = pyrosim.Simulator(eval_steps=1000, play_blind=False, play_paused=True, dt=.01)
+        aggr.evaluate(sim, elmt)
+
         
-        
+
+
         
                 
                 
