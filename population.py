@@ -1,16 +1,18 @@
+# import numpy as np
+
+import random
 from copy import deepcopy
-import numpy as np
 
 
 class POPULATION:
-    '''
+    """
     Handles evolutionary methods for the given object
     
     Attributes
     ----------
     ind     : class
         the individual type that composes the population
-    n       : int
+    popSize       : int
         the population size
     unique  : bool
         defines how the initial population is created
@@ -25,91 +27,123 @@ class POPULATION:
         generates the initial, random population
     evaluate()
         evaluates each individual
-    '''
+    """
     
-    def __init__(self, ind, n=10, unique=True):
-        '''
-        initializes the population of n objects
-        '''
-
+    def __init__(self, ind, pop_size=10, unique=True):
+        """
+        initializes the population of popSize objects
+        :param ind: Class definition
+        :param pop_size: target number of individuals in the class
+        :param unique: Should we seed the initial population with unique individuals or mutants of a single one.
+        """
         assert hasattr(ind, 'mutate'), print('ERROR: Object needs method .mutate()')
-        #assert hasattr(ind, 'evaluate'), print('ERROR: Object needs method .evaluate()')
+        # assert hasattr(ind, 'evaluate'), print('ERROR: Object needs method .evaluate()')
         
         self.ind = ind
-        self.n = n
+        self.popSize = pop_size
         self.unique = unique
-        
-        self.p = {}
+
+        self.p = [None] * self.popSize
         self.fits = {}
         
-    
     def initialize(self):
-        '''
+        """
         generates the population
-        '''        
-        
+        :return: None
+        """
         self.p[0] = self.ind()
         
         assert hasattr(self.p[0], 'fitness'), print('ERROR: Object needs field .fitness')
         
-        for i in range(1, self.n):
+        for i in range(1, self.popSize):
             if self.unique:
                 self.p[i] = self.ind()
             else:
                 self.p[i] = self.p[0].mutate()
-                
-        
+
     def evaluate(self):
-        '''
+        """
         evaluates each individual in the population
-        '''
-        
-        for i in self.p:
+        :return: None
+        """
+        for i in range(len(self.p)):
             self.p[i].evaluate()
             self.fits[i] = self.p[i].fitness
             
     def reset(self):
-        '''
+        """
         resets all fitness values
-        '''
-        
-        for i in self.p:
+        :return: None
+        """
+        for i in range(len(self.p)):
             self.p[i].reset()
             self.p[i].fitness = 0
             
     def selection(self):
-        '''
-        standard GA selection with mutation
-        '''
-        
-        newPop = {}
-        
-        #find best and copy over
-        bestP = self.p[0]
-        for i in self.p:
-            if self.p[i].fitness > bestP.fitness:
-                bestP = self.p[i] 
-        
-        newPop[0] = deepcopy(bestP)
-        
-        #random tournament to fill population
-        for i in range(1, self.n):
-            
-            x, y = np.random.choice(self.n, size=2, replace=False)
-            
-            ind1 = self.p[x]
-            ind2 = self.p[y]
-            
-            if ind1.fitness > ind2.fitness:
-                newPop[i] = deepcopy(ind1)
-            else:
-                newPop[i] = deepcopy(ind2)
-                
-            newPop[i].mutate()
-                
-        self.p = deepcopy(newPop)
-        
-    
-    
-    
-    
+        """
+        AFPO for genetic evolution
+        :return: None
+        """
+        # increment ages
+        for i in range(len(self.p)):
+            self.p[i].increment_age()
+
+        # add new RANDOM student
+        self.p.append(self.ind())
+
+        # expand the population
+        while len(self.p) < self.popSize * 2:
+            parent_index = random.randrange(0, self.popSize)
+            new_indv = deepcopy(self.p[parent_index])
+            new_indv.mutate()
+            self.p.append(new_indv)
+
+        # calculate number of non-dominated individuals
+        dom_ind = []
+        for s in range(len(self.p)):
+            dominated = False
+            for t in range(len(self.p)):
+                if dominates(self.p[t], self.p[s]):
+                    dominated = True
+                    break
+            if not dominated:
+                dom_ind.append(self.p[s])
+
+        # remove as many dominated individuals as we can, or until pop is original size,
+        # whichever comes first.
+        numb_individuals = len(self.p)
+        while numb_individuals > max(self.popSize, len(dom_ind)):
+            i1 = random.randrange(len(self.p))
+            i2 = random.randrange(len(self.p))
+            if i1 == i2:
+                continue
+            if self.p[i1] is None or self.p[i2] is None:
+                continue
+            if dominates(self.p[i1], self.p[i2]):
+                self.p[i2] = None
+                numb_individuals -= 1
+
+        # remove deleted individuals from population.
+        self.p = [ind for ind in self.p if ind is not None]
+
+    def getNonDominated(self):
+
+        dom_ind = []
+        for s in range(len(self.p)):
+            dominated = False
+            for t in range(len(self.p)):
+                if dominates(self.p[t], self.p[s]):
+                    dominated = True
+                    break
+            if not dominated:
+                dom_ind.append(self.p[s])
+        return sorted(dom_ind, key=lambda x: x.age)
+
+def dominates(a, b):
+    if a.fitness < b.fitness or a.age > b.age:
+        return False
+
+    if a.fitness > b.fitness or a.age < b.age:
+        return True
+
+    return a.id < b.id

@@ -3,44 +3,61 @@ import random
 import math
 import constants as c
 
+global sequenceNumber
+sequenceNumber = 0
+
+def getSeqNumber():
+    global sequenceNumber
+    sequenceNumber += 1
+    return sequenceNumber
+
 class AGGREGATE:
     def __init__(self, numCubes=None):
+
+        self.id = getSeqNumber()
         
         self.tree = {(0, 0, 0): []}
         self.positions = {}
         
         self.scores = []
         self.fitness = 0
+        self.age = 0
 
         if numCubes == None:
             numCubes = np.random.choice(range(1, c.NUMCUBES))
         
-        self.generate_random(numCubes)
-        
-        self.update_subtree_sizes()
-        
+        self.generate_random(numCubes=numCubes)
+
         if c.DEBUG:
             print("Tree built")
 
-    def generate_random(self, numCubes):
+    def __str__(self):
+        return "Fit: %.3f, Age: %d" % (self.fitness, self.age)
+
+    def generate_random(self, numCubes=None):
         '''
         Takes numcubes as an integer argument for the size of the desired polycube
         Will randomly generate a polycube of desired size
         '''
+        if numCubes is None:
+            numCubes = np.random.choice(range(1, c.NUMCUBES))
 
         while numCubes > len(self.tree):
             
             self.add_cube()
+        self.update_subtree_sizes()
     
-    
+    def increment_age(self):
+        self.age += 1
+
     def mutate(self):
         '''
         Choose between adding a new node or deleting a subtree. If adding, call add_cube.
         If deleting, find the length of the subtree, ensure the root of the subtree is not the polycube's root node, then delete every node in the subtree.
         '''
-        
+        self.id = getSeqNumber()
         mu = len(self.tree)/c.MAXCUBES
-        print(mu)
+        # print(mu)
         
         if np.random.random() < mu and len(self.tree) > 1: #mu is mutation hyperparameter
             N = len(self.tree)
