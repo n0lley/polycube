@@ -47,4 +47,5 @@ docs/_build
 *.idea
 
 # Code generated files
+data/
 saved_generations/
