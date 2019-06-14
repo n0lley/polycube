@@ -24,7 +24,7 @@ elementTypes = [TouchSensorUniversalHingeJointElement,
 N = 10
 GENS = 100
 
-assert len(sys.argv) > 1, "Please run as python evolve.py <SEED>"
+assert len(sys.argv) > 2, "Please run as python evolve.py <SEED> <NAME>"
 try:
     seed = int(sys.argv[1])
     np.random.seed(seed)
@@ -42,8 +42,18 @@ elements.initialize()
 
 for i in range(N):
     elements.p[i] = elementTypes[i%len(elementTypes)]()
+
+if "COOP" in sys.argv[2]:
+    coevolve = COEVOLVE(aggregates, elements, evolution_mode=COEVOLVE.COOPERATIVE_MODE)
+    print("Evolving in Cooperative Mode.")
+
+elif "COMP" in sys.argv[2]:
+    coevolve = COEVOLVE(aggregates, elements, evolution_mode=COEVOLVE.COMPETITIVE_MODE)
+    print("Evolving in Competative Mode.")
     
-coevolve = COEVOLVE(aggregates, elements)
+else:
+    coevolve = COEVOLVE(aggregates, elements)
+    print("Evolution mode not understood. Using default.")
 
 print('GENERATION %d' % 0)
 t0 = time()

@@ -50,14 +50,17 @@ class COEVOLVE:
     random_subset(p=0.5)
         Evaluates every aggregate with p proportion of elements
     '''
-    
-    def __init__(self, aggrs, elmts):
+
+    COOPERATIVE_MODE = 0
+    COMPETITIVE_MODE = 1
+    def __init__(self, aggrs, elmts, evolution_mode=COOPERATIVE_MODE):
         '''
         initializes the two populations 
         '''
         
         self.aggrs = aggrs
         self.elmts = elmts
+        self.evolution_mode = evolution_mode
         
     def exhaustive(self):
         '''
@@ -87,7 +90,10 @@ class COEVOLVE:
             self.aggrs.p[j].fitness = np.mean(self.aggrs.p[j].scores)
 
         for i in range(len(self.elmts.p)):
-            self.elmts.p[i].fitness = np.mean(self.elmts.p[i].scores)
+            if self.evolution_mode == COEVOLVE.COOPERATIVE_MODE:
+                self.elmts.p[i].fitness = np.mean(self.elmts.p[i].scores)
+            elif self.evolution_mode == COEVOLVE.COMPETITIVE_MODE:
+                self.elmts.p[i].fitness = -1 * np.mean(self.elmts.p[i].scores)
                 
     def random_subset(self, p=0.1):
         '''
