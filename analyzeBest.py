@@ -62,7 +62,7 @@ while tmp is not None:
 fig = plt.figure()
 ax = fig.add_subplot(1,1,1)
 for i in range(0, currGen-1):
-    ax.scatter(i, aggtBest[i])
-    ax.scatter(i, elmtBest[i])
+    ax.scatter(i, aggtBest[i], color=[.3, .7, .4])
+    ax.scatter(i, elmtBest[i], color=[.7, .3, .4])
 
 plt.show()
