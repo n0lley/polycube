@@ -90,7 +90,8 @@ for g in range(1, GENS+1):
     
     #selection and mutation
     coevolve.selection()
-    
+
+
     #resets all fitness values
     coevolve.reset()
 

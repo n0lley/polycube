@@ -88,17 +88,7 @@ class POPULATION:
         for i in range(len(self.p)):
             self.p[i].increment_age()
 
-        # add new RANDOM student
-        self.p.append(self.ind())
-
-        # expand the population
-        while len(self.p) < self.popSize * 2:
-            parent_index = random.randrange(0, self.popSize)
-            new_indv = deepcopy(self.p[parent_index])
-            new_indv.mutate()
-            self.p.append(new_indv)
-
-        # calculate number of non-dominated individuals
+        # contract the population to non-dominated individuals
         dom_ind = []
         for s in range(len(self.p)):
             dominated = False
@@ -108,23 +98,17 @@ class POPULATION:
                     break
             if not dominated:
                 dom_ind.append(self.p[s])
+        self.p = dom_ind
 
-        # remove as many dominated individuals as we can, or until pop is original size,
-        # whichever comes first.
-        numb_individuals = len(self.p)
-        while numb_individuals > max(self.popSize, len(dom_ind)):
-            i1 = random.randrange(len(self.p))
-            i2 = random.randrange(len(self.p))
-            if i1 == i2:
-                continue
-            if self.p[i1] is None or self.p[i2] is None:
-                continue
-            if dominates(self.p[i1], self.p[i2]):
-                self.p[i2] = None
-                numb_individuals -= 1
+        # add new RANDOM student
+        self.p.append(self.ind())
 
-        # remove deleted individuals from population.
-        self.p = [ind for ind in self.p if ind is not None]
+        # expand the population
+        while len(self.p) < self.popSize:
+            parent_index = random.randrange(0, self.popSize)
+            new_indv = deepcopy(self.p[parent_index])
+            new_indv.mutate()
+            self.p.append(new_indv)
 
     def getNonDominated(self):
 
