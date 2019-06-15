@@ -21,12 +21,12 @@ def try_load_generation(fileName):
 
 def find_best_fits(coevolve):
     fit = 0
-    for j in coevolve.aggrs.p:
+    for j in range(len(coevolve.aggrs.p)):
         if coevolve.aggrs.p[j].fitness > fit:
             fit = coevolve.aggrs.p[j].fitness
     bestAggt = fit
     fit = 0
-    for j in coevolve.elmts.p:
+    for j in range(len(coevolve.elmts.p)):
         if coevolve.elmts.p[j].fitness > fit:
             fit = coevolve.elmts.p[j].fitness
     bestElmt = fit
