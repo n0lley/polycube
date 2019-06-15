@@ -124,7 +124,7 @@ class AGGREGATE:
         if c.DEBUG:
             print("Cube added at", child)
         
-    def evaluate(self, sim, elmt):
+    def evaluate(self, sim, elmt, debug=False):
         '''
         calls send_to_sim and
             calculate_displacement
@@ -134,7 +134,9 @@ class AGGREGATE:
             sim.start()
             sim.wait_to_finish()
             return self.calculate_displacement(sim)
-        except:
+        except Exception as e:
+            if debug:
+                print(e)
             return 0
         
     def reset(self):

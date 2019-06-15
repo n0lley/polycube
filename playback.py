@@ -10,13 +10,13 @@ import os
 import sys
 
 def try_load_generation(fileName):
-    print(fileName)
     try:
         f = open(fileName, 'rb')
         coevolve = pickle.load(f)
         f.close()
+        print(fileName)
         return coevolve
-    except:
+    except Exception as e:
         return None
 
 
@@ -38,6 +38,7 @@ tmp = try_load_generation(pathToSavedGens+fileName%currGen)
 while tmp is not None:
     coevolve = tmp
     currGen += 1
-    tmp = try_load_generation(fileName%currGen)
+    tmp = try_load_generation(pathToSavedGens+fileName%currGen)
 
-coevolve.playback()
+
+coevolve.playback(play_all=True)

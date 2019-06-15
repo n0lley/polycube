@@ -183,7 +183,7 @@ class COEVOLVE:
         self.aggrs.selection()
         self.elmts.selection()
         
-    def playback(self):
+    def playback(self, play_all=False):
         '''
         for review purposes, plays the best aggregate and element, with play_blind off
         '''
@@ -194,18 +194,26 @@ class COEVOLVE:
             if self.aggrs.p[j].fitness > fit:
                 fit = self.aggrs.p[j].fitness
                 aindex = j
-            
-        fit = 0
-        for e in range(len(self.elmts.p)):
+
+        if play_all:
+            for e in range(len(self.elmts.p)):
+                aggr = self.aggrs.p[aindex]
+                elmt = self.elmts.p[e]
+                sim = pyrosim.Simulator(eval_steps=1000, play_blind=False, play_paused=False, dt=.01)
+                aggr.evaluate(sim, elmt, debug=True)
+        else:
+
+            fit = 0
             index = 0
-            if self.elmts.p[e].fitness > fit:
-                fit = self.elmts.p[j].fitness
-                index = e
-        
-        aggr = self.aggrs.p[j]
-        elmt = self.elmts.p[e]
-        sim = pyrosim.Simulator(eval_steps=1000, play_blind=False, play_paused=True, dt=.01)
-        aggr.evaluate(sim, elmt)
+            for e in range(len(self.elmts.p)):
+                if self.elmts.p[e].fitness > fit:
+                    fit = self.elmts.p[aindex].fitness
+                    index = e
+
+            aggr = self.aggrs.p[aindex]
+            elmt = self.elmts.p[index]
+            sim = pyrosim.Simulator(eval_steps=1000, play_blind=False, play_paused=False, dt=.01)
+            aggr.evaluate(sim, elmt, debug=True)
 
         
 
