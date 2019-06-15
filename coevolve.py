@@ -23,8 +23,9 @@ class SIM(Work):
         self.fitness = None
 
     def compute_work(self, serial=False):
+
         sim = pyrosim.Simulator(eval_steps=COEVOLVE.TIME_STEPS, play_blind=True, play_paused=False, dt=COEVOLVE.DT)
-        self.fitness = self.aggregate.evaluate(sim, self.element)
+        self.fitness = self.aggregate.evaluate(sim, self.element, debug=False)
 
     def write_letter(self):
         return Letter((self.fitness, self.aggregate_key, self.element_key), None)

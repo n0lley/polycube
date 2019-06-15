@@ -21,6 +21,7 @@ elementTypes = [TouchSensorUniversalHingeJointElement,
                 TouchAndLightSensorXAxisHingeJointElement,
                 TouchSensorUniversalHingeJointCPGElement]
 
+
 EXHAUSTIVE_EVALUATION_MODE = 0
 RANDOM_SUBSET_EVALUATION_MODE = 1
 HYBRID_EVALUATION_MODE = 2
@@ -51,14 +52,13 @@ elif "HYBRID_EVAL" in sys.argv[2]:
 
 parallel_evaluate.setup(parallel_evaluate.PARALLEL_MODE_MPI_INTER)
 
+def GetNewElement():
+    return random.choice(elementTypes)()
 aggregates = POPULATION(AGGREGATE, pop_size=N, unique=True)
-elements = POPULATION(ELEMENT, pop_size=N, unique=True)
+elements = POPULATION(GetNewElement, pop_size=N, unique=True)
 
 aggregates.initialize()
 elements.initialize()
-
-for i in range(N):
-    elements.p[i] = elementTypes[i%len(elementTypes)]()
 
 # what evolution mode are we running in?
 if "COOPERATIVE" in sys.argv[2]:

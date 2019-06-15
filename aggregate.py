@@ -3,6 +3,7 @@ import random
 import math
 import constants as c
 
+from individual import INDIVIDUAL
 global sequenceNumber
 sequenceNumber = 0
 
@@ -11,7 +12,7 @@ def getSeqNumber():
     sequenceNumber += 1
     return sequenceNumber
 
-class AGGREGATE:
+class AGGREGATE(INDIVIDUAL):
     def __init__(self, numCubes=None):
 
         self.id = getSeqNumber()
@@ -50,7 +51,7 @@ class AGGREGATE:
     def increment_age(self):
         self.age += 1
 
-    def mutate(self):
+    def mutate(self, *args, **kwargs):
         '''
         Choose between adding a new node or deleting a subtree. If adding, call add_cube.
         If deleting, find the length of the subtree, ensure the root of the subtree is not the polycube's root node, then delete every node in the subtree.
@@ -129,6 +130,8 @@ class AGGREGATE:
         calls send_to_sim and
             calculate_displacement
         '''
+        if debug:
+            print(type(elmt))
         try:
             self.send_to_sim(sim, elmt)
             sim.start()
@@ -137,6 +140,7 @@ class AGGREGATE:
         except Exception as e:
             if debug:
                 print(e)
+                raise e
             return 0
         
     def reset(self):

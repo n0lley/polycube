@@ -4,6 +4,8 @@
     Mutate which changes the motor/sensors
 """
 import constants as c
+from individual import INDIVIDUAL
+
 import numpy as np
 import pyrosim
 import math
@@ -16,7 +18,7 @@ def getSeqNumber():
     sequenceNumber += 1
     return sequenceNumber
 
-class ELEMENT:
+class ELEMENT(INDIVIDUAL):
 
     def __init__(self, c1=2, c2=2):
         '''

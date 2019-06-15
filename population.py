@@ -3,6 +3,7 @@
 import random
 from copy import deepcopy
 
+from individual import INDIVIDUAL
 
 class POPULATION:
     """
@@ -32,11 +33,11 @@ class POPULATION:
     def __init__(self, ind, pop_size=10, unique=True):
         """
         initializes the population of popSize objects
-        :param ind: Class definition
+        :param ind: function which returns an instance of the INDIVIDUAL class.
         :param pop_size: target number of individuals in the class
         :param unique: Should we seed the initial population with unique individuals or mutants of a single one.
         """
-        assert hasattr(ind, 'mutate'), print('ERROR: Object needs method .mutate()')
+        assert isinstance(ind(), INDIVIDUAL), print('ERROR: ind() must return an instance of the INDIVIDUAL class')
         # assert hasattr(ind, 'evaluate'), print('ERROR: Object needs method .evaluate()')
         
         self.ind = ind
