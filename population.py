@@ -104,7 +104,7 @@ class POPULATION:
         self.p.append(self.ind())
 
         # expand the population
-        initial_size = self.p
+        initial_size = len(self.p)
         while len(self.p) < self.popSize:
             parent_index = random.randrange(0, initial_size)
             new_indv = deepcopy(self.p[parent_index])
