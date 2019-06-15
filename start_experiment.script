@@ -1,7 +1,7 @@
-#PBS -l nodes=1:ppn=24,pmem=1792mb,pvmem=1792mb
-#PBS -l walltime=12:00:00
+#PBS -l nodes=2:ppn=12,pmem=1792mb,pvmem=1792mb
+#PBS -l walltime=30:00:00
 #PBS -n
-##PBS -t 11-20
+#PBS -t 1-10
 #PBS -N polycubes
 #PBS -M dmatthe1+VACC@uvm.edu
 #PBS -m bea 
@@ -11,12 +11,12 @@
 
 runSingleNode() {
     echo "Running in Single Node Mode NO MPI"
-    python ../../evolve.py $seed $name
+    python ../../../evolve.py $seed $name
 }
 
 runMPIBasic() {
     echo "Running in MPI 1 worker per core Mode"
-    mpiexec -v -n $numCores python ../../evolve.py $seed $name
+    mpiexec -v -n $numCores python ../../../evolve.py $seed $name
 }
 
 runMPIIntraNode() {
@@ -35,10 +35,10 @@ cd $HOME/polycube
 
 mkdir "data"
 cd "data"
-mdir "$name"
+mkdir "$name"
 cd "$name"
 
-seed=${PBS_ARRAYID-2}
+seed=${PBS_ARRAYID-0}
 echo "evo run: $seed running $(git log | head -n 1)" >> run_commit.txt
 
 mkdir "run_$seed"

@@ -78,6 +78,7 @@ class COEVOLVE:
             for i in range(len(self.elmts.p)):
                 work_to_complete[work_index] = SIM(aggr, j, self.elmts.p[i], i)
                 work_index += 1
+        print("Simulating %d robots" % len(work_to_complete))
         parallel_evaluate.batch_complete_work(work_to_complete)
 
         for work in work_to_complete:
@@ -124,6 +125,7 @@ class COEVOLVE:
                 elmt = self.elmts.p[i]
                 work_to_complete[work_index] = SIM(aggr, j, elmt, i)
                 work_index += 1
+        print("Simulating %d robots" % len(work_to_complete))
         parallel_evaluate.batch_complete_work(work_to_complete)
 
         for work in work_to_complete:
