@@ -109,7 +109,7 @@ class AGGREGATE(INDIVIDUAL):
         child = tuple(child)
 
         #if child's coordinates are already occupied, do that again
-        while child in self.tree.keys():
+        while child in self.tree.keys() or abs(child[2]) > c.MAXCUBES/4:
 
             index = np.random.choice(len(keys))
             parent = keys[index]
