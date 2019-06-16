@@ -199,11 +199,17 @@ class COEVOLVE:
                 aindex = j
 
         if play_all:
-            for e in range(len(self.elmts.p)):
+            for e in self.elmts.p:
                 aggr = self.aggrs.p[aindex]
-                elmt = self.elmts.p[e]
+                elmt = e
+                sim = pyrosim.Simulator(eval_steps=1000, play_blind=True, play_paused=False, dt=.01)
+                print("Fitness: %.2f" %aggr.evaluate(sim, elmt, debug=True))
+
                 sim = pyrosim.Simulator(eval_steps=1000, play_blind=False, play_paused=False, dt=.01)
-                aggr.evaluate(sim, elmt, debug=True)
+                try:
+                    aggr.evaluate(sim, elmt, debug=True)
+                except Exception as e:
+                    pass
         else:
 
             fit = 0

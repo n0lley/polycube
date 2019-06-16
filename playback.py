@@ -9,20 +9,39 @@ import pickle
 import os
 import sys
 
-def try_load_generation(fileName):
+def GetNewElement():
+    raise NotImplementedError
+
+def try_load_generation(fileName, debug=False):
     try:
         f = open(fileName, 'rb')
         coevolve = pickle.load(f)
         f.close()
-        print(fileName)
+        if debug: print(fileName)
         return coevolve
     except Exception as e:
+        if debug:
+            print(e)
         return None
 
-
-elementTypes = [TouchSensorUniversalHingeJointElement,
-                TouchAndLightSensorYAxisHingeJointElement,
-                TouchAndLightSensorXAxisHingeJointElement]
+def load_last_gen(pathToSavedGens, fileName, lGen=0, uGen=1, expand=True):
+    if expand:
+        if (try_load_generation(pathToSavedGens + fileName%uGen) is not None):
+            return load_last_gen(pathToSavedGens, fileName, lGen=lGen, uGen=uGen*2)
+        else:
+            return load_last_gen(pathToSavedGens, fileName, lGen=lGen, uGen=uGen, expand=False)
+    else:
+        midGen = (uGen + lGen)//2
+        if (lGen == uGen):
+            print("Loading Gen %d" %lGen)
+            return try_load_generation(pathToSavedGens+fileName%lGen)
+        if (try_load_generation(pathToSavedGens + fileName%midGen) is not None):
+            if (midGen == lGen):
+                print("Loading Gen %d" %lGen)
+                return try_load_generation(pathToSavedGens+fileName%lGen)
+            return load_last_gen(pathToSavedGens, fileName, lGen=midGen, uGen=uGen, expand=False)
+        else:
+            return load_last_gen(pathToSavedGens, fileName, lGen=lGen, uGen=midGen, expand=False)
 
 assert len(sys.argv) > 1, "Please run as python playback.py <path/to/saved_gens/>"
 pathToSavedGens = sys.argv[1]
@@ -34,11 +53,7 @@ coevolve = None
 tmp = try_load_generation(pathToSavedGens+fileName%currGen)
 
 # TODO: switch to use binary search. It will be much faster
-
-while tmp is not None:
-    coevolve = tmp
-    currGen += 1
-    tmp = try_load_generation(pathToSavedGens+fileName%currGen)
+coevolve = load_last_gen(pathToSavedGens, fileName)
 
 
-coevolve.playback(play_all=True)
+coevolve.playback(play_all=False)
