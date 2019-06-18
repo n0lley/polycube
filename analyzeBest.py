@@ -73,7 +73,8 @@ def coallate_best_fits(r=''):
 
     return aggtBest, elmtBest
 
-assert len(sys.argv) > 1, "Please run as python playback.py <path/to/saved_gens/>"
+#System input should give the directory storing the run folders. Provided they're organized in the same manner as previous runs, it should work from there.
+assert len(sys.argv) > 1, "Please run as python playback.py <path/to/saved_runs/>"
 pathToSavedGens = sys.argv[1]
 fileName = "gen%d.p"
 currGen = 1
