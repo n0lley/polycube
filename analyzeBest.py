@@ -28,14 +28,14 @@ def find_best_fits(coevolve):
     find the fitnesses of the most fit aggregate and element in a population
     """
     fit = 0
-    for j in range(len(coevolve.aggrs.p)):
-        if coevolve.aggrs.p[j].fitness > fit:
-            fit = coevolve.aggrs.p[j].fitness
+    for j in coevolve.aggrs.p:
+        if j.fitness > fit:
+            fit = j.fitness
     bestAggt = fit
     fit = 0
-    for j in range(len(coevolve.elmts.p)):
-        if coevolve.elmts.p[j].fitness > fit:
-            fit = coevolve.elmts.p[j].fitness
+    for j in coevolve.elmts.p:
+        if j.fitness > fit:
+            fit = j.fitness
     bestElmt = fit
 
     return bestAggt, bestElmt
