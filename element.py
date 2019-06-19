@@ -324,3 +324,55 @@ class TouchSensorPistonJointElement(ELEMENT):
         sensors[0] = sim.send_touch_sensor(body_id = box)
 
         self.build_neural_network(sim, sensors, actuators)
+
+class TouchSensorPistonJointCPGElement(ELEMENT):
+    
+    def __init__(self):
+        '''
+            Create an element. Initialization does not differ from superclass.
+            '''
+        super().__init__(1,1)
+    
+    def send_element(self, sim, box, parent, coords):
+        '''
+            Use the current box being modified, the box it's being attached to, and the coordinates of those boxes (in that order) to build class-specific  joints, sensors, motors, etc on box.
+            Attach controller to that network.
+            '''
+        
+        j = self.find_joint_position(coords[0], coords[1])
+        joints = {}
+        
+        dx = coords[0][0] - coords[1][0]
+        dy = coords[0][1] - coords[1][1]
+        dz = coords[0][2] - coords[1][2]
+        
+        joints[0] = sim.send_slider_joint(body1 = box, body2 = parent,
+                                          axis=(dx, dy, dz),
+                                          joint_range = (-1 * c.SCALE*.75, c.SCALE*.01))
+
+        actuators = {}
+        for j in joints:
+        actuators[j] = sim.send_linear_actuator(joint_id = joints[j])
+      
+        sensors = {}
+        sin = np.linspace(0, 2*math.pi, 100)
+        sin = np.sin(sin)
+        cpg = sim.send_user_neuron(input_values = sin)
+        sensors[0] = sim.send_touch_sensor(body_id = box)
+              
+        #manually build network
+        #add sensor neurons
+        SN = {}
+        for s in sensors:
+            SN[s] = sim.send_sensor_neuron(sensor_id = sensors[s])
+        SN[1] = cpg
+            
+        #build the motors
+        MN = {}
+        for a in actuators:
+            MN[a] = sim.send_motor_neuron(motor_id=actuators[a], tau=.3)
+
+        #add synapses
+        for s in SN:
+            for m in MN:
+                sim.send_synapse(source_neuron_id = SN[s], target_neuron_id=MN[m], weight=self.controller[s,m])
