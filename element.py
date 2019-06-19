@@ -352,7 +352,7 @@ class TouchSensorPistonJointCPGElement(ELEMENT):
 
         actuators = {}
         for j in joints:
-        actuators[j] = sim.send_linear_actuator(joint_id = joints[j])
+            actuators[j] = sim.send_linear_actuator(joint_id = joints[j])   
       
         sensors = {}
         sin = np.linspace(0, 2*math.pi, 100)
