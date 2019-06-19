@@ -331,7 +331,7 @@ class TouchSensorPistonJointCPGElement(ELEMENT):
         '''
             Create an element. Initialization does not differ from superclass.
             '''
-        super().__init__(1,1)
+        super().__init__(2,1)
     
     def send_element(self, sim, box, parent, coords):
         '''
@@ -352,7 +352,7 @@ class TouchSensorPistonJointCPGElement(ELEMENT):
 
         actuators = {}
         for j in joints:
-            actuators[j] = sim.send_linear_actuator(joint_id = joints[j])   
+            actuators[j] = sim.send_linear_actuator(joint_id = joints[j])
       
         sensors = {}
         sin = np.linspace(0, 2*math.pi, 100)
