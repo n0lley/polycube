@@ -197,6 +197,8 @@ class COEVOLVE:
         aindex2 = 0
         for j in range(len(self.aggrs.p)):
             if self.aggrs.p[j].fitness > fit:
+                print("fit")
+                print(j)
                 fit = self.aggrs.p[j].fitness
                 aindex = j
             elif self.aggrs.p[j].fitness > fit2:
@@ -219,13 +221,15 @@ class COEVOLVE:
 
             fit = 0
             index = 0
+            
             for e in range(len(self.elmts.p)):
                 if self.elmts.p[e].fitness > fit:
-                    fit = self.elmts.p[aindex].fitness
                     index = e
+                    fit = self.elmts.p[index].fitness
 
             aggr = self.aggrs.p[aindex]
             aggr2 = self.aggrs.p[aindex2]
+            print(aindex, aindex2, index)
             elmt = self.elmts.p[index]
             sim = pyrosim.Simulator(eval_steps=1000, play_blind=False, play_paused=True, dt=.01, use_textures=False)
             aggr.evaluate(sim, elmt, debug=True)
