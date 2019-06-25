@@ -55,7 +55,7 @@ class COEVOLVE:
     COOPERATIVE_MODE = 0
     COMPETITIVE_MODE = 1
     DT = 0.01
-    TIME_STEPS = 1500
+    TIME_STEPS = 3000
     def __init__(self, aggrs, elmts, evolution_mode=COOPERATIVE_MODE):
         '''
         initializes the two populations 
@@ -192,11 +192,18 @@ class COEVOLVE:
         '''
 
         fit = 0
+        fit2 = -1
         aindex = 0
+        aindex2 = 0
         for j in range(len(self.aggrs.p)):
             if self.aggrs.p[j].fitness > fit:
+                print("fit")
+                print(j)
                 fit = self.aggrs.p[j].fitness
                 aindex = j
+            elif self.aggrs.p[j].fitness > fit2:
+                fit2 = self.aggrs.p[j].fitness
+                aindex2 = j
 
         if play_all:
             for e in self.elmts.p:
@@ -214,15 +221,21 @@ class COEVOLVE:
 
             fit = 0
             index = 0
+            
             for e in range(len(self.elmts.p)):
                 if self.elmts.p[e].fitness > fit:
-                    fit = self.elmts.p[aindex].fitness
                     index = e
+                    fit = self.elmts.p[index].fitness
 
             aggr = self.aggrs.p[aindex]
+            aggr2 = self.aggrs.p[aindex2]
+            print(aindex, aindex2, index)
             elmt = self.elmts.p[index]
-            sim = pyrosim.Simulator(eval_steps=1000, play_blind=False, play_paused=False, dt=.01)
+            sim = pyrosim.Simulator(eval_steps=1000, play_blind=False, play_paused=True, dt=.01, use_textures=False)
             aggr.evaluate(sim, elmt, debug=True)
+            sim2 = pyrosim.Simulator(eval_steps=1000, play_blind=False, play_paused=True, dt=.01, use_textures=False)
+            aggr2.evaluate(sim2, elmt, debug=True)
+
 
         
 
