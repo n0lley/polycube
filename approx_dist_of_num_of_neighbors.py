@@ -303,24 +303,24 @@ if __name__ == "__main__":
 
     np.set_printoptions(suppress=True, formatter={'float_kind': lambda x: '%5.2f' % x})
 
-    data = np.zeros(shape=(ttl_node_count, num_iterations, 6))
+    data = np.zeros(shape=(num_iterations, 6))
 
     # used for parallel computation
-    process_count = None
+    process_count = 12
     pool = Pool(processes=process_count)
 
     # compute the work
-    for j in range( ttl_node_count):
-        sys.stdout.write("%3d" % (j+1))
-        sys.stdout.flush()
-        iterations_list = list(range(num_iterations))
-        res = [pool.apply_async(compute_work, args=((j+1), iter_num, num_iterations, global_seed_offset)) for iter_num in
-               iterations_list]
-        for r in res:
-            node_count, iter_num, ret = r.get()
-            data[j, iter_num] = ret
-        sys.stdout.write("\n")
-        sys.stdout.flush()
+    iterations_list = range(num_iterations)
+    res = [pool.apply_async(compute_work, args=(ttl_node_count, iter_num, num_iterations, global_seed_offset)) for iter_num in iterations_list]
+    for n, r in enumerate(res):
+        node_count, iter_num, ret = r.get()
+        data[iter_num] = ret
+        if n%1000 == 0:
+            sys.stdout.write("/n%d/n"%(n//1000))
+            sys.stdout.flush()
     pool.close()
     pool.join()
-    print(data.mean(axis=1))
+    
+    import pickle
+    with open("%d_cubes_%d_iterations.p"%(ttl_node_count, num_iterations), "wb") as f:
+        pickle.dump(data, f)
