@@ -25,7 +25,7 @@ class AGGREGATE(INDIVIDUAL):
         self.age = 0
 
         if numCubes == None:
-            numCubes = np.random.choice(range(1, c.NUMCUBES))
+            numCubes = np.random.choice(1, c.NUMCUBES)
         
         self.generate_random(numCubes=numCubes)
 
@@ -175,14 +175,8 @@ class AGGREGATE(INDIVIDUAL):
         if c.DEBUG:
             print(self.body)
         
-        #Using the element's specifications, build the joints, neurons, and synapses
-        for parent in self.tree:
-            #modify parent coordinates to match real-space
-            rparent = parent[:2] + (float(format(parent[2] - lowest + .5, '.2f')),)
-            for child in self.tree[parent]:
-                #modify child coordinates to match real-space
-                rchild = child[:2]+ (float(format(child[2] - lowest + .5, '.2f')),)
-                element.send_element(sim, self.body[rchild], self.body[rparent], [rchild, rparent])
+        #Send the aggregate's information to the element for construction of the network.
+        element.build_elements(sim, self.tree, self.body, lowest)
     
     
     def send_cube(self, sim, coord, lowest, rgb=(0,0,0)):
