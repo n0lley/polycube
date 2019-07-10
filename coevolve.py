@@ -94,14 +94,14 @@ class COEVOLVE:
             fit = np.mean(self.aggrs.p[j].scores)
             if (np.isnan(fit) or np.isinf(fit)):
                 fit = 0
-            self.aggrs.p[j].fitness = fit
-
-        for i in range(len(self.elmts.p)):
-            fit = np.mean(self.elmts.p[i].scores)
             if self.evolution_mode == COEVOLVE.COOPERATIVE_MODE:
                 pass
             elif self.evolution_mode == COEVOLVE.COMPETITIVE_MODE:
                 fit *= -1
+            self.aggrs.p[j].fitness = fit
+
+        for i in range(len(self.elmts.p)):
+            fit = np.mean(self.elmts.p[i].scores)
             if (np.isnan(fit) or np.isinf(fit)):
                 fit = 0
             self.elmts.p[i].fitness = fit
