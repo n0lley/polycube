@@ -25,7 +25,7 @@ class AGGREGATE(INDIVIDUAL):
         self.age = 0
 
         if numCubes == None:
-            numCubes = np.random.choice(1, c.NUMCUBES)
+            numCubes = np.random.choice(5, c.NUMCUBES)
         
         self.generate_random(numCubes=numCubes)
 
@@ -60,7 +60,7 @@ class AGGREGATE(INDIVIDUAL):
         mu = len(self.tree)/c.MAXCUBES
         # print(mu)
         
-        if np.random.random() < mu and len(self.tree) > 1: #mu is mutation hyperparameter
+        if np.random.random() < mu and len(self.tree) > 5: #mu is mutation hyperparameter
             N = len(self.tree)
             cList = [] #list of coordinates
             pList = np.zeros(N) #list of probabilities
@@ -110,6 +110,9 @@ class AGGREGATE(INDIVIDUAL):
 
         #if child's coordinates are already occupied, do that again
         while child in self.tree.keys() or abs(child[2]) > c.MAXCUBES/4:
+            
+            direction = np.random.choice([-1, 1])
+            coord = np.random.choice([0, 1, 2])
 
             index = np.random.choice(len(keys))
             parent = keys[index]
