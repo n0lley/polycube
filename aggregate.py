@@ -25,7 +25,7 @@ class AGGREGATE(INDIVIDUAL):
         self.age = 0
 
         if numCubes == None:
-            numCubes = np.random.choice(5, c.NUMCUBES)
+            numCubes = np.random.choice(range(5, c.NUMCUBES))
         
         self.generate_random(numCubes=numCubes)
 
@@ -41,7 +41,7 @@ class AGGREGATE(INDIVIDUAL):
         Will randomly generate a polycube of desired size
         '''
         if numCubes is None:
-            numCubes = np.random.choice(range(1, c.NUMCUBES))
+            numCubes = np.random.choice(range(5, c.NUMCUBES))
 
         while numCubes > len(self.tree):
             
