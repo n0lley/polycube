@@ -16,10 +16,7 @@ import sys
 
 from time import time
 
-elementTypes = [TouchSensorUniversalHingeJointElement,
-                TouchAndLightSensorYAxisHingeJointElement,
-                TouchAndLightSensorXAxisHingeJointElement,
-                TouchSensorUniversalHingeJointCPGElement]
+elementTypes = [TouchSensorUniversalHingeJointCPGElement]
 
 
 EXHAUSTIVE_EVALUATION_MODE = 0
@@ -73,20 +70,33 @@ else:
     coevolve = COEVOLVE(aggregates, elements)
     print("Evolution mode not understood. Using default.")
 
-print('GENERATION %d' % 0)
-t0 = time()
-if EVALUATION_MODE == EXHAUSTIVE_EVALUATION_MODE:
-    coevolve.exhaustive()
-elif EVALUATION_MODE == RANDOM_SUBSET_EVALUATION_MODE:
-    coevolve.random_subset()
-elif EVALUATION_MODE == HYBRID_EVALUATION_MODE:
-    coevolve.exhaustive()
-t1 = time()
-print("Simulation took: %.2f" % (t1 - t0))
+latestGen = 1
+print(os.path.exists("./saved_generations/gen%d.p"%latestGen))
+if os.path.exists("./saved_generations/gen%d.p"%latestGen):
+    while os.path.exists("./saved_generations/gen%d.p"%latestGen):
+        print("Gen", latestGen, "exists")
+        latestGen += 1
 
-coevolve.print_fitness()
+    f = open("./saved_generations/gen%d.p"%(latestGen-1), 'rb')
+    coevolve = pickle.load(f)
+    f.close()
+    print("Beginning at Generation", latestGen-1)
 
-for g in range(1, GENS+1):
+else:
+    print('GENERATION %d' % 0)
+    t0 = time()
+    if EVALUATION_MODE == EXHAUSTIVE_EVALUATION_MODE:
+        coevolve.exhaustive()
+    elif EVALUATION_MODE == RANDOM_SUBSET_EVALUATION_MODE:
+        coevolve.random_subset()
+    elif EVALUATION_MODE == HYBRID_EVALUATION_MODE:
+        coevolve.exhaustive()
+    t1 = time()
+    print("Simulation took: %.2f" % (t1 - t0))
+
+    coevolve.print_fitness()
+
+for g in range(latestGen, GENS+1):
     
     #selection and mutation
     coevolve.selection()
