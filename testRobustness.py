@@ -3,12 +3,51 @@ from population import POPULATION
 from aggregate import AGGREGATE
 from element import ELEMENT
 from element import TouchSensorUniversalHingeJointCPGElement
+
+from parallelpy.utils import Work, Letter
+from parallelpy import parallel_evaluate
+
 import pyrosim
+import constants as c
+import os
 import pickle
 import sys
 import matplotlib.pyplot as plt
 import numpy as np
 from time import time
+
+newData = False
+
+class SIM(Work):
+    """
+        Wrapper for a simulation instance which allows us to parallelize the simulation of aggregates and elements
+        across a cluster of computers.
+        """
+    def __init__(self, aggregate, element, key):
+        """
+            :param aggregate: The instance of the aggregate
+            :param aggregate_key: The key of the aggregate in the dict of elements.
+            :param element: The instance of the element
+            :param element_key: The key of the element in the dict of elements
+            """
+        self.aggregate = aggregate
+        self.eval = key.split(".")[0]
+        self.run = key.split(".")[1]
+        self.element = element
+        self.fitness = None
+    
+    def compute_work(self, serial=False):
+        
+        sim = pyrosim.Simulator(eval_steps=COEVOLVE.TIME_STEPS, play_blind=True, play_paused=False, dt=COEVOLVE.DT)
+        self.fitness = self.aggregate.evaluate(sim, self.element, debug=False)
+    
+    def write_letter(self):
+        return Letter((self.fitness, self.eval, self.run), None)
+    
+    def open_letter(self, letter):
+        self.fitness, _, _ = letter.get_data()
+
+parallel_evaluate.setup(parallel_evaluate.PARALLEL_MODE_MPI_INTER)
 
 def try_load_generation(fileName, debug=False):
     try:
@@ -25,144 +64,119 @@ def try_load_generation(fileName, debug=False):
 def GetNewElement():
     raise NotImplementedError
 
-def find_best_agg(coevolve):
+def find_best(coevolve):
     """
-    find the fitnesses of the most fit aggregate in a population
+    find the fitnesses of the most fit element in a population
     """
+    elm = None
     fit = 0
-    agg = None
-    for j in coevolve.aggrs.p:
+    for j in coevolve.elmts.p:
         if j.fitness > fit:
             fit = j.fitness
-            agg = j
+            elm = j
+    return elm
 
-    return agg
-
-def test_robustness(inds, tests, coevolve=None, agg=None):
-    
-    fits = np.empty((inds, tests))
+def test_robustness(elements, tests, fits):
     
     for i in range(0, tests):
-        e = TouchSensorUniversalHingeJointCPGElement()
+        
+        #create an aggregate of random size, normally distributed between 5 and 45
+        size = int(np.random.normal(loc=25, scale=12.5)+1)
+        while size > 45 or size < 5:
+            size = int(np.random.normal(loc=25, scale=12.5)+1)
+        a = AGGREGATE(size)
+        print(size)
+        
         start = time()
         
-        for j in range(inds):
-            sim = pyrosim.Simulator(eval_steps=2000, play_blind=True, play_paused=False, dt=.01)
-            if coevolve is not None:
-                fits[j][i] = coevolve.aggrs.p[j].evaluate(sim, e, debug=False)
-            
-            elif agg is not None:
-                fits[j][i] = agg.evaluate(sim, e, debug=False)
-            else:
-                print("Error: no evaluation target")
-                break
-        print("Iteration %d, Time taken: "%i + format((time()-start), '.0f'))
+        work_to_complete = [None]*(len(elements))
+        work_index = 0
     
+        for e in elements:
+            name = e.split(".")
+            work_to_complete[work_index] = SIM(a, elements[e], e)
+            work_index += 1
+        
+        parallel_evaluate.batch_complete_work(work_to_complete)
+        
+        for work in work_to_complete:
+            eval = work.eval
+            run = work.run
+            fits[eval][run].append(work.fitness)
+        
+        print("Iteration %d, Time taken: "%i + format((time()-start), '.0f'))
+
     return fits
 
-def whole_pop(path, gen1, gen2, newData):
-    coevolve1 = try_load_generation(path%gen1)
-    print("Generation", gen1, "loaded...")
-    coevolve2 = try_load_generation(path%gen2)
-    print("Generation", gen2, "loaded...")
-
-    if newData:
-        print("Creating new robustness data...")
-        
-        print("Testing Gen %s"%gen1)
-        gen1fits = test_robustness(15, 100, coevolve = coevolve1)
-        
-        print("Testing Gen %s"%gen2)
-        gen2fits = test_robustness(15, 100, coevolve = coevolve2)
-        
-        print("Saving data")
-        f1 = open("robustness_data/gen1.p", 'wb')
-        f2 = open("robustness_data/gen2.p", 'wb')
-        pickle.dump(gen1fits, f1)
-        pickle.dump(gen2fits, f2)
-        f1.close()
-        f2.close()
-
-    else:
-        print("Loading data")
-        f1 = open("robustness_data/gen1.p", 'rb')
-        gen1fits = pickle.load(f1)
-        f1.close()
-        
-        f2 = open("robustness_data/gen2.p", 'rb')
-        gen2fits = pickle.load(f2)
-        f2.close()
-
-    return gen1fits, gen2fits
-
-def use_best(path, gen1, gen2, newData):
-
-    coevolve1 = try_load_generation(path%gen1)
-    gen1Best = find_best_agg(coevolve1)
-    print("Generation", gen1, "individual loaded...")
-    coevolve2 = try_load_generation(path%gen2)
-    gen2Best = find_best_agg(coevolve2)
-    print("Generation", gen2, "individual loaded...")
+def analyze_best_elements(target_file):
+    
+    robustness_data = {}
+    elements = {}
+    
+    #initialize the array,
+    for eval in os.listdir(target_file):
+        if os.path.isdir(os.path.join(target_file, eval)):
+            robustness_data[eval] = {}
+            for run in os.listdir(target_file+eval):
+                if os.path.isdir(target_file+eval+"/"+run):
+                    coevolve = try_load_generation(target_file+eval+"/"+run+"/saved_generations/gen1000.p")
+                    if coevolve is not None:
+                        e = find_best(coevolve)
+                        robustness_data[eval][run] = []
+                        elements[eval+"."+run] = e
     
     if newData:
-        print("Testing Gen %s"%gen1)
-        gen1fits = test_robustness(1, 500, agg = gen1Best)
-        print("Testing Gen %s"%gen2)
-        gen2fits = test_robustness(1, 500, agg = gen2Best)
+        robustness_data = test_robustness(elements, 500, robustness_data)
+
         print("Saving Data")
-        f1 = open("robustness_data/gen1Best.p", 'wb')
-        f2 = open("robustness_data/gen2Best.p", 'wb')
-        pickle.dump(gen1fits, f1)
-        pickle.dump(gen2fits, f2)
-        f1.close()
-        f2.close()
-    
-    else:
-        print("Loading Data")
-        f1 = open("robustness_data/gen1Best.p", 'rb')
-        gen1fits = pickle.load(f1)
-        f1.close()
-        
-        f2 = open("robustness_data/gen2Best.p", 'rb')
-        gen2fits = pickle.load(f2)
-        f2.close()
+        for eval in robustness_data:
+            for run in robustness_data[eval]:
+                f = open("robustness_data/"+eval+"_"+run+".gen1000.p", 'wb')
+                pickle.dump(robustness_data[eval][run], f)
+                f.close()
 
-    return gen1fits, gen2fits
+    else:
+        for eval in robustness_data:
+            for run in robustness_data[eval]:
+                f = open("robustness_data/"+eval+"_"+run+".gen1000.p", 'rb')
+                robustness_data[eval][run] = pickle.load(f)
+                f.close()
+
+    return robustness_data
+
+def chart_data(genfits):
+    for eval in genfits:
+        i = 0
+        color = np.random.random(size=3)
+        for run in genfits[eval]:
+            fit = np.asarray(genfits[eval][run])
+            if i == 0:
+                plt.hist(x=fit*c.SCALE*3, bins=36, label=eval.split("_")[2], alpha = .75, weights=np.ones(len(fit)) / len(fit), density=False, color=color)
+                i += 1
+            else:
+                plt.hist(x=fit*c.SCALE*3, bins=36, alpha = .3, weights=np.ones(len(fit)) / len(fit), density=False, color=color)
+
+    plt.ylabel("Density")
+    plt.xlabel("Speed (cube lengths per minute)")
+
+    plt.legend()
+    plt.show()
 
 #System input should give the directory path to the run, and the generations being compared
-assert len(sys.argv) > 5, "Please run as python playback.py <path/to/saved_runs/>, <firstGeneration>, <secondGeneration>, <usingOnlyBest>, <usingNewData>"
+assert len(sys.argv) > 2, "Please run as python testrobustness.py <seed> <target directory>"
 
-pathToSavedGens = sys.argv[1]
-if pathToSavedGens[-1] is not "/":
-    pathToSavedGens += "/"
-gen1 = sys.argv[2]
-gen2 = sys.argv[3]
-best = sys.argv[4] == "True"
-newData = sys.argv[5] == "True"
-pathToSavedGens += "gen%s.p"
-currGen = 1
-coevolve1 = None
-coevolve2 = None
+try:
+    seed = int(sys.argv[1])
+    np.random.seed(seed)
+except:
+    print("Please give seed as an int.")
 
-if best:
-    print("Loading best aggregates...")
-    gen1fits, gen2fits = use_best(pathToSavedGens, gen1, gen2, newData)
+target = sys.argv[2]
+if target[-1] != "/":
+    target += "/"
 
-    gen1fits = gen1fits[0]
-    gen2fits = gen2fits[0]
+print("Loading best...")
+genfits = analyze_best_elements(target)
 
-else:
-    print("Loading all aggregates...")
-    gen1fits, gen2fits = whole_pop(pathToSavedGens, gen1, gen2, newData)
-
-    gen1fits = np.mean(gen1fits, axis=1)
-    gen2fits = np.mean(gen2fits, axis=1)
-
-plt.hist(x=(gen1fits, gen2fits), color=([.7,.3,.4],[.3,.7,.4]), label=("Generation "+gen1, "Generation "+gen2))
-
-plt.ylabel("Frequency")
-plt.xlabel("Fitnesses")
-
-plt.legend()
-plt.show()
-
+if not newData:
+    chart_data(genfits)
