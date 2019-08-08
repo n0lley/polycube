@@ -24,7 +24,7 @@ class SIM(Work):
 
     def compute_work(self, serial=False):
 
-        sim = pyrosim.Simulator(eval_steps=COEVOLVE.TIME_STEPS, play_blind=False, play_paused=False, dt=COEVOLVE.DT)
+        sim = pyrosim.Simulator(eval_steps=COEVOLVE.TIME_STEPS, play_blind=True, play_paused=False, dt=COEVOLVE.DT)
         print("Simulating aggregate", self.aggregate_key, "with element", self.element_key)
         self.fitness = self.aggregate.evaluate(sim, self.element, debug=False)
         print("fitness of aggregate", self.aggregate_key, "and element", self.element_key, "retrieved")
@@ -124,12 +124,18 @@ class COEVOLVE:
         k = 10
         
         # pre allocate work_array to avoid need to expand array upon append.
-        work_to_complete = [None]*(len(self.aggrs.p)*k)
+        work_to_complete = [None]*(k*(len(self.aggrs.p)+len(self.elmts.p)))
         work_index = 0 # keep track of which index in the array we are at.
         for j in range(len(self.aggrs.p)):
             aggr = self.aggrs.p[j]
             for i in np.random.choice(range(N), size=k, replace=False):
                 elmt = self.elmts.p[i]
+                work_to_complete[work_index] = SIM(aggr, j, elmt, i)
+                work_index += 1
+        for j in range(len(self.elmts.p)):
+            elmt = self.elmts.p[j]
+            for i in np.random.choice(range(N), size=k, replace=False):
+                aggr = self.aggrs.p[i]
                 work_to_complete[work_index] = SIM(aggr, j, elmt, i)
                 work_index += 1
         print("Simulating %d robots" % len(work_to_complete))
