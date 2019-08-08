@@ -327,7 +327,7 @@ class TouchSensorUniversalHingeJointCPGElement(ELEMENT):
             actuators[j] = sim.send_rotary_actuator(joint_id = joints[j])
 
         sensors = {}
-        sin = np.linspace(0, 2*math.pi, 100)
+        sin = np.linspace(0, 2*math.pi, 33)
         sin = np.sin(sin)
         cpg = sim.send_user_neuron(input_values = sin)
         sensors[0] = sim.send_touch_sensor(body_id = box)

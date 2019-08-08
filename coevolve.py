@@ -24,8 +24,10 @@ class SIM(Work):
 
     def compute_work(self, serial=False):
 
-        sim = pyrosim.Simulator(eval_steps=COEVOLVE.TIME_STEPS, play_blind=True, play_paused=False, dt=COEVOLVE.DT)
+        sim = pyrosim.Simulator(eval_steps=COEVOLVE.TIME_STEPS, play_blind=False, play_paused=False, dt=COEVOLVE.DT)
+        print("Simulating aggregate", self.aggregate_key, "with element", self.element_key)
         self.fitness = self.aggregate.evaluate(sim, self.element, debug=False)
+        print("fitness of aggregate", self.aggregate_key, "and element", self.element_key, "retrieved")
 
     def write_letter(self):
         return Letter((self.fitness, self.aggregate_key, self.element_key), None)
@@ -55,7 +57,7 @@ class COEVOLVE:
     COOPERATIVE_MODE = 0
     COMPETITIVE_MODE = 1
     DT = 0.01
-    TIME_STEPS = 3000
+    TIME_STEPS = 1000
     def __init__(self, aggrs, elmts, evolution_mode=COOPERATIVE_MODE):
         '''
         initializes the two populations 
@@ -81,7 +83,8 @@ class COEVOLVE:
                 work_index += 1
         print("Simulating %d robots" % len(work_to_complete))
         parallel_evaluate.batch_complete_work(work_to_complete)
-
+        
+        print("appending fitnesses")
         for work in work_to_complete:
             aggr_key = work.aggregate_key
             elmt_key = work.element_key
@@ -90,6 +93,7 @@ class COEVOLVE:
             self.aggrs.p[aggr_key].scores.append(fit)
             self.elmts.p[elmt_key].scores.append(fit)
 
+        print("averaging aggregate fitnesses")
         for j in range(len(self.aggrs.p)):
             fit = np.mean(self.aggrs.p[j].scores)
             if (np.isnan(fit) or np.isinf(fit)):
@@ -100,6 +104,7 @@ class COEVOLVE:
                 fit *= -1
             self.aggrs.p[j].fitness = fit
 
+        print("averaging element fitnesses")
         for i in range(len(self.elmts.p)):
             fit = np.mean(self.elmts.p[i].scores)
             if (np.isnan(fit) or np.isinf(fit)):
@@ -115,7 +120,8 @@ class COEVOLVE:
         assert 0 <= p <= 1, print('Input needs to be a valid proportion')
         
         N = len(self.elmts.p)
-        k = int(N*p)
+        #k = int(N*p) //Switched out for constant k
+        k = 10
         
         # pre allocate work_array to avoid need to expand array upon append.
         work_to_complete = [None]*(len(self.aggrs.p)*k)
@@ -182,7 +188,6 @@ class COEVOLVE:
         '''
         calls selection on both populations
         '''
-        
         self.aggrs.selection()
         self.elmts.selection()
         
@@ -235,11 +240,3 @@ class COEVOLVE:
             aggr.evaluate(sim, elmt, debug=True)
             sim2 = pyrosim.Simulator(eval_steps=1000, play_blind=False, play_paused=True, dt=.01, use_textures=False)
             aggr2.evaluate(sim2, elmt, debug=True)
-
-
-        
-
-
-        
-                
-                
