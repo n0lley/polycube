@@ -2,10 +2,8 @@ from coevolve import COEVOLVE
 from population import POPULATION
 from aggregate import AGGREGATE
 from element import ELEMENT
-from element import TouchSensorUniversalHingeJointElement
-from element import TouchAndLightSensorYAxisHingeJointElement
-from element import TouchAndLightSensorXAxisHingeJointElement
 from element import TouchSensorUniversalHingeJointCPGElement
+from element import UniversalHingeJointCPGChildBasedElement
 
 from parallelpy import parallel_evaluate
 import numpy as np
@@ -16,14 +14,14 @@ import sys
 
 from time import time
 
-elementTypes = [TouchSensorUniversalHingeJointCPGElement]
+elementTypes = [TouchSensorUniversalHingeJointCPGElement, UniversalHingeJointCPGChildBasedElement]
 
 
 EXHAUSTIVE_EVALUATION_MODE = 0
 RANDOM_SUBSET_EVALUATION_MODE = 1
 HYBRID_EVALUATION_MODE = 2
 
-N = 50
+N = 30
 GENS = 500
 EVALUATION_MODE = EXHAUSTIVE_EVALUATION_MODE # Default
 
@@ -40,7 +38,6 @@ except:
 # how to give fitness to individuals?
 if "RAND_EVAL" in sys.argv[2]:
     EVALUATION_MODE = RANDOM_SUBSET_EVALUATION_MODE
-    N = 30
 elif "EXHAUSTIVE_EVAL" in sys.argv[2]:
     EVALUATION_MODE = EXHAUSTIVE_EVALUATION_MODE
 elif "HYBRID_EVAL" in sys.argv[2]:
