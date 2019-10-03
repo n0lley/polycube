@@ -1,7 +1,6 @@
 """
-    TODO: Create Element init which specifies the element's properties
-    
-    Mutate which changes the motor/sensors
+TODO:
+
 """
 import constants as c
 from individual import INDIVIDUAL
@@ -20,17 +19,13 @@ def getSeqNumber():
 
 class ELEMENT(INDIVIDUAL):
 
-    def __init__(self, c1=2, c2=2):
+    def __init__(self, dimensions):
         '''
         Initialize class variables
         '''
         self.id = getSeqNumber()
-        self.controller = None
         
-        self.contDim1 = c1
-        self.contDim2 = c2
-        
-        self.generate_random()
+        self.generate_random(dimensions)
         
         self.scores = []
         self.fitness = 0
@@ -46,9 +41,9 @@ class ELEMENT(INDIVIDUAL):
         
         self.scores = []
     
-    def generate_random(self):
+    def generate_random(self, dimensions):
 
-        self.controller = np.random.random((self.contDim1, self.contDim2))
+        self.controller = np.random.random(dimensions)
 
     def increment_age(self):
         self.age += 1
@@ -57,19 +52,26 @@ class ELEMENT(INDIVIDUAL):
         '''
         Randomly modify a weight in the element's genome
         '''
+        dimensions = self.controller.shape
+        index = 0
+        genome = self.controller
+        while type(genome[0]).__name__ != "float64":
+            tmp = np.random.randint(0, dimensions[index])
+            index += 1
+            genome = genome[tmp]
+        
+        gene = np.random.choice(genome)
+        
         self.id = getSeqNumber()
-        row = np.random.randint(0, self.contDim1)
-        col = np.random.randint(0, self.contDim2)
         
-        gene = self.controller[row, col]
-        gene = np.random.normal(gene)
+        newgene = np.random.normal(gene)
         
-        if gene > 1:
-            gene = 1
-        elif gene < -1:
-            gene = -1
+        if newgene > 1:
+            newgene = 1
+        elif newgene < -1:
+            newgene = -1
         
-        self.controller[row, col] = gene
+        self.controller = np.where(self.controller == gene, newgene, self.controller)
 
     def build_elements(self):
         '''
@@ -169,7 +171,7 @@ class TouchSensorUniversalHingeJointElement(ELEMENT):
         '''
         Create an element. Initialization does not differ from superclass.
         '''
-        super().__init__(1, 2)
+        super().__init__((1, 2))
     
     def build_elements(self, sim, tree, cubes, lowest):
         '''
@@ -209,7 +211,7 @@ class TouchAndLightSensorYAxisHingeJointElement(ELEMENT):
         '''
         Create an element. Initialization does not differ from superclass.
         '''
-        super().__init__(2, 1)
+        super().__init__((2, 1))
     
     def build_elements(self, sim, tree, cubes, lowest):
         '''
@@ -254,7 +256,7 @@ class TouchAndLightSensorXAxisHingeJointElement(ELEMENT):
         '''
         Create an element. Initialization does not differ from superclass.
         '''
-        super().__init__(2, 1)
+        super().__init__((2, 1))
     
     def build_elements(self, sim, tree, cubes, lowest):
         '''
@@ -299,7 +301,7 @@ class TouchSensorUniversalHingeJointCPGElement(ELEMENT):
         '''
         Create an element. Initialization does not differ from superclass.
         '''
-        super().__init__(2,2)
+        super().__init__((2,2))
     
     def build_elements(self, sim, tree, cubes, lowest):
         '''
@@ -348,3 +350,61 @@ class TouchSensorUniversalHingeJointCPGElement(ELEMENT):
         for s in SN:
             for m in MN:
                 sim.send_synapse(source_neuron_id = SN[s], target_neuron_id=MN[m], weight=self.controller[s,m])
+
+class UniversalHingeJointCPGChildBasedElement(ELEMENT):
+
+    def __init__(self):
+        '''
+        Create an element. Initialization does not differ from superclass.
+        '''
+        super().__init__((1, 6))
+        self.tree = {}
+
+    def build_elements(self, sim, tree, cubes, lowest):
+        '''
+        Take the tree and boxes from the aggregate and construct the elements.
+        '''
+        self.tree = tree
+        for parent in tree:
+            #modify parent coordinates to match real-space
+            rparent = parent[:2] + (float(format(parent[2] - lowest + .5, '.2f')),)
+            for child in tree[parent]:
+                #modify child coordinates to match real-space
+                rchild = child[:2]+ (float(format(child[2] - lowest + .5, '.2f')),)
+                children = len(tree[child])
+                self.send_element(sim, cubes[rchild], cubes[rparent], [rchild, rparent], children)
+
+    def send_element(self, sim, box, parent, coords, numChildren):
+        '''
+        Use the current box being modified, the box it's being attached to, and the coordinates of those boxes (in that order) to build class-specific  joints, sensors, motors, etc on box.
+        Attach controller to that network.
+        '''
+            
+        joints = self.build_universal_hinge(sim, box, parent, coords)
+        
+        actuators = {}
+        for j in joints:
+            actuators[j] = sim.send_rotary_actuator(joint_id = joints[j])
+                
+        sensors = {}
+        sin = np.linspace(0+math.pi*self.controller[0, numChildren], 2*math.pi+math.pi*self.controller[0, numChildren], 100)
+        sin = np.sin(sin)
+        cpg = sim.send_user_neuron(input_values = sin)
+        sensors[0] = sim.send_touch_sensor(body_id = box)
+        
+        #manually build network
+        #add sensor neurons
+        SN = {}
+        for s in sensors:
+            SN[s] = sim.send_sensor_neuron(sensor_id = sensors[s])
+            SN[1] = cpg
+            
+        #build the motors
+        MN = {}
+        for a in actuators:
+            MN[a] = sim.send_motor_neuron(motor_id=actuators[a], tau=.3)
+                
+        #add synapses
+        for s in SN:
+            for m in MN:
+                sim.send_synapse(source_neuron_id = SN[s], target_neuron_id=MN[m], weight=2)

@@ -108,8 +108,8 @@ class AGGREGATE(INDIVIDUAL):
         child[coord] += direction
         child = tuple(child)
 
-        #if child's coordinates are already occupied, do that again
-        while child in self.tree.keys() or abs(child[2]) > c.MAXCUBES/4:
+        #if child's coordinates are already occupied, or go outside the bounding box, do that again
+        while child in self.tree.keys() or len(self.tree[parent]) >= 5:
             
             direction = np.random.choice([-1, 1])
             coord = np.random.choice([0, 1, 2])
@@ -137,8 +137,10 @@ class AGGREGATE(INDIVIDUAL):
             print(type(elmt))
         try:
             self.send_to_sim(sim, elmt)
+            print("sent to sim")
             sim.start()
             sim.wait_to_finish()
+            print("sim complete")
             return self.calculate_displacement(sim)
         except Exception as e:
             if debug:
