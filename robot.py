@@ -3,17 +3,18 @@ import math
 import pyrosim
 import constants as c
 from aggregate import AGGREGATE
-from element import ELEMENT, TouchSensorUniversalHingeJointElement, TouchAndLightSensorYAxisHingeJointElement,                    TouchAndLightSensorXAxisHingeJointElement
+from element import ELEMENT, UniversalHingeJointCPGChildBasedElement
 
 #np.random.seed(0)
 
-element = TouchAndLightSensorXAxisHingeJointElement()
+element = UniversalHingeJointCPGChildBasedElement()
+
 polybot = AGGREGATE()
 
-sim = pyrosim.Simulator(eval_steps = 1000, play_paused=True, dt=.01)
+sim = pyrosim.Simulator(eval_steps = 1000, play_blind=False, play_paused=True, dt=.01)
 
-polybot.send_to_sim(sim, element)
+fit = polybot.evaluate(sim, element, debug=True)
 
-sim.start()
-sim.wait_to_finish()
+print(fit)
+
 #print(sim.get_debug_output())
