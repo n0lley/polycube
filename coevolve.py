@@ -136,7 +136,7 @@ class COEVOLVE:
             elmt = self.elmts.p[j]
             for i in np.random.choice(range(N), size=k, replace=False):
                 aggr = self.aggrs.p[i]
-                work_to_complete[work_index] = SIM(aggr, j, elmt, i)
+                work_to_complete[work_index] = SIM(aggr, i, elmt, j)
                 work_index += 1
         print("Simulating %d robots" % len(work_to_complete))
         parallel_evaluate.batch_complete_work(work_to_complete)
@@ -207,12 +207,12 @@ class COEVOLVE:
         aindex = 0
         aindex2 = 0
         for j in range(len(self.aggrs.p)):
-            if self.aggrs.p[j].fitness > fit:
+            if abs(self.aggrs.p[j].fitness) > abs(fit):
                 print("fit")
                 print(j)
                 fit = self.aggrs.p[j].fitness
                 aindex = j
-            elif self.aggrs.p[j].fitness > fit2:
+            elif abs(self.aggrs.p[j].fitness) > abs(fit2):
                 fit2 = self.aggrs.p[j].fitness
                 aindex2 = j
 
