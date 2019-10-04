@@ -97,6 +97,8 @@ def test_robustness(elements, tests, fits):
             work_to_complete[work_index] = SIM(a, elements[e], e)
             work_index += 1
         
+        print(work_to_complete)
+        
         parallel_evaluate.batch_complete_work(work_to_complete)
         
         for work in work_to_complete:
@@ -112,6 +114,7 @@ def analyze_best_elements(target_file):
     
     robustness_data = {}
     elements = {}
+    times = {}
     
     #initialize the array,
     for eval in os.listdir(target_file):
@@ -119,11 +122,12 @@ def analyze_best_elements(target_file):
             robustness_data[eval] = {}
             for run in os.listdir(target_file+eval):
                 if os.path.isdir(target_file+eval+"/"+run):
-                    coevolve = try_load_generation(target_file+eval+"/"+run+"/saved_generations/gen1000.p")
+                    coevolve = try_load_generation(target_file+eval+"/"+run+"/saved_generations/gen300.p")
                     if coevolve is not None:
                         e = find_best(coevolve)
                         robustness_data[eval][run] = []
                         elements[eval+"."+run] = e
+
     
     if newData:
         robustness_data = test_robustness(elements, 500, robustness_data)
@@ -131,35 +135,92 @@ def analyze_best_elements(target_file):
         print("Saving Data")
         for eval in robustness_data:
             for run in robustness_data[eval]:
-                f = open("robustness_data/"+eval+"_"+run+".gen1000.p", 'wb')
-                pickle.dump(robustness_data[eval][run], f)
-                f.close()
+                if "gen1000.p" in os.listdir("robustness_targets/"+eval+"/"+run+"/saved_generations/"):
+                    f = open("robustness_data/"+eval+"_"+run+".gen1000.p", 'wb')
+                    pickle.dump(robustness_data[eval][run], f)
+                    f.close()
+                else:
+                    f = open("robustness_data/"+eval+"_"+run+".gen500.p", 'wb')
+                    pickle.dump(robustness_data[eval][run], f)
+                    f.close()
 
     else:
         for eval in robustness_data:
             for run in robustness_data[eval]:
-                f = open("robustness_data/"+eval+"_"+run+".gen1000.p", 'rb')
-                robustness_data[eval][run] = pickle.load(f)
-                f.close()
+                if eval+"_"+run+".gen1000.p" in os.listdir("robustness_data"):
+                    f = open("robustness_data/"+eval+"_"+run+".gen1000.p", 'rb')
+                    robustness_data[eval][run] = pickle.load(f)
+                    f.close()
+                elif eval+"_"+run+".gen500.p" in os.listdir("robustness_data"):
+                    f = open("robustness_data/"+eval+"_"+run+".gen500.p", 'rb')
+                    robustness_data[eval][run] = pickle.load(f)
+                    f.close()
+                
+                else:
+                    f = open("robustness_data/"+eval+"_"+run+".gen300.p", 'rb')
+                    robustness_data[eval][run] = pickle.load(f)
+                    f.close()
 
-    return robustness_data
+            tf = try_load_generation("robustness_targets/"+eval+"/run_111/saved_generations/gen1.p",'rb')
+            times[eval] = tf.DT * tf.TIME_STEPS / 60
 
-def chart_data(genfits):
+    return robustness_data, times
+
+def chart_data(genfits, times):
+    i = 111
+    axmaster = plt.subplot(i)
     for eval in genfits:
-        i = 0
+        ax = plt.subplot(i, sharex=axmaster)
         color = np.random.random(size=3)
+        fit = np.empty((0))
+        firstFits = []
+        evolvedFits = []
+        
         for run in genfits[eval]:
-            fit = np.asarray(genfits[eval][run])
-            if i == 0:
-                plt.hist(x=fit*c.SCALE*3, bins=36, label=eval.split("_")[2], alpha = .75, weights=np.ones(len(fit)) / len(fit), density=False, color=color)
-                i += 1
+            if "gen1000.p" in os.listdir(target + eval + "/" + run + "/saved_generations/"):
+                f = open(target + eval + "/" + run + "/saved_generations/gen1000.p", 'rb')
+                gen = pickle.load(f)
+                f.close()
+            
+            elif "gen500.p" in os.listdir(target + eval + "/" + run + "/saved_generations/"):
+                f = open(target + eval + "/" + run + "/saved_generations/gen500.p", 'rb')
+                gen = pickle.load(f)
+                f.close()
+            
             else:
-                plt.hist(x=fit*c.SCALE*3, bins=36, alpha = .3, weights=np.ones(len(fit)) / len(fit), density=False, color=color)
+                f = open(target + eval + "/" + run + "/saved_generations/gen300.p", 'rb')
+                gen = pickle.load(f)
+                f.close()
+            
+            f = open(target + eval + "/" + run + "/saved_generations/gen1.p", 'rb')
+            gen1 = pickle.load(f)
+            f.close()
+            
+            if gen is not None and gen1 is not None:
+                bestE = find_best(gen)
+                e1 = find_best(gen1)
+                for score in bestE.scores:
+                    evolvedFits.append(score)
+                for score in e1.scores:
+                    firstFits.append(score)
+            
+            tmp = np.asarray(genfits[eval][run])
+            fit = np.append(fit, tmp)
+                
+        evolvedFits = np.asarray(evolvedFits)
+        firstFits = np.asarray(firstFits)
+        print(firstFits.shape)
+        
+        ax.hist(x=(firstFits/c.SCALE)/times[eval], bins=36, label="First Gen Fitnesses", alpha = .45, weights=(np.ones(firstFits.shape[0]) / firstFits.shape[0]), density=False, color=[.1, .4, .4])
+        ax.hist(x=(evolvedFits/c.SCALE)/times[eval], bins=36, label="Run Champion Fitnesses", alpha = .45, weights=(np.ones(evolvedFits.shape[0]) / evolvedFits.shape[0]), density=False, color=[.8, .2, .1])
+        ax.hist(x=(fit/c.SCALE)/times[eval], bins=36, label=eval, alpha = .75, weights=(np.ones(len(fit)) / len(fit)), density=False, color=color)
+        i += 1
+        plt.legend()
 
-    plt.ylabel("Density")
+        plt.ylabel("Density")
+
     plt.xlabel("Speed (cube lengths per minute)")
 
-    plt.legend()
     plt.show()
 
 #System input should give the directory path to the run, and the generations being compared
@@ -176,7 +237,7 @@ if target[-1] != "/":
     target += "/"
 
 print("Loading best...")
-genfits = analyze_best_elements(target)
+genfits, times = analyze_best_elements(target)
 
 if not newData:
-    chart_data(genfits)
+    chart_data(genfits, times)
