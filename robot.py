@@ -1,55 +1,20 @@
 import numpy as np
-import random
 import math
 import pyrosim
 import constants as c
 from aggregate import AGGREGATE
-from element import ELEMENT
+from element import ELEMENT, UniversalHingeJointCPGChildBasedElement
 
-sim = pyrosim.Simulator( play_paused=True )
+#np.random.seed(0)
 
-sensors = {}
-motors = {}
+element = UniversalHingeJointCPGChildBasedElement()
 
-element = ELEMENT(sensors, motors)
-polybot = AGGREGATE(sim, [element], 15)
-print (polybot.tree)
+polybot = AGGREGATE()
 
-sim.start()
-sim.wait_to_finish()
-"""
-joints1 = {}
-joints2 = {}
-joints3 = {}
-for coord in polybot.polycube:
-    for neighbor in polybot.polycube[coord]:
-        joints1[coord] = {}
-        joints2[coord] = {}
-        joints3[coord] = {}
-        xdif = (coord[0] - neighbor[0])/2
-        ydif = (coord[1] - neighbor[1])/2
-        zdif = (coord[2] - neighbor[2])/2
-        
-        if(xdif == 0):
-            joints1[coord][neighbor] = sim.send_hinge_joint(
-                        first_body_id = cubes[coord], second_body_id = cubes[neighbor],
-                        x=(xdif + coord[0])*c.SCALE, y=(ydif + coord[1])*c.SCALE, z=(zdif + coord[2])*c.SCALE,
-                        n1=1, n2=0, n3=0,
-                        lo=-math.pi/2., hi=math.pi/2.
-                        )
-        if(ydif == 0):
-            joints2[coord][neighbor] = sim.send_hinge_joint(
-                        first_body_id = cubes[coord], second_body_id = cubes[neighbor],
-                        x=(xdif + coord[0])*c.SCALE, y=(ydif + coord[1])*c.SCALE, z=(zdif + coord[2])*c.SCALE,
-                        n1=0, n2=1, n3=0,
-                        lo=-math.pi/2., hi=math.pi/2.
-                        )
+sim = pyrosim.Simulator(eval_steps = 1000, play_blind=False, play_paused=True, dt=.01)
 
-        if(zdif == 0):
-            joints3[coord][neighbor] = sim.send_hinge_joint(
-                        first_body_id = cubes[coord], second_body_id = cubes[neighbor],
-                        x=(xdif + coord[0])*c.SCALE, y=(ydif + coord[1])*c.SCALE, z=(zdif + coord[2])*c.SCALE,
-                        n1=0, n2=0, n3=1,
-                        lo=-math.pi/2., hi=math.pi/2.
-                        )
-"""
+fit = polybot.evaluate(sim, element, debug=True)
+
+print(fit)
+
+#print(sim.get_debug_output())
