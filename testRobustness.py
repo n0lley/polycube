@@ -3,6 +3,7 @@ from population import POPULATION
 from aggregate import AGGREGATE
 from element import ELEMENT
 from element import TouchSensorUniversalHingeJointCPGElement
+from playback import load_last_gen
 
 from parallelpy.utils import Work, Letter
 from parallelpy import parallel_evaluate
@@ -122,11 +123,11 @@ def analyze_best_elements(target_file):
             robustness_data[eval] = {}
             for run in os.listdir(target_file+eval):
                 if os.path.isdir(target_file+eval+"/"+run):
-                    coevolve = try_load_generation(target_file+eval+"/"+run+"/saved_generations/gen300.p")
+                    coevolve, g = load_last_gen(target_file+eval+"/"+run+"/saved_generations/", "gen%d.p")
                     if coevolve is not None:
                         e = find_best(coevolve)
                         robustness_data[eval][run] = []
-                        elements[eval+"."+run] = e
+                        elements[eval+"."+run] = [e,g]
 
     
     if newData:
@@ -135,31 +136,18 @@ def analyze_best_elements(target_file):
         print("Saving Data")
         for eval in robustness_data:
             for run in robustness_data[eval]:
-                if "gen1000.p" in os.listdir("robustness_targets/"+eval+"/"+run+"/saved_generations/"):
-                    f = open("robustness_data/"+eval+"_"+run+".gen1000.p", 'wb')
-                    pickle.dump(robustness_data[eval][run], f)
-                    f.close()
-                else:
-                    f = open("robustness_data/"+eval+"_"+run+".gen500.p", 'wb')
-                    pickle.dump(robustness_data[eval][run], f)
-                    f.close()
+                g = elements[eval+"."+run][1]
+                f = open("robustness_data/"+eval+"/"+run+".gen%d"%g + ".p", 'wb')
+                pickle.dump(robustness_data[eval][run],f)
+                f.close()
 
     else:
         for eval in robustness_data:
             for run in robustness_data[eval]:
-                if eval+"_"+run+".gen1000.p" in os.listdir("robustness_data"):
-                    f = open("robustness_data/"+eval+"_"+run+".gen1000.p", 'rb')
-                    robustness_data[eval][run] = pickle.load(f)
-                    f.close()
-                elif eval+"_"+run+".gen500.p" in os.listdir("robustness_data"):
-                    f = open("robustness_data/"+eval+"_"+run+".gen500.p", 'rb')
-                    robustness_data[eval][run] = pickle.load(f)
-                    f.close()
-                
-                else:
-                    f = open("robustness_data/"+eval+"_"+run+".gen300.p", 'rb')
-                    robustness_data[eval][run] = pickle.load(f)
-                    f.close()
+                g = elements[eval+"."+run][1]
+                f = open("robustness_data/"+eval+"_"+run+".gen%d"%g + ".p", 'rb')
+                robustness_data[eval][run] = pickle.load(f)
+                f.close()
 
             tf = try_load_generation("robustness_targets/"+eval+"/run_111/saved_generations/gen1.p",'rb')
             times[eval] = tf.DT * tf.TIME_STEPS / 60
