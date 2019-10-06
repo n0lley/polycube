@@ -155,31 +155,20 @@ def analyze_best_elements(target_file):
     return robustness_data, times
 
 def chart_data(genfits, times):
-    i = 111
-    axmaster = plt.subplot(i)
+    numRuns = 0
+    i = 1
+    for e in genfits:
+        numRuns += 1
+    axmaster = plt.subplot(numRuns,1,1)
     for eval in genfits:
-        ax = plt.subplot(i, sharex=axmaster)
+        ax = plt.subplot(numRuns, 1, i, sharex=axmaster, sharey=axmaster)
         color = np.random.random(size=3)
         fit = np.empty((0))
         firstFits = []
         evolvedFits = []
         
         for run in genfits[eval]:
-            if "gen1000.p" in os.listdir(target + eval + "/" + run + "/saved_generations/"):
-                f = open(target + eval + "/" + run + "/saved_generations/gen1000.p", 'rb')
-                gen = pickle.load(f)
-                f.close()
-            
-            elif "gen500.p" in os.listdir(target + eval + "/" + run + "/saved_generations/"):
-                f = open(target + eval + "/" + run + "/saved_generations/gen500.p", 'rb')
-                gen = pickle.load(f)
-                f.close()
-            
-            else:
-                f = open(target + eval + "/" + run + "/saved_generations/gen300.p", 'rb')
-                gen = pickle.load(f)
-                f.close()
-            
+            gen, g = load_last_gen(target + eval + "/" + run + "/saved_generations/gen1000.p", "gen%d.p")
             f = open(target + eval + "/" + run + "/saved_generations/gen1.p", 'rb')
             gen1 = pickle.load(f)
             f.close()
