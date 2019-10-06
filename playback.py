@@ -34,11 +34,11 @@ def load_last_gen(pathToSavedGens, fileName, lGen=0, uGen=1, expand=True):
         midGen = (uGen + lGen)//2
         if (lGen == uGen):
             print("Loading Gen %d" %lGen)
-            return try_load_generation(pathToSavedGens+fileName%lGen)
+            return try_load_generation(pathToSavedGens+fileName%lGen), lGen
         if (try_load_generation(pathToSavedGens + fileName%midGen) is not None):
             if (midGen == lGen):
                 print("Loading Gen %d" %lGen)
-                return try_load_generation(pathToSavedGens+fileName%lGen)
+                return try_load_generation(pathToSavedGens+fileName%lGen), lGen
             return load_last_gen(pathToSavedGens, fileName, lGen=midGen, uGen=uGen, expand=False)
         else:
             return load_last_gen(pathToSavedGens, fileName, lGen=lGen, uGen=midGen, expand=False)
@@ -53,7 +53,7 @@ coevolve = None
 tmp = try_load_generation(pathToSavedGens+fileName%currGen)
 
 # TODO: switch to use binary search. It will be much faster
-coevolve = load_last_gen(pathToSavedGens, fileName)
+coevolve, gen = load_last_gen(pathToSavedGens, fileName)
 
 
 coevolve.playback(play_all=False)
