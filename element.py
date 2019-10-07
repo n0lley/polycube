@@ -357,7 +357,7 @@ class UniversalHingeJointCPGChildBasedElement(ELEMENT):
         '''
         Create an element. Initialization does not differ from superclass.
         '''
-        super().__init__((1, 6))
+        super().__init__((6))
         self.tree = {}
 
     def build_elements(self, sim, tree, cubes, lowest):
@@ -387,7 +387,7 @@ class UniversalHingeJointCPGChildBasedElement(ELEMENT):
             actuators[j] = sim.send_rotary_actuator(joint_id = joints[j])
                 
         sensors = {}
-        sin = np.linspace(0+math.pi*self.controller[0, numChildren], 2*math.pi+math.pi*self.controller[0, numChildren], 100)
+        sin = np.linspace(0+math.pi*self.controller[numChildren], 2*math.pi+math.pi*self.controller[numChildren], 100)
         sin = np.sin(sin)
         cpg = sim.send_user_neuron(input_values = sin)
         sensors[0] = sim.send_touch_sensor(body_id = box)
