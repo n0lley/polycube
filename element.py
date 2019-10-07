@@ -357,7 +357,7 @@ class UniversalHingeJointCPGChildBasedElement(ELEMENT):
         '''
         Create an element. Initialization does not differ from superclass.
         '''
-        super().__init__((6))
+        super().__init__((6,))
         self.tree = {}
 
     def build_elements(self, sim, tree, cubes, lowest):
