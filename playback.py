@@ -43,17 +43,18 @@ def load_last_gen(pathToSavedGens, fileName, lGen=0, uGen=1, expand=True):
         else:
             return load_last_gen(pathToSavedGens, fileName, lGen=lGen, uGen=midGen, expand=False)
 
-assert len(sys.argv) > 1, "Please run as python playback.py <path/to/saved_gens/>"
-pathToSavedGens = sys.argv[1]
-if pathToSavedGens[-1] != "/":
-    pathToSavedGens += "/"
-fileName = "gen%d.p"
-currGen = 1
-coevolve = None
-tmp = try_load_generation(pathToSavedGens+fileName%currGen)
+def main():
+    assert len(sys.argv) > 1, "Please run as playback.py <path/to/saved_gens>"
+    pathToSavedGens = sys.argv[1]
+    if pathToSavedGens[-1] != "/":
+        pathToSavedGens += "/"
+    fileName = "gen%d.p"
+    currGen = 1
+    coevolve = None
+    tmp = try_load_generation(pathToSavedGens+fileName%currGen)
 
-# TODO: switch to use binary search. It will be much faster
-coevolve, gen = load_last_gen(pathToSavedGens, fileName)
+    # TODO: switch to use binary search. It will be much faster
+    coevolve, gen = load_last_gen(pathToSavedGens, fileName)
 
 
-coevolve.playback(play_all=False)
+    coevolve.playback(play_all=False)
