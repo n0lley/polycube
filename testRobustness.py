@@ -95,9 +95,9 @@ def test_robustness(elements, tests, fits):
         work_index = 0
     
         for element in elements:
-            e = element[0]
-            name = e.split(".")
-            work_to_complete[work_index] = SIM(a, elements[e], e)
+            e = elements[element][0]
+            name = element.split(".")
+            work_to_complete[work_index] = SIM(a, elements[element][0], element)
             work_index += 1
         
         print(work_to_complete)
