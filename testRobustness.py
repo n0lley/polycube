@@ -100,7 +100,7 @@ def test_robustness(elements, tests, fits):
             work_to_complete[work_index] = SIM(a, elements[element][0], element)
             work_index += 1
         
-        print(work_to_complete)
+        #print(work_to_complete)
         
         parallel_evaluate.batch_complete_work(work_to_complete)
         
