@@ -2,6 +2,7 @@ from coevolve import COEVOLVE
 from population import POPULATION
 from aggregate import AGGREGATE
 from element import ELEMENT
+import constants as c
 from element import TouchSensorUniversalHingeJointCPGElement
 from playback import load_last_gen
 
@@ -83,7 +84,7 @@ def test_robustness(elements, tests, fits):
         
         #create an aggregate of random size, normally distributed between 5 and 45
         size = int(np.random.normal(loc=25, scale=12.5)+1)
-        while size > 45 or size < 5:
+        while size > c.MAXCUBES or size < 5:
             size = int(np.random.normal(loc=25, scale=12.5)+1)
         a = AGGREGATE(size)
         print(size)
@@ -151,7 +152,9 @@ def analyze_best_elements(target_file):
 
             tf = try_load_generation("robustness_targets/"+eval+"/run_111/saved_generations/gen1.p",'rb')
             times[eval] = tf.DT * tf.TIME_STEPS / 60
-
+        
+    parallel_evaluate.cleanup()
+    
     return robustness_data, times
 
 def chart_data(genfits, times):
@@ -168,7 +171,7 @@ def chart_data(genfits, times):
         evolvedFits = []
         
         for run in genfits[eval]:
-            gen, g = load_last_gen(target + eval + "/" + run + "/saved_generations/gen1000.p", "gen%d.p")
+            gen, g = load_last_gen(target + eval + "/" + run + "/saved_generations/", "gen%d.p")
             f = open(target + eval + "/" + run + "/saved_generations/gen1.p", 'rb')
             gen1 = pickle.load(f)
             f.close()
@@ -186,10 +189,9 @@ def chart_data(genfits, times):
                 
         evolvedFits = np.asarray(evolvedFits)
         firstFits = np.asarray(firstFits)
-        print(firstFits.shape)
         
-        ax.hist(x=(firstFits/c.SCALE)/times[eval], bins=36, label="First Gen Fitnesses", alpha = .45, weights=(np.ones(firstFits.shape[0]) / firstFits.shape[0]), density=False, color=[.1, .4, .4])
-        ax.hist(x=(evolvedFits/c.SCALE)/times[eval], bins=36, label="Run Champion Fitnesses", alpha = .45, weights=(np.ones(evolvedFits.shape[0]) / evolvedFits.shape[0]), density=False, color=[.8, .2, .1])
+        ax.hist(x=(firstFits/c.SCALE)/times[eval], bins=16, label="First Gen Fitnesses", alpha = .45, weights=(np.ones(firstFits.shape[0]) / firstFits.shape[0]), density=False, color=[.1, .4, .4])
+        ax.hist(x=(evolvedFits/c.SCALE)/times[eval], bins=64, label="Run Champion Fitnesses", alpha = .45, weights=(np.ones(evolvedFits.shape[0]) / evolvedFits.shape[0]), density=False, color=[.8, .2, .1])
         ax.hist(x=(fit/c.SCALE)/times[eval], bins=36, label=eval, alpha = .75, weights=(np.ones(len(fit)) / len(fit)), density=False, color=color)
         i += 1
         plt.legend()
