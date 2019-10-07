@@ -18,7 +18,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from time import time
 
-newData = False
+newData = True
 
 class SIM(Work):
     """
@@ -94,7 +94,8 @@ def test_robustness(elements, tests, fits):
         work_to_complete = [None]*(len(elements))
         work_index = 0
     
-        for e in elements:
+        for element in elements:
+            e = element[0]
             name = e.split(".")
             work_to_complete[work_index] = SIM(a, elements[e], e)
             work_index += 1
