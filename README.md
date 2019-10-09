@@ -1,7 +1,6 @@
 
 # Polycubes
-Please expand on me.
-What is Polycubes?
+Polycubes is an implementation of Pyrosim that simulates polycube-based modular robots.
 
 # Getting started 
 * Please install both of the dependencies below. Instructions are on their github repository pages
