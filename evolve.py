@@ -22,7 +22,7 @@ RANDOM_SUBSET_EVALUATION_MODE = 1
 HYBRID_EVALUATION_MODE = 2
 
 N = 50
-GENS = 1
+GENS = 500
 EVALUATION_MODE = EXHAUSTIVE_EVALUATION_MODE # Default
 
 assert len(sys.argv) > 2, "Please run as python evolve.py <SEED> <NAME>"
