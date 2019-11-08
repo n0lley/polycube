@@ -1,6 +1,6 @@
 
 # Polycubes
-Polycubes is an implementation of Pyrosim that simulates polycube-based modular robots.
+Polycubes is an implementation of Pyrosim that simulates polycube-based modular robots. The master branch is a starting point containing an algorithm for creating the polycube robots and simulating them with basic distributed controllers, then coevolving them. Each subsequent branch from master contains a step of abstraction away from the initial algorithm and controller, with the goal of eventually achieving a controller that can generate a desired behavior in any given polycube structure.
 
 # Getting started 
 * Please install both of the dependencies below. Instructions are on their github repository pages
