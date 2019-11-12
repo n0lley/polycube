@@ -271,12 +271,19 @@ class Simulator(_body.Mixin,
         )
         
         self._send_simulator_parameters()
-        f = open(self._simulator_path + "outfile.txt", 'w')
+        i=0
+        self.outFileName = "/outfile%d.txt"%i
+        while os.path.exists(self._simulator_path + self.outFileName):
+            i += 1
+            self.outFileName = "/outfile%d.txt"%i
+            
+        f = open(self._simulator_path + self.outFileName, 'w')
         f.write(self._strings_to_send)
         f.write("Done\n")
         f.close()
+        print(self._simulator_path + self.outFileName)
         
-        commands = [self._simulator_path + '/sim.sh', self._simulator_path + "outfile.txt"]
+        commands = [self._simulator_path + '/sim.sh', self._simulator_path + self.outFileName]
         if self._play_blind:
             commands.append('-blind')
         if self._play_paused:
@@ -296,6 +303,7 @@ class Simulator(_body.Mixin,
             universal_newlines=True,  # necessary for 3.x
             cwd=self._simulator_path,  # helps with textures
         )
+        
         #print(commands)
         # write parameters
         #self.pipe.stdin.write(self._strings_to_send)
@@ -335,6 +343,7 @@ class Simulator(_body.Mixin,
                 self._raw_cerr[end_index + len(end_str):]
 
         self._read_sensor_data()
+        os.remove(self._simulator_path + self.outFileName)
 
     def _read_sensor_data(self):
         # sensor data comes back as a long string of single values delimited by a space 
