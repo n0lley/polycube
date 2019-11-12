@@ -269,8 +269,14 @@ class Simulator(_body.Mixin,
             'Cannot play blind and paused. Change truth value of play_blind '
             'or play_paused'
         )
-
-        commands = [self._simulator_path + '/simulator']
+        
+        self._send_simulator_parameters()
+        f = open(self._simulator_path + "outfile.txt", 'w')
+        f.write(self._strings_to_send)
+        f.write("Done\n")
+        f.close()
+        
+        commands = [self._simulator_path + '/sim.sh', self._simulator_path + "outfile.txt"]
         if self._play_blind:
             commands.append('-blind')
         if self._play_paused:
@@ -290,11 +296,11 @@ class Simulator(_body.Mixin,
             universal_newlines=True,  # necessary for 3.x
             cwd=self._simulator_path,  # helps with textures
         )
+        #print(commands)
         # write parameters
-        self._send_simulator_parameters()
-        self.pipe.stdin.write(self._strings_to_send)
+        #self.pipe.stdin.write(self._strings_to_send)
         # finish by writing done
-        self.pipe.stdin.write('Done\n')
+        #self.pipe.stdin.write('Done\n')
         # self.pipe.stdin.close()
 
     def wait_to_finish(self):
@@ -310,10 +316,14 @@ class Simulator(_body.Mixin,
         # self.pipe.terminate()
         # code = self.pipe.poll()
         data = self.pipe.communicate()
+        #print(data)
         self._raw_cout = data[0]
         self._raw_cerr = data[1]
 
         # cut out annoying drawstuff commands
+        #print(self._raw_cout)
+        #print("======================================")
+        #print(self._raw_cerr)
         start_str = 'Simulation test environment v0.02'
         end_str = 'sideways and up.'
 
