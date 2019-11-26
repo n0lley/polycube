@@ -1,7 +1,7 @@
 """
-TODO:
-
+Contains controller layouts for simulation. Each subclass should init with the dimensions of its genome as a tuple.
 """
+
 import constants as c
 from individual import INDIVIDUAL
 
@@ -164,144 +164,14 @@ class ELEMENT(INDIVIDUAL):
             i+=1
 
         return joints
-
-class TouchSensorUniversalHingeJointElement(ELEMENT):
+        
+class TwoWeightAmplitude(ELEMENT):
 
     def __init__(self):
         '''
         Create an element. Initialization does not differ from superclass.
         '''
-        super().__init__((1, 2))
-    
-    def build_elements(self, sim, tree, cubes, lowest):
-        '''
-        Take the tree and boxes from the aggregate and construct the elements.
-        '''
-    
-        for parent in tree:
-            #modify parent coordinates to match real-space
-            rparent = parent[:2] + (float(format(parent[2] - lowest + .5, '.2f')),)
-            for child in tree[parent]:
-                #modify child coordinates to match real-space
-                rchild = child[:2]+ (float(format(child[2] - lowest + .5, '.2f')),)
-                self.send_element(sim, cubes[rchild], cubes[rparent], [rchild, rparent])
-
-    def send_element(self, sim, box, parent, coords):
-        '''
-        Use the current box being modified, the box it's being attached to, and the coordinates of those boxes (in that order) to build class-specific  joints, sensors, motors, etc on box.
-        Attach controller to that network.
-        '''
-
-        #add hinge joints
-        joints = self.build_universal_hinge(sim, box, parent, coords)
-        
-        actuators = {}
-        for j in joints:
-            actuators[j] = sim.send_rotary_actuator(joint_id = joints[j])
-
-        #build the sensors
-        sensors = {}
-        sensors[0] = sim.send_touch_sensor(body_id = box)
-        
-        self.build_neural_network(sim, sensors, actuators)
-
-class TouchAndLightSensorYAxisHingeJointElement(ELEMENT):
-
-    def __init__(self):
-        '''
-        Create an element. Initialization does not differ from superclass.
-        '''
-        super().__init__((2, 1))
-    
-    def build_elements(self, sim, tree, cubes, lowest):
-        '''
-        Take the tree and boxes from the aggregate and construct the elements.
-        '''
-        
-        for parent in tree:
-            #modify parent coordinates to match real-space
-            rparent = parent[:2] + (float(format(parent[2] - lowest + .5, '.2f')),)
-            for child in tree[parent]:
-                #modify child coordinates to match real-space
-                rchild = child[:2]+ (float(format(child[2] - lowest + .5, '.2f')),)
-                self.send_element(sim, cubes[rchild], cubes[rparent], [rchild, rparent])
-
-    def send_element(self, sim, box, parent, coords):
-        '''
-        Use the current box being modified, the box it's being attached to, and the coordinates of those boxes (in that order) to build class-specific  joints, sensors, motors, etc on box.
-        Attach controller to that network.
-        '''
-
-        j = self.find_joint_position(coords[0], coords[1])
-        joints = {}
-
-        joints[0] = sim.send_hinge_joint(body1 = box, body2 = parent,
-                                         anchor=(j[0],j[1],j[2]),
-                                         axis=(0, 1, 0),
-                                         joint_range = math.pi/2.)
-
-        actuators = {}
-        for j in joints:
-            actuators[j] = sim.send_rotary_actuator(joint_id = joints[j])
-
-        sensors = {}
-        sensors[0] = sim.send_touch_sensor(body_id = box)
-        sensors[1] = sim.send_light_sensor(body_id = box)
-
-        self.build_neural_network(sim, sensors, actuators)
-
-class TouchAndLightSensorXAxisHingeJointElement(ELEMENT):
-    
-    def __init__(self):
-        '''
-        Create an element. Initialization does not differ from superclass.
-        '''
-        super().__init__((2, 1))
-    
-    def build_elements(self, sim, tree, cubes, lowest):
-        '''
-        Take the tree and boxes from the aggregate and construct the elements.
-        '''
-        
-        for parent in tree:
-            #modify parent coordinates to match real-space
-            rparent = parent[:2] + (float(format(parent[2] - lowest + .5, '.2f')),)
-            for child in tree[parent]:
-                #modify child coordinates to match real-space
-                rchild = child[:2]+ (float(format(child[2] - lowest + .5, '.2f')),)
-                self.send_element(sim, cubes[rchild], cubes[rparent], [rchild, rparent])
-    
-    def send_element(self, sim, box, parent, coords):
-        '''
-        Use the current box being modified, the box it's being attached to, and the coordinates of those boxes (in that order) to build class-specific  joints, sensors, motors, etc on box.
-        Attach controller to that network.
-        '''
-        
-        j = self.find_joint_position(coords[0], coords[1])
-        joints = {}
-        
-        joints[0] = sim.send_hinge_joint(body1 = box, body2 = parent,
-                                         anchor=(j[0],j[1],j[2]),
-                                         axis=(1, 0, 0),
-                                         joint_range = math.pi/2.)
-            
-        actuators = {}
-        for j in joints:
-            actuators[j] = sim.send_rotary_actuator(joint_id = joints[j])
-         
-        sensors = {}
-        sensors[0] = sim.send_touch_sensor(body_id = box)
-        sensors[1] = sim.send_light_sensor(body_id = box)
-                 
-        self.build_neural_network(sim, sensors, actuators)
-
-class TouchSensorUniversalHingeJointCPGElement(ELEMENT):
-
-    def __init__(self):
-        '''
-        Create an element. Initialization does not differ from superclass.
-        '''
-        super().__init__((2,2))
+        super().__init__((1,2))
     
     def build_elements(self, sim, tree, cubes, lowest):
         '''
@@ -328,18 +198,14 @@ class TouchSensorUniversalHingeJointCPGElement(ELEMENT):
         for j in joints:
             actuators[j] = sim.send_rotary_actuator(joint_id = joints[j])
 
-        sensors = {}
-        sin = np.linspace(0, 2*math.pi, 33)
+        sin = np.linspace(0, 2*math.pi, 200)
         sin = np.sin(sin)
         cpg = sim.send_user_neuron(input_values = sin)
-        sensors[0] = sim.send_touch_sensor(body_id = box)
 
         #manually build network
-        #add sensor neurons
+        #add sensor neuron
         SN = {}
-        for s in sensors:
-            SN[s] = sim.send_sensor_neuron(sensor_id = sensors[s])
-        SN[1] = cpg
+        SN[0] = cpg
         
         #build the motors
         MN = {}
@@ -351,60 +217,108 @@ class TouchSensorUniversalHingeJointCPGElement(ELEMENT):
             for m in MN:
                 sim.send_synapse(source_neuron_id = SN[s], target_neuron_id=MN[m], weight=self.controller[s,m])
 
-class UniversalHingeJointCPGChildBasedElement(ELEMENT):
+class OneWeightPhaseOffset(ELEMENT):
 
     def __init__(self):
         '''
         Create an element. Initialization does not differ from superclass.
         '''
-        super().__init__((1,6))
-        self.tree = {}
+        super().__init__((1,1))
 
     def build_elements(self, sim, tree, cubes, lowest):
         '''
         Take the tree and boxes from the aggregate and construct the elements.
         '''
-        self.tree = tree
+        
         for parent in tree:
             #modify parent coordinates to match real-space
             rparent = parent[:2] + (float(format(parent[2] - lowest + .5, '.2f')),)
             for child in tree[parent]:
                 #modify child coordinates to match real-space
                 rchild = child[:2]+ (float(format(child[2] - lowest + .5, '.2f')),)
-                children = len(tree[child])
-                self.send_element(sim, cubes[rchild], cubes[rparent], [rchild, rparent], children)
+                self.send_element(sim, cubes[rchild], cubes[rparent], [rchild, rparent])
 
-    def send_element(self, sim, box, parent, coords, numChildren):
+    def send_element(self, sim, box, parent, coords):
         '''
         Use the current box being modified, the box it's being attached to, and the coordinates of those boxes (in that order) to build class-specific  joints, sensors, motors, etc on box.
         Attach controller to that network.
         '''
-            
+
         joints = self.build_universal_hinge(sim, box, parent, coords)
-        
+
         actuators = {}
         for j in joints:
             actuators[j] = sim.send_rotary_actuator(joint_id = joints[j])
-                
-        sensors = {}
-        sin = np.linspace(0+math.pi*self.controller[0][numChildren], 2*math.pi+math.pi*self.controller[0][numChildren], 100)
-        sin = np.sin(sin)
-        cpg = sim.send_user_neuron(input_values = sin)
-        sensors[0] = sim.send_touch_sensor(body_id = box)
-        
+
+        sin1 = np.linspace(0 + self.controller[0][0]*math.pi, 2*math.pi + self.controller[0][0]*math.pi, 200)
+        sin1 = np.sin(sin1)
+        sin2 = np.linspace(0, 2*math.pi, 200)
+        sin2 = np.sin(sin2)
+        cpg1 = sim.send_user_neuron(input_values = sin1)
+        cpg2 = sim.send_user_neuron(input_values = sin2)
+
         #manually build network
-        #add sensor neurons
+        #add sensor neuron
         SN = {}
-        for s in sensors:
-            SN[s] = sim.send_sensor_neuron(sensor_id = sensors[s])
-            SN[1] = cpg
-            
+        SN[0] = cpg1
+        SN[1] = cpg2
+        
         #build the motors
         MN = {}
         for a in actuators:
             MN[a] = sim.send_motor_neuron(motor_id=actuators[a], tau=.3)
-                
+        
         #add synapses
         for s in SN:
-            for m in MN:
-                sim.send_synapse(source_neuron_id = SN[s], target_neuron_id=MN[m], weight=2)
+            sim.send_synapse(source_neuron_id = SN[s], target_neuron_id=MN[s], weight=1)
+
+class FourWeightPhaseOffsetAmplitude(ELEMENT):
+    
+    def __init__(self):
+       '''
+       Create an element. Initialization does not differ from superclass.
+       '''
+       super().__init__((2,2))
+   
+    def build_elements(self, sim, tree, cubes, lowest):
+       '''
+       Take the tree and boxes from the aggregate and construct the elements.
+       '''
+       
+       for parent in tree:
+           #modify parent coordinates to match real-space
+           rparent = parent[:2] + (float(format(parent[2] - lowest + .5, '.2f')),)
+           for child in tree[parent]:
+               #modify child coordinates to match real-space
+               rchild = child[:2]+ (float(format(child[2] - lowest + .5, '.2f')),)
+               self.send_element(sim, cubes[rchild], cubes[rparent], [rchild, rparent])
+
+    def send_element(self, sim, box, parent, coords):
+        '''
+        Use the current box being modified, the box it's being attached to, and the coordinates of those boxes (in that order) to build class-specific  joints, sensors, motors, etc on box.
+        Attach controller to that network.
+        '''
+
+        joints = self.build_universal_hinge(sim, box, parent, coords)
+
+        actuators = {}
+        for j in joints:
+            actuators[j] = sim.send_rotary_actuator(joint_id = joints[j])
+
+        #input neurons
+        SN = {}
+        sin1 = np.linspace(0+self.controller[0,0]*math.pi, 2*math.pi+self.controller[0,0]*math.pi, 200)
+        sin2 = np.linspace(0+self.controller[1,0]*math.pi, 2*math.pi+self.controller[1,0]*math.pi, 200)
+        sin1 = np.sin(sin1)
+        sin2 = np.sin(sin2)
+        SN[0] = sim.send_user_neuron(input_values = sin1)
+        SN[1] = sim.send_user_neuron(input_values = sin2)
+        
+        #build the motors
+        MN = {}
+        for a in actuators:
+            MN[a] = sim.send_motor_neuron(motor_id=actuators[a], tau=.3)
+        
+        #add synapses
+        for s in SN:
+            sim.send_synapse(source_neuron_id = SN[s], target_neuron_id=MN[s], weight=self.controller[s,1])
