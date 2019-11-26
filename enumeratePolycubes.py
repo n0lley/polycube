@@ -7,6 +7,15 @@ import itertools
 import time
 
 
+def num_regions(p):
+    
+    A = polycube_to_graph(p)
+    
+    G = nx.from_numpy_matrix(A)
+    
+    return nx.number_connected_components(G)
+
+
 def convert_to_decimal(b, num):
     '''
     converts num in base b to 10
@@ -47,6 +56,50 @@ def unrank_kSubset(r, k, n):
         T[i-1] = x
         r -= int(binom(x, k+1-i))
     return T
+
+
+def checkTree(edgeList, n):
+    '''
+    '''
+    A = np.zeros((n,n))
+    
+    for edge in edgeList:
+        A[edge] = 1
+    
+    G = nx.from_numpy_matrix(A)
+    
+    return nx.is_tree(G)
+    
+    
+def brute_force_trees(n, E):
+    '''
+    Brute force search through all (n-1)-subsets in (E)
+    
+    n: number of nodes
+    E: edgelist of graph
+    '''
+    
+    validTrees = []
+    
+    m = len(E)
+    
+    numSubsets = int(binom(m, n-1))
+    
+    for i in range(numSubsets):
+        
+        subset = unrank_kSubset(i, n-1, m)
+        
+        edgeSubset = []
+        
+        for j in subset[::-1]:
+            
+            edgeSubset.append(E[j-1])
+            
+        if checkTree(edgeSubset, n):
+        
+            validTrees.append(edgeSubset)
+        
+    return validTrees
 
 
 def check_all_isomorphism(p1, p2):
@@ -202,6 +255,9 @@ def get_polycubes_of_size(k):
         #get a list of coordinate ranks in base 5
         coordinateRanks = unrank_kSubset(r=r, k=k, n=125)
         
+        #if 0 not in coordinateRanks:
+        #    continue
+        
         #convert coordinates ranks to base 10
         coordinateBases = [convert_to_decimal(5, x) for x in coordinateRanks]
         
@@ -214,21 +270,25 @@ def get_polycubes_of_size(k):
         #convert to ints
         coordinates = [tuple([int(x) for x in coor]) for coor in coordinates]
         
+        #get a cube-presence grid lattice
+        #grid = np.zeros((5,5,5))
+        #for coord in coordinates:
+        #    grid[coord] = 1
+        
+        #count the number of regions...we want only one component
+        #regs = measure.regionprops(measure.label(grid, connectivity=1), cache=False)
+        #if len(regs) != 1:
+        #    continue
+        
+        if num_regions(coordinates) != 1:
+            continue
+        
+        
         #translate towards (0,0,0) while keeping all coordinates nonnegative
         minX = np.min([x[0] for x in coordinates])
         minY = np.min([x[1] for x in coordinates])
         minZ = np.min([x[2] for x in coordinates])
         coordinates = [(x[0]-minX, x[1]-minY, x[2]-minZ) for x in coordinates]
-        
-        #get a cube-presence grid lattice
-        grid = np.zeros((5,5,5))
-        for coord in coordinates:
-            grid[coord] = 1
-        
-        #count the number of regions...we want only one component
-        regs = measure.regionprops(measure.label(grid, connectivity=1), cache=False)
-        if len(regs) != 1:
-            continue
         
         #check against previously added polycubes
         unique = True
@@ -239,6 +299,7 @@ def get_polycubes_of_size(k):
                 break         
                 
         if unique:
+            #print(coordinates)
             returnUnique.append(coordinates)
         
         
@@ -291,6 +352,22 @@ def polycube_to_graph(p):
     return A
     
 
+def get_edge_list(G):
+    '''
+    '''
+    edges = []
+    
+    for line in nx.generate_edgelist(G):
+        
+        line = line.split()
+        
+        x = int(line[0])
+        y = int(line[1])
+        
+        edges.append((x, y))
+        
+    return edges    
+        
 if __name__ == '__main__':
     
     test = sys.argv[1]
@@ -351,7 +428,7 @@ if __name__ == '__main__':
         
         print('Number of Structures Found: %d'%len(listOfPolycubes))
         
-        print('Structure  :  Number of Articulations')
+        print('Structure  :  Number of Articulations  :  Trees')
         print('-------------------------------------')
         for polycube in listOfPolycubes:
             
@@ -359,11 +436,15 @@ if __name__ == '__main__':
             # #number of spanning trees
             A = polycube_to_graph(polycube)
             G = nx.from_numpy_matrix(A)
-            Q = nx.laplacian_matrix(G).todense()
-            Q_star = matrix_minor(Q, 1, 1)
-            numTrees = int(np.linalg.det(Q_star))
-                
-            print(polycube, ':      ', numTrees)
+            #Q = nx.laplacian_matrix(G).todense()
+            #Q_star = matrix_minor(Q, 1, 1)
+            #numTrees = int(np.linalg.det(Q_star))
+            
+            edges = get_edge_list(G)
+            trees = brute_force_trees(numCubes, edges)
+            numTrees = len(trees)
+            
+            print(polycube, ':      ', numTrees, ':      ', trees)
 
         print('Time to run: %0.2f seconds'%(time.time() - begin))
         
