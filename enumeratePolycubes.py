@@ -8,7 +8,19 @@ import time
 
 
 def num_regions(p):
+    '''
+    counts the number of regions in p
     
+    Parameters
+    ----------
+    p   :   list
+        cube coordinates
+    
+    Returns
+    -------
+    int
+        number of regions found from the cubes
+    '''
     A = polycube_to_graph(p)
     
     G = nx.from_numpy_matrix(A)
@@ -19,6 +31,19 @@ def num_regions(p):
 def convert_to_decimal(b, num):
     '''
     converts num in base b to 10
+    this works for base 2 through 10
+    
+    Parameters
+    ----------
+    b   :   int
+        base of num
+    num :   int
+        number to convert to decimal
+    
+    Returns
+    -------
+    int
+        num in base 10
     '''
     
     if num == 0:
@@ -40,6 +65,20 @@ def unrank_kSubset(r, k, n):
     '''
     bijection that turns an integer to a k-subset
         of n elements
+        
+    Parameters
+    ----------
+    r   :   int
+        rank of the subset
+    k   :   int
+        size of the subset 
+    n   :   int
+        size of the original set
+    
+    Returns
+    -------
+    list
+        k-subset defined by (r,k,n) parameters
     '''
     
     T = [0]*k
@@ -60,6 +99,19 @@ def unrank_kSubset(r, k, n):
 
 def checkTree(edgeList, n):
     '''
+    checks if a given edge list is a tree
+    
+    Parameters
+    ----------
+    edgeList    :   list
+        edgelist of the graph
+    n           :   int
+        number of nodes the graph is on
+    
+    Returns
+    -------
+    bool
+        True if edgeList defines a tree
     '''
     A = np.zeros((n,n))
     
@@ -75,8 +127,17 @@ def brute_force_trees(n, E):
     '''
     Brute force search through all (n-1)-subsets in (E)
     
-    n: number of nodes
-    E: edgelist of graph
+    Parameters
+    ----------
+    n   :   int
+        Number of nodes (cubes)
+    E   :   list
+        edge list of the graph
+        
+    Returns
+    -------
+    list
+        list containing the edge lists of the spanning trees
     '''
     
     validTrees = []
@@ -108,6 +169,19 @@ def check_all_isomorphism(p1, p2):
         and checks if it's equal to polycube1 (p1)
         
     48 symmetries come from the octahedral group with reflections
+        (O48)
+    
+    Parameters
+    ----------
+    p1  :   list
+        cube coordinates
+    p2  :   list
+        cube coordinates
+        
+    Returns
+    -------
+    bool
+        True if p1 and p2 are isomorphic under O48 symmetries
     """
     
     #use p1 as the comparison
@@ -177,8 +251,20 @@ def check_poly_isomorphism(p1, p2):
     Performs all 8 symmetries on polycube2 (p2)
         and checks if it's equal to polycube1 (p1)
         
-    8 symmetries come from dihedral group of order 8
+    8 symmetries come from dihedral group of order 8 (D8)
         (treat the xy-plane as the square under symmetries)
+        
+    Parameters
+    ----------
+    p1  :   list
+        cube coordinates
+    p2  :   list
+        cube coordinates
+        
+    Returns
+    -------
+    bool
+        True if p1 and p2 are isomorphic under D8 symmetries in xy-plane
     """
     
     #use p1 as the comparison
@@ -241,9 +327,18 @@ def check_poly_isomorphism(p1, p2):
 
 def get_polycubes_of_size(k):
     '''
-    bounding box of size 5x5x5
+    finds all polycube structures of size k that
+        exists in a 5x5x5 bounding box
     
-    possible coordinate subsets are (125 choose n)
+    Parameters
+    ----------
+    k   :   int
+        Number of polycubes
+    
+    Returns
+    -------
+    list
+        list that contains lists of polycube cube coordinates
     '''
     
     totalPossibilities = int(binom(125, k))
@@ -254,9 +349,6 @@ def get_polycubes_of_size(k):
         
         #get a list of coordinate ranks in base 5
         coordinateRanks = unrank_kSubset(r=r, k=k, n=125)
-        
-        #if 0 not in coordinateRanks:
-        #    continue
         
         #convert coordinates ranks to base 10
         coordinateBases = [convert_to_decimal(5, x) for x in coordinateRanks]
@@ -270,21 +362,11 @@ def get_polycubes_of_size(k):
         #convert to ints
         coordinates = [tuple([int(x) for x in coor]) for coor in coordinates]
         
-        #get a cube-presence grid lattice
-        #grid = np.zeros((5,5,5))
-        #for coord in coordinates:
-        #    grid[coord] = 1
-        
-        #count the number of regions...we want only one component
-        #regs = measure.regionprops(measure.label(grid, connectivity=1), cache=False)
-        #if len(regs) != 1:
-        #    continue
-        
+        #we want one connected component
         if num_regions(coordinates) != 1:
             continue
         
-        
-        #translate towards (0,0,0) while keeping all coordinates nonnegative
+        #this handles translational symmetries
         minX = np.min([x[0] for x in coordinates])
         minY = np.min([x[1] for x in coordinates])
         minZ = np.min([x[2] for x in coordinates])
@@ -302,16 +384,27 @@ def get_polycubes_of_size(k):
             #print(coordinates)
             returnUnique.append(coordinates)
         
-        
     return returnUnique
 
 
-def determinant(A):
-    
-    return np.linalg.det(A)
-
-
 def matrix_minor(A, r, c):
+    '''
+    Removes a row and a column from an adjacency matrix
+    
+    Parameters
+    ----------
+    A   :   numpy 2-d array
+        adjacency matrix
+    r   :   int
+        row index to delete
+    c   :   int
+        column index to delete
+        
+    Returns
+    -------
+    numpy 2-d array
+        adjacency matrix after deletions
+    '''
     #delete row
     Ar = np.delete(A, r, 0)
     
@@ -324,6 +417,18 @@ def matrix_minor(A, r, c):
 def taxi_distance(v1, v2):
     '''
     taxi cab metric distance between v1 and v2
+    
+    Parameters
+    ----------
+    v1  :   list
+        first point
+    v2  :   list
+        second point
+    
+    Returns
+    -------
+    float
+        taxi cab distance between v1 and v2 
     '''
     
     assert len(v1)==len(v2), "taxi_distance: v1 and v2 are not of the same dimension"
@@ -339,6 +444,16 @@ def polycube_to_graph(p):
     '''
     converts a polycube into a graph by connecting
         polycubes (nodes) if they share a face
+    
+    Parameters
+    ----------
+    p   :   list
+        list of cube coordinates
+        
+    Returns
+    -------
+    numpy 2-d array
+        adjacency matrix of the cubes
     '''
     N = len(p)
     
@@ -354,6 +469,17 @@ def polycube_to_graph(p):
 
 def get_edge_list(G):
     '''
+    Returns an edge list of the given graph
+    
+    Parameters
+    ----------
+    G   :   networkx graph object
+        graph to find the edge list of
+        
+    Returns
+    -------
+    list
+        edge list where edges are 2-tuples of ints
     '''
     edges = []
     
@@ -368,6 +494,7 @@ def get_edge_list(G):
         
     return edges    
         
+    
 if __name__ == '__main__':
     
     test = sys.argv[1]
@@ -419,7 +546,6 @@ if __name__ == '__main__':
         print(check_poly_isomorphism(d3, d4))
         
     elif int(test):
-        
         
         numCubes = int(test)
         
