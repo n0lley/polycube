@@ -7,6 +7,18 @@ import itertools
 import time
 
 
+def memoize(f):
+    memo = {}
+    def helper(x, y):
+        if (x, y) not in memo:            
+            memo[(x,y)] = f(x, y)
+        return memo[(x,y)]
+    return helper
+
+@memoize
+def binomial(n,k):
+    return binom(n,k)
+
 def num_regions(p):
     '''
     counts the number of regions in p
@@ -81,19 +93,18 @@ def unrank_kSubset(r, k, n):
         k-subset defined by (r,k,n) parameters
     '''
     
-    T = [0]*k
-    x = n
+    T = [0 for _ in range(k)]
     for i in range(1,k+1):
         
-        c = int(binom(x, k+1-i))
+        c = int(binomial(n, k+1-i))
             
         while c > r:
             
-            x -= 1
-            c = int(binom(x, k+1-i))
+            n -= 1
+            c = int(binomial(n, k+1-i))
             
-        T[i-1] = x
-        r -= int(binom(x, k+1-i))
+        T[i-1] = n
+        r -= c
     return T
 
 
@@ -495,9 +506,10 @@ def get_edge_list(G):
     return edges    
         
     
-if __name__ == '__main__':
+
     
-    test = sys.argv[1]
+    
+def main(test):
     
     d1 = [(0,0,0), 
           (0,0,1),
@@ -573,4 +585,10 @@ if __name__ == '__main__':
             print(polycube, ':      ', numTrees, ':      ', trees)
 
         print('Time to run: %0.2f seconds'%(time.time() - begin))
-        
+ 
+
+if __name__ == '__main__':
+    
+    test = sys.argv[1]
+    
+    main(test)
