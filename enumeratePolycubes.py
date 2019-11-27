@@ -10,11 +10,22 @@ import time
 def memoize(f):
     memo = {}
     def helper(x, y):
-        if (x, y) not in memo:            
+        try:
+            return memo[(x,y)]
+        except:
             memo[(x,y)] = f(x, y)
-        return memo[(x,y)]
+            return memo[(x,y)]
     return helper
 
+def memoize2(f):
+    memo = {}
+    def helper(x, y):
+        try:
+            return memo[(x,y)]
+        except:
+            memo[(x,y)] = f(x, y)
+            return memo[(x,y)]
+    return helper
 
 @memoize
 def binomial(n,k):
@@ -62,7 +73,7 @@ def is_connected(p):
     
     return nx.is_connected(G)
 
-
+@memoize2
 def convert_to_base(b, num):
     '''
     converts num in base 10 to b
