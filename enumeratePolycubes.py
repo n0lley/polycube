@@ -40,6 +40,27 @@ def num_regions(p):
     return nx.number_connected_components(G)
 
 
+def is_connected(p):
+    '''
+    checks if the cubes are connected in one component
+    
+    Parameters
+    ----------
+    p   :   list
+        cube coordinates
+    
+    Returns
+    -------
+    bool
+        True if there is only one component
+    '''
+    A = polycube_to_graph(p)
+    
+    G = nx.from_numpy_matrix(A)
+    
+    return nx.is_connected(G)
+
+
 def convert_to_decimal(b, num):
     '''
     converts num in base b to 10
@@ -66,7 +87,8 @@ def convert_to_decimal(b, num):
     returnStr = ''
     
     for i in range(numDigits-1, -1, -1):
-        digitToAdd = int(np.floor(num/(b**i)))
+        #digitToAdd = int(np.floor(num/(b**i)))
+        digitToAdd = num//(b**i)
         returnStr += str(digitToAdd)
         num -= (b**i)*digitToAdd
         
@@ -155,7 +177,7 @@ def brute_force_trees(n, E):
     
     m = len(E)
     
-    numSubsets = int(binom(m, n-1))
+    numSubsets = int(binomial(m, n-1))
     
     for i in range(numSubsets):
         
@@ -352,17 +374,22 @@ def get_polycubes_of_size(k):
         list that contains lists of polycube cube coordinates
     '''
     
-    totalPossibilities = int(binom(125, k))
+    box = k*k*k
+    
+    #totalPossibilities = int(binomial(125, k))
+    totalPossibilities = int(binomial(box, k))
     
     returnUnique = []
     
     for r in range(totalPossibilities):
         
         #get a list of coordinate ranks in base 5
-        coordinateRanks = unrank_kSubset(r=r, k=k, n=125)
+        #coordinateRanks = unrank_kSubset(r=r, k=k, n=125)
+        coordinateRanks = unrank_kSubset(r=r, k=k, n=box)
         
         #convert coordinates ranks to base 10
-        coordinateBases = [convert_to_decimal(5, x) for x in coordinateRanks]
+        #coordinateBases = [convert_to_decimal(5, x) for x in coordinateRanks]
+        coordinateBases = [convert_to_decimal(k, x) for x in coordinateRanks]
         
         #0 pad to length 3
         coordinateStrings = [x.zfill(3) for x in coordinateBases]
@@ -374,7 +401,8 @@ def get_polycubes_of_size(k):
         coordinates = [tuple([int(x) for x in coor]) for coor in coordinates]
         
         #we want one connected component
-        if num_regions(coordinates) != 1:
+        #if num_regions(coordinates) != 1:
+        if not is_connected(coordinates):
             continue
         
         #this handles translational symmetries
@@ -504,10 +532,7 @@ def get_edge_list(G):
         edges.append((x, y))
         
     return edges    
-        
-    
-
-    
+         
     
 def main(test):
     
