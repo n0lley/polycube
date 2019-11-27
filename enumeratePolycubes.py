@@ -15,9 +15,11 @@ def memoize(f):
         return memo[(x,y)]
     return helper
 
+
 @memoize
 def binomial(n,k):
-    return binom(n,k)
+    return int(binom(n,k))
+
 
 def num_regions(p):
     '''
@@ -33,7 +35,7 @@ def num_regions(p):
     int
         number of regions found from the cubes
     '''
-    A = polycube_to_graph(p)
+    A = polycube_to_graph(p, len(p))
     
     G = nx.from_numpy_matrix(A)
     
@@ -54,46 +56,36 @@ def is_connected(p):
     bool
         True if there is only one component
     '''
-    A = polycube_to_graph(p)
+    A = polycube_to_graph(p, len(p))
     
     G = nx.from_numpy_matrix(A)
     
     return nx.is_connected(G)
 
 
-def convert_to_decimal(b, num):
+def convert_to_base(b, num):
     '''
-    converts num in base b to 10
+    converts num in base 10 to b
     this works for base 2 through 10
     
     Parameters
     ----------
     b   :   int
-        base of num
+        base to convert to
     num :   int
-        number to convert to decimal
+        number to convert
     
     Returns
     -------
-    int
-        num in base 10
+    str
+        num in base b
     '''
-    
-    if num == 0:
-        return '0'
+
+    if num < b:
+        return str(num)
     else:
-        numDigits = int(np.ceil(np.log10(num+1)/np.log10(b)))
+        return convert_to_base(b, num//b) + str(num%b)
     
-    returnStr = ''
-    
-    for i in range(numDigits-1, -1, -1):
-        #digitToAdd = int(np.floor(num/(b**i)))
-        digitToAdd = num//(b**i)
-        returnStr += str(digitToAdd)
-        num -= (b**i)*digitToAdd
-        
-    return returnStr
-        
 
 def unrank_kSubset(r, k, n):
     '''
@@ -114,16 +106,16 @@ def unrank_kSubset(r, k, n):
     list
         k-subset defined by (r,k,n) parameters
     '''
-    
     T = [0 for _ in range(k)]
+        
     for i in range(1,k+1):
         
-        c = int(binomial(n, k+1-i))
+        c = binomial(n, k+1-i)
             
         while c > r:
             
             n -= 1
-            c = int(binomial(n, k+1-i))
+            c = binomial(n, k+1-i)
             
         T[i-1] = n
         r -= c
@@ -177,7 +169,7 @@ def brute_force_trees(n, E):
     
     m = len(E)
     
-    numSubsets = int(binomial(m, n-1))
+    numSubsets = binomial(m, n-1)
     
     for i in range(numSubsets):
         
@@ -187,7 +179,7 @@ def brute_force_trees(n, E):
         
         for j in subset[::-1]:
             
-            edgeSubset.append(E[j-1])
+            edgeSubset.append(E[j])
             
         if checkTree(edgeSubset, n):
         
@@ -313,16 +305,16 @@ def check_poly_isomorphism(p1, p2):
     reflectPoints = [max(coor) for coor in coordinatesSplit]
     
     #symmetries only on x and y
-    coorReflect = list(itertools.product('01', repeat=2))
-    permutations = list(itertools.permutations('01'))
-
+    #coorReflect = list(itertools.product('01', repeat=2))
+    #permutations = list(itertools.permutations('01'))
+    coorReflect = [(0,0), (0,1), (1,0), (1,1)]
+    permutations = [(0,1), (1,0)]
+    
     #check each permutation of the coordinates
     for permute in permutations:
         
         #permutation indices
         i,j = permute[0], permute[1]
-        i = int(i)
-        j = int(j)
         
         #get reflection args
         a,b = reflectPoints[i], reflectPoints[j]
@@ -330,8 +322,7 @@ def check_poly_isomorphism(p1, p2):
         #check each possible reflection of each coordinate
         for reflect in coorReflect:
             
-            rX = int(reflect[0])
-            rY = int(reflect[1])
+            rX, rY = reflect[0], reflect[1]
             
             newCoordSet = set()
             
@@ -374,41 +365,32 @@ def get_polycubes_of_size(k):
         list that contains lists of polycube cube coordinates
     '''
     
-    box = k*k*k
+    boxDim  = min(5, k)
+    boxSize = boxDim**3
     
-    #totalPossibilities = int(binomial(125, k))
-    totalPossibilities = int(binomial(box, k))
+    totalPossibilities = binomial(boxSize, k)
     
     returnUnique = []
     
     for r in range(totalPossibilities):
         
-        #get a list of coordinate ranks in base 5
-        #coordinateRanks = unrank_kSubset(r=r, k=k, n=125)
-        coordinateRanks = unrank_kSubset(r=r, k=k, n=box)
+        #get a list of coordinate ranks in base 10
+        coordinateRanks = unrank_kSubset(r=r, k=k, n=boxSize)
         
-        #convert coordinates ranks to base 10
-        #coordinateBases = [convert_to_decimal(5, x) for x in coordinateRanks]
-        coordinateBases = [convert_to_decimal(k, x) for x in coordinateRanks]
+        #convert coordinates ranks to base k (coordinates in bounding box)
+        coordinateStrings = [convert_to_base(boxDim, x).zfill(3) for x in coordinateRanks]
         
-        #0 pad to length 3
-        coordinateStrings = [x.zfill(3) for x in coordinateBases]
-        
-        #split string into coordinates
-        coordinates = [[x for x in str] for str in coordinateStrings]
-        
-        #convert to ints
-        coordinates = [tuple([int(x) for x in coor]) for coor in coordinates]
+        #split string into integer coordinates 
+        coordinates = [tuple([int(x) for x in str]) for str in coordinateStrings]
         
         #we want one connected component
-        #if num_regions(coordinates) != 1:
         if not is_connected(coordinates):
             continue
         
         #this handles translational symmetries
-        minX = np.min([x[0] for x in coordinates])
-        minY = np.min([x[1] for x in coordinates])
-        minZ = np.min([x[2] for x in coordinates])
+        minX = min(coordinates, key=lambda x: x[0])[0]
+        minY = min(coordinates, key=lambda x: x[1])[1]
+        minZ = min(coordinates, key=lambda x: x[2])[2]
         coordinates = [(x[0]-minX, x[1]-minY, x[2]-minZ) for x in coordinates]
         
         #check against previously added polycubes
@@ -418,9 +400,8 @@ def get_polycubes_of_size(k):
                 #if isomorphic, skip
                 unique = False
                 break         
-                
+        
         if unique:
-            #print(coordinates)
             returnUnique.append(coordinates)
         
     return returnUnique
@@ -470,16 +451,19 @@ def taxi_distance(v1, v2):
         taxi cab distance between v1 and v2 
     '''
     
-    assert len(v1)==len(v2), "taxi_distance: v1 and v2 are not of the same dimension"
+    #assert len(v1)==len(v2), "taxi_distance: v1 and v2 are not of the same dimension"
     
     d = 0
     for x,y in zip(v1, v2):
-        d += np.abs(x-y)
+        if x <= y:
+            d += (y-x)
+        else:
+            d += (x-y)
     
     return d
     
     
-def polycube_to_graph(p):
+def polycube_to_graph(p, n):
     '''
     converts a polycube into a graph by connecting
         polycubes (nodes) if they share a face
@@ -494,13 +478,11 @@ def polycube_to_graph(p):
     numpy 2-d array
         adjacency matrix of the cubes
     '''
-    N = len(p)
+    A = np.zeros((n, n))
     
-    A = np.zeros((N, N))
-    
-    for i in range(N):
-        for j in range(N):
-            if int(taxi_distance(p[i], p[j])) == 1:
+    for i in range(n):
+        for j in range(n):
+            if taxi_distance(p[i], p[j]) == 1:
                 A[i, j] = 1
     
     return A
@@ -597,7 +579,7 @@ def main(test):
             
             #kirchoff's matrix-tree theorem to count 
             # #number of spanning trees
-            A = polycube_to_graph(polycube)
+            A = polycube_to_graph(polycube, numCubes)
             G = nx.from_numpy_matrix(A)
             #Q = nx.laplacian_matrix(G).todense()
             #Q_star = matrix_minor(Q, 1, 1)
