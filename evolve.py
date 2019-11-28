@@ -19,11 +19,10 @@ elementTypes = [
     #element.FourWeightPhaseOffsetAmplitude,
     ]
 
-N = 3
-num_cubes = 4
-GENS = 3
+N = 50
+GENS = 200
 
-assert len(sys.argv) > 2, "Please run as python evolve.py <SEED> <NAME>"
+assert len(sys.argv) > 3, "Please run as python evolve.py <SEED> <NUM_CUBES> <NAME>"
 
 try:
     seed = int(sys.argv[1])
@@ -36,7 +35,7 @@ parallel_evaluate.setup(parallel_evaluate.PARALLEL_MODE_MPI_INTER)
 
 def GetNewElement():
     return np.random.choice(elementTypes)
-aggregates = FIXEDAGGPOP(AGGREGATE, num_cubes=num_cubes, unique=True)
+aggregates = FIXEDAGGPOP(AGGREGATE, num_cubes=num_cubes)
 elements = POPULATION(GetNewElement(), pop_size=N, unique=True)
 
 aggregates.initialize()
