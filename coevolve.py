@@ -45,27 +45,19 @@ class COEVOLVE:
         Population of aggregate objects
     elmts    : POPULATION instance
         Population of element objects
-        
-    Methods
-    -------
-    exhaustive()
-        Evaluates with every combination of aggregate and element
-    random_subset(p=0.5)
-        Evaluates every aggregate with p proportion of elements
     '''
 
     COOPERATIVE_MODE = 0
     COMPETITIVE_MODE = 1
     DT = 0.01
     TIME_STEPS = 1000
-    def __init__(self, aggrs, elmts, evolution_mode=COOPERATIVE_MODE):
+    def __init__(self, aggrs, elmts):
         '''
         initializes the two populations 
         '''
         
         self.aggrs = aggrs
         self.elmts = elmts
-        self.evolution_mode = evolution_mode
         
     def exhaustive(self):
         '''
@@ -90,19 +82,7 @@ class COEVOLVE:
             elmt_key = work.element_key
             fit = work.fitness
 
-            self.aggrs.p[aggr_key].scores.append(fit)
             self.elmts.p[elmt_key].scores.append(fit)
-
-        print("averaging aggregate fitnesses")
-        for j in range(len(self.aggrs.p)):
-            fit = np.mean(self.aggrs.p[j].scores)
-            if (np.isnan(fit) or np.isinf(fit)):
-                fit = 0
-            if self.evolution_mode == COEVOLVE.COOPERATIVE_MODE:
-                pass
-            elif self.evolution_mode == COEVOLVE.COMPETITIVE_MODE:
-                fit *= -1
-            self.aggrs.p[j].fitness = fit
 
         print("averaging element fitnesses")
         for i in range(len(self.elmts.p)):
@@ -194,7 +174,6 @@ class COEVOLVE:
         '''
         calls selection on both populations
         '''
-        self.aggrs.selection()
         self.elmts.selection()
         
     def playback(self, play_all=False):
