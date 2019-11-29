@@ -2,6 +2,7 @@ from coevolve import COEVOLVE
 from population import POPULATION, FIXEDAGGPOP
 from aggregate import AGGREGATE
 from element import ELEMENT
+import constants as c
 import element
 
 from parallelpy import parallel_evaluate
@@ -19,8 +20,8 @@ elementTypes = [
     #element.FourWeightPhaseOffsetAmplitude,
     ]
 
-N = 50
-GENS = 200
+N = c.POPSIZE
+GENS = c.GENS
 
 assert len(sys.argv) > 3, "Please run as python evolve.py <SEED> <NUM_CUBES> <NAME>"
 
