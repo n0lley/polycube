@@ -172,7 +172,7 @@ class COEVOLVE:
         
     def selection(self):
         '''
-        calls selection on both populations
+        calls selection on elements
         '''
         self.elmts.selection()
         
