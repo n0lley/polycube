@@ -63,7 +63,7 @@ class POPULATION:
             if self.unique:
                 self.p[i] = self.ind()
             else:
-                self.p[i] = copy.deepcopy(self.p[0])
+                self.p[i] = deepcopy(self.p[0])
                 self.p[i].mutate()
                 
     def evaluate(self):
@@ -83,8 +83,47 @@ class POPULATION:
         for i in range(len(self.p)):
             self.p[i].reset()
             self.p[i].fitness = 0
-            
+          
     def selection(self):
+        """
+        tournament selection for genetic evolution
+        :return: None
+        """
+        newpop = [None] * self.popSize
+        
+        #copy the best individual
+        bestfit = 0
+        bestindex = -1
+        for i in range(len(self.p)):
+            if self.p[i].fitness > bestfit:
+                bestfit = self.p[i].fitness
+                bestindex = i
+        
+        newpop[0] = deepcopy(self.p[bestindex])
+        
+        #tournament selection on the rest
+        for i in range(1, len(newpop)):
+        
+            i1 = np.random.choice(self.p)
+            i2 = np.random.choice(self.p)
+            while(i1 == i2):
+                i2 = np.random.choice(self.p)
+            
+            if i1.fitness > i2.fitness:
+                newpop[i] = deepcopy(i1)
+            
+            else:
+                newpop[i] = deepcopy(i2)
+        
+        #mutate all but the best
+        for i in range(1, len(newpop)):
+            newpop[i].mutate()
+        
+        #replace current pop with new pop
+        self.p = deepcopy(newpop)
+        del newpop
+                
+    def afpo_selection(self):
         """
         AFPO for genetic evolution
         :return: None
@@ -131,14 +170,19 @@ class POPULATION:
                 dom_ind.append(self.p[s])
         return sorted(dom_ind, key=lambda x: x.age)
 
-def dominates(a, b):
-    if a.fitness < b.fitness or a.age > b.age:
-        return False
+    def dominates(a, b):
+        if a.fitness < b.fitness or a.age > b.age:
+            return False
 
-    if a.fitness > b.fitness or a.age < b.age:
-        return True
+        if a.fitness > b.fitness or a.age < b.age:
+            return True
 
-    return a.id < b.id
+        return a.id < b.id
+        
+    def Print(self):
+        
+        for i in range(len(self.p)):
+            print("[%d: %.4f]"%(i, self.p[i].fitness))
 
 class FIXEDAGGPOP(POPULATION):
     """
