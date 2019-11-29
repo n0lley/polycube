@@ -151,16 +151,11 @@ class COEVOLVE:
                 
     def print_fitness(self):
         '''
-        prints aggrs and elmts fitness values
+        prints the top element fitness
         '''
 
-        print('AGGREGATES:', len(self.aggrs.p))
-        print('\n'.join(list([str(indv) for indv in self.aggrs.getNonDominated()])))
-        print()
-
-        print('ELEMENTS:',len(self.elmts.p))
-        print('\n'.join(list([str(indv) for indv in self.elmts.getNonDominated()])))
-        print()
+        print('Best Element of',len(self.elmts.p),':')
+        print('\n', self.elmts.p[0].fitness)
 
     def reset(self):
         '''
