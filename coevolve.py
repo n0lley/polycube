@@ -81,12 +81,17 @@ class COEVOLVE:
             aggr_key = work.aggregate_key
             elmt_key = work.element_key
             fit = work.fitness
+            if c.DEBUG:
+                print("Sim fit:",fit)
 
             self.elmts.p[elmt_key].scores.append(fit)
 
         print("averaging element fitnesses")
         for i in range(len(self.elmts.p)):
             fit = np.mean(self.elmts.p[i].scores)
+            if c.DEBUG:
+                print("Element scores:",self.elmts.p[i].scores)
+                print("Element mean:",fit)
             if (np.isnan(fit) or np.isinf(fit)):
                 fit = 0
             self.elmts.p[i].fitness = fit
