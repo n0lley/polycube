@@ -1,6 +1,10 @@
 
 # Polycubes
-Polycubes is an implementation of Pyrosim that simulates polycube-based modular robots. The master branch is a starting point containing an algorithm for creating the polycube robots and simulating them with basic distributed controllers, then coevolving them. Each subsequent branch from master contains a step of abstraction away from the initial algorithm and controller, with the goal of eventually achieving a controller that can generate a desired behavior in any given polycube structure.
+Polycubes is an implementation of Pyrosim that simulates polycube-based modular robots and distributed neural controllers.
+
+The Small_Polycubes branch exhaustively simulates elements with fixed populations of polycube structures of sizes 2 through 5. Each structure is distinct from every other structure in the population in terms of reflection and rotation about the z axis. Individuals from the controller population are simulated with every individual from the morphology population, then given a fitness determined by the average of all their performances.
+
+Evolution can be started by running evolve.py and specifying the random seed, polycube size, and run name in that order. The size of the element population, the number of generations of evolution, and the size of a cube may all be modified in constants.py
 
 # Getting started 
 * Please install both of the dependencies below. Instructions are on their github repository pages
