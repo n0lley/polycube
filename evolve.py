@@ -32,6 +32,12 @@ try:
 except:
     raise Exception("Please give a seed as an int.")
     
+try:
+    num_cubes = int(sys.argv[2])
+    
+except:
+    raise Exception("Please give the polycube size as an int")
+    
 parallel_evaluate.setup(parallel_evaluate.PARALLEL_MODE_MPI_INTER)
 
 def GetNewElement():
