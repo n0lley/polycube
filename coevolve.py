@@ -1,6 +1,7 @@
 from parallelpy.utils import Work, Letter
 from parallelpy import parallel_evaluate
 
+import constants as c
 import numpy as np
 import pyrosim
 
@@ -20,13 +21,14 @@ class SIM(Work):
         self.aggregate_key = aggregate_key
         self.element = element
         self.element_key = element_key
+        self.keys = [aggregate_key,element_key]
         self.fitness = None
 
     def compute_work(self, serial=False):
 
         sim = pyrosim.Simulator(eval_steps=COEVOLVE.TIME_STEPS, play_blind=True, play_paused=False, dt=COEVOLVE.DT)
         print("Simulating aggregate", self.aggregate_key, "with element", self.element_key)
-        self.fitness = self.aggregate.evaluate(sim, self.element, debug=False)
+        self.fitness = self.aggregate.evaluate(sim, self.element, idNum=self.keys, debug=True)
         print("fitness of aggregate", self.aggregate_key, "and element", self.element_key, "retrieved")
 
     def write_letter(self):
