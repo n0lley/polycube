@@ -2,9 +2,7 @@ from coevolve import COEVOLVE
 from population import POPULATION
 from aggregate import AGGREGATE
 from element import ELEMENT
-from element import TouchSensorUniversalHingeJointElement
-from element import TouchAndLightSensorYAxisHingeJointElement
-from element import TouchAndLightSensorXAxisHingeJointElement
+import element
 import pickle
 import os
 import sys
@@ -56,5 +54,4 @@ def main():
     # TODO: switch to use binary search. It will be much faster
     coevolve, gen = load_last_gen(pathToSavedGens, fileName)
 
-
-    coevolve.playback(play_all=False)
+    coevolve[0].playback(play_all=True)
