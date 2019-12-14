@@ -82,9 +82,18 @@ class POPULATION:
         """
         for i in range(len(self.p)):
             self.p[i].reset()
-            self.p[i].fitness = 0
+            
+    def hillclimber_selection(self, parent):
+        """
+        hill climber selection for genetic evolution
+        :return: None
+        """
+        
+        for i in range(len(parent.p)):
+            if parent.p[i].fitness > self.p[i].fitness:
+                self.p[i] = deepcopy(parent.p[i])
           
-    def selection(self):
+    def tournament_selection(self):
         """
         tournament selection for genetic evolution
         :return: None
@@ -100,24 +109,14 @@ class POPULATION:
                 bestindex = i
         
         newpop[0] = deepcopy(self.p[bestindex])
+        del self.p[bestindex]
         
-        #tournament selection on the rest
-        for i in range(1, len(newpop)):
-        
-            i1 = np.random.choice(self.p)
-            i2 = np.random.choice(self.p)
-            while(i1 == i2):
-                i2 = np.random.choice(self.p)
-            
-            if i1.fitness > i2.fitness:
-                newpop[i] = deepcopy(i1)
-            
-            else:
-                newpop[i] = deepcopy(i2)
-        
-        #mutate all but the best
-        for i in range(1, len(newpop)):
+        for i in range(1, len(self.p)):
+            newpop[i] = self.p[i]
             newpop[i].mutate()
+            
+        newpop[-1] = self.p[0]
+        newpop[-1].mutate()
         
         #replace current pop with new pop
         self.p = deepcopy(newpop)

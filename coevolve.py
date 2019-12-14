@@ -4,6 +4,7 @@ from parallelpy import parallel_evaluate
 import constants as c
 import numpy as np
 import pyrosim
+from copy import deepcopy
 
 class SIM(Work):
     """
@@ -61,6 +62,30 @@ class COEVOLVE:
         self.aggrs = aggrs
         self.elmts = elmts
         
+    def non_MPI_exhaustive(self):
+        """
+        non-parallel exhaustive evaluation
+        """
+        
+        parent = deepcopy(self.elmts.p)
+        
+        for j in range(len(self.elmts.p)):
+            elmt = self.elmts.p[j]
+            for i in range(len(self.aggrs.p)):
+                aggr = self.aggrs.p[i]
+                sim = pyrosim.Simulator(eval_steps=COEVOLVE.TIME_STEPS, play_blind=True, play_paused=False, dt=COEVOLVE.DT)
+                fit = aggr.evaluate(sim, self.elmts.p[i], idNum = [i,j])
+                self.elmts.p[j].scores.append(fit)
+        
+        for i in range(len(self.elmts.p)):
+            fit = np.mean(self.elmts.p[i].scores)
+            if c.DEBUG:
+                print("Element scores:",self.elmts.p[i].scores)
+                print("Element mean:",fit)
+            if (np.isnan(fit) or np.isinf(fit)):
+                fit = 0
+            self.elmts.p[i].fitness = fit
+
     def exhaustive(self):
         '''
         Evaluates every single aggregate composed with 
@@ -168,8 +193,6 @@ class COEVOLVE:
         '''
         calls reset on both populations
         '''
-        
-        self.aggrs.reset()
         self.elmts.reset()
         
     def selection(self):
@@ -185,29 +208,27 @@ class COEVOLVE:
 
         fit = 0
         fit2 = -1
-        aindex = 0
-        aindex2 = 0
-        for j in range(len(self.aggrs.p)):
-            if abs(self.aggrs.p[j].fitness) > abs(fit):
+        eindex = 0
+        eindex2 = 0
+        for j in range(len(self.elmts.p)):
+            if abs(self.elmts.p[j].fitness) > abs(fit):
                 print("fit")
                 print(j)
-                fit = self.aggrs.p[j].fitness
-                aindex = j
-            elif abs(self.aggrs.p[j].fitness) > abs(fit2):
-                fit2 = self.aggrs.p[j].fitness
-                aindex2 = j
+                fit = self.elmts.p[j].fitness
+                eindex = j
+            elif abs(self.elmts.p[j].fitness) > abs(fit2):
+                fit2 = self.elmts.p[j].fitness
+                eindex2 = j
 
         if play_all:
-            for e in self.elmts.p:
-                aggr = self.aggrs.p[aindex]
-                elmt = e
-                sim = pyrosim.Simulator(eval_steps=1000, play_blind=True, play_paused=False, dt=.01)
-                print("Fitness: %.2f" %aggr.evaluate(sim, elmt, debug=True))
-
+            for a in self.aggrs.p:
+                aggr = a
+                elmt = self.elmts.p[eindex]
                 sim = pyrosim.Simulator(eval_steps=1000, play_blind=False, play_paused=False, dt=.01)
                 try:
-                    aggr.evaluate(sim, elmt, debug=True)
+                    print(aggr.evaluate(sim, elmt, debug=True))
                 except Exception as e:
+                    print("error")
                     pass
         else:
 

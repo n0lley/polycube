@@ -10,6 +10,7 @@ import numpy as np
 import pickle
 import os
 import sys
+from copy import deepcopy
 
 from time import time
 
@@ -51,7 +52,6 @@ elements.initialize()
 coevolve = COEVOLVE(aggregates, elements)
 
 latestGen = 1
-print(os.path.exists("./saved_generations/gen%d.p"%latestGen))
 if os.path.exists("./saved_generations/gen%d.p"%latestGen):
     while os.path.exists("./saved_generations/gen%d.p"%latestGen):
         print("Gen", latestGen, "exists")
@@ -68,26 +68,25 @@ if os.path.exists("./saved_generations/gen%d.p"%latestGen):
 else:
     print('GENERATION %d' % 0)
     t0 = time()
-    coevolve.exhaustive()
+    coevolve.non_MPI_exhaustive()
     t1 = time()
     print("Simulation took: %.2f" % (t1 - t0))
 
     coevolve.print_fitness()
 
-
-    
 for g in range(latestGen, GENS+1):
+
+    parent = deepcopy(coevolve.elmts)
+    
+    #evaluation
+    t0 = time()
+    #coevolve.exhaustive()
+    coevolve.non_MPI_exhaustive()
+    t1 = time()
     
     #selection and mutation
-    coevolve.selection()
+    coevolve.elmts.hillclimber_selection(parent)
 
-    #resets all fitness values
-    coevolve.reset()
-
-    t0 = time()
-    #evaluation
-    coevolve.exhaustive()
-    t1 = time()
     print('GENERATION %d' % g)
     print("Simulation took: %.2f"%(t1-t0))
     
@@ -107,5 +106,8 @@ for g in range(latestGen, GENS+1):
         
     except:
         print ("Error saving generation", g, "to file.")
+
+    #resets all fitness values
+    coevolve.reset()
 
 parallel_evaluate.cleanup()
