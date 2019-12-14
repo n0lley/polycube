@@ -279,7 +279,7 @@ class Simulator(_body.Mixin,
         f.write(self._strings_to_send)
         f.write("Done\n")
         f.close()
-        print(self._simulator_path + self.outFileName)
+        #print(self._simulator_path + self.outFileName)
         
         commands = [self._simulator_path + '/sim.sh', self._simulator_path + self.outFileName]
         if self._play_blind:
