@@ -10,6 +10,10 @@ import pickle
 import os
 import math
 
+"""
+This code takes a custom OneWeightPhaseOffset element designed to initialize at a set starting weight and initializes it at 20000 separate points evenly spaced along its genome's range. It then evaluates each of those elements against every aggregate of size num_cubes (line 17) and saves those performances before plotting them along with the performances from other aggregate sizes.
+"""
+
 num_cubes = 3
 
 phases = np.linspace(-1,1, 20000)
