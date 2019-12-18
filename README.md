@@ -13,7 +13,9 @@ The initial stage of Small_Polycubes is intended to be the simplest possible con
 We evaluate a population of 50 controllers under our current algorithm against fixed aggregate populations. Should the controllers prove capable of producing displacement in all polycubes in the population, then they are considered robust. Should they fail to do so, we make one of the following changes:
 
   Increase controller complexity - change input function, add to genome, add more inputs
+  
   Modify evolutionary algorithm
+  
   Modify the encoding of the controller - from a direct encoding to indirect
 
 The order in which these changes are made will be determined by the results from testing.
