@@ -206,8 +206,7 @@ class AGGREGATE(INDIVIDUAL):
                  collision_group = "body")
         
         self.positions[coord] = [sim.send_position_x_sensor(body_id = box),
-                                 sim.send_position_y_sensor(body_id = box),
-                                 sim.send_position_z_sensor(body_id = box)]
+                                 sim.send_position_y_sensor(body_id = box)]
         
         return box, float(format(coord[2] - lowest + .5, '.2f'))
 
@@ -299,8 +298,7 @@ class AGGREGATE(INDIVIDUAL):
             dx = dx[-1]
             dx -= coord[0]
             dy = sim.get_sensor_data(sensor_id = p[1])[-1] - coord[1]
-            dz = sim.get_sensor_data(sensor_id = p[2])[-1] - coord[2]
-            d = dx**2 + dy**2 + dz**2
+            d = dx**2 + dy**2
             deltas.append(d**0.5)
         
         return min(deltas)
