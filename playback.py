@@ -3,6 +3,7 @@ from population import POPULATION
 from aggregate import AGGREGATE
 from element import ELEMENT
 import element
+import math
 import pickle
 import os
 import sys

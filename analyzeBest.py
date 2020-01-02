@@ -44,30 +44,26 @@ def coallate_best_fits(path, r=None):
     currGen = 1
     runNumber = "run_%s"
     coevolve = None
-    
-    tmp = try_load_generation(path + runNumber%(r) + "/saved_generations/" + fileName%currGen)
+    tmp = try_load_generation(path + "/saved_generations/" + fileName%currGen)
     
     if tmp is not None:
-        elmtFit = find_best_fits(tmp)
+        elmtFit = find_best_fits(tmp[0])
         best = np.array([elmtFit])
     
     while tmp is not None:
         currGen += 1
-        tmp = try_load_generation(path + runNumber%(r) + "/saved_generations/" + fileName%currGen)
-        
+        tmp = try_load_generation(path + "/saved_generations/" + fileName%currGen)
         if tmp is not None:
-            elmtFit = find_best_fits(tmp)
+            elmtFit = find_best_fits(tmp[0])
             best = np.append(best, [elmtFit], axis=0)
-            time = tmp.DT * tmp.TIME_STEPS / 60
+            time = tmp[0].DT * tmp[0].TIME_STEPS / 60
 
     return best, time
 
 def evaluate_runs(path):
     evalBest = {}
-    for run in os.listdir(path):
-        if os.path.isdir(os.path.join(path, run)):
-            tmp, time = coallate_best_fits(path+"/", run.split("_")[1])
-            evalBest[int(run.split("_")[1])] = tmp
+    tmp, time = coallate_best_fits(path)
+    evalBest[111] = tmp
 
     return evalBest, time
 
@@ -95,32 +91,24 @@ best, times = analyze_data(datapath)
 
 fig = plt.figure()
 ax = fig.add_subplot(1,1,1)
+plt.title("Average Fitness of Controllers for Fixed-Size Polycubes")
 
-colors = [np.random.random(size=3), np.random.random(size=3), np.random.random(size=3)]
+colors = [np.random.random(size=3), np.random.random(size=3)]
 avs = {}
 
 i=0
 for eval in best:
+    print(eval)
     avs[eval] = np.empty((15, len(best[eval][111])))
     x = np.arange(len(best[eval][111]))
-    ax.plot(x, best[eval][111]/c.SCALE/times[eval], alpha=.1, color=colors[i])
-    avs[eval][0] = best[eval][111]
-
-for i in range(112,126):
-    
-    q = 0
-    for eval in best:
-        x = np.arange(len(best[eval][i]))
-        ax.plot(x, (best[eval][i]/c.SCALE)/times[eval], color=colors[q], alpha=.1)
-        avs[eval][i-111] = best[eval][i]
-        q += 1
-
-i=0
-for eval in best:
-    avs[eval] = np.mean(avs[eval], axis=0)
-    x = np.arange(len(avs[eval]))
-    ax.plot(x, (avs[eval]/c.SCALE)/times[eval], color=colors[i], label=eval)
-    i+=1
+    print(best[eval][111][-1])
+    best[eval][111] -= c.SCALE/2
+    best[eval][111]/=times[eval]
+    print(best[eval][111][-1])
+    best[eval][111]/=c.SCALE
+    print(best[eval][111][-1])
+    ax.plot(x, best[eval][111], color=colors[i], label=eval)
+    i += 1
 
 ax.set_ylabel("Displacement (cube lengths per minute)")
 ax.set_xlabel("Generations")
