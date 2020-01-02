@@ -16,9 +16,8 @@ from time import time
 
 #Comment out whichever element types are not in use
 elementTypes = [
-    element.OneWeightPhaseOffset,
-    #element.TwoWeightAmplitude,
-    #element.FourWeightPhaseOffsetAmplitude,
+    element.OneWeightPhaseOffset
+    #element.ThreeWeightPhaseOffsetFrequency
     ]
 
 N = c.POPSIZE
@@ -76,7 +75,10 @@ else:
 
 for g in range(latestGen, GENS+1):
 
+    #create a child population
     parent = deepcopy(coevolve.elmts)
+    for i in range(len(coevolve.elmts.p)):
+        coevolve.elmts.p[i].mutate()
     
     #evaluation
     t0 = time()
@@ -84,7 +86,7 @@ for g in range(latestGen, GENS+1):
     coevolve.non_MPI_exhaustive()
     t1 = time()
     
-    #selection and mutation
+    #Parents retake their children's place if they failed to outperform
     coevolve.elmts.hillclimber_selection(parent)
 
     print('GENERATION %d' % g)

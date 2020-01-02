@@ -1,20 +1,26 @@
 import numpy as np
 import math
 import pyrosim
+import pickle
 import constants as c
 from aggregate import AGGREGATE
-from element import ELEMENT, UniversalHingeJointCPGChildBasedElement
+import element
+import population
 
 #np.random.seed(0)
 
-element = UniversalHingeJointCPGChildBasedElement()
+elements = population.POPULATION(element.OneWeightPhaseOffset)
 
-polybot = AGGREGATE()
+apop = population.FIXEDAGGPOP(AGGREGATE, 3)
+apop.initialize()
+elements.initialize()
 
-sim = pyrosim.Simulator(eval_steps = 1000, play_blind=False, play_paused=True, dt=.01)
+sim = pyrosim.Simulator(eval_steps = 1000, play_blind=True, play_paused=False, dt=.01)
 
-fit = polybot.evaluate(sim, element, debug=True)
-
-print(fit)
+f = open("data/3cube/saved_generations/gen200.p", 'rb')
+gen = pickle.load(f)
+f.close()
+co = gen[0]
+co.non_MPI_exhaustive()
 
 #print(sim.get_debug_output())

@@ -73,11 +73,18 @@ class ELEMENT(INDIVIDUAL):
         
         self.controller = np.where(self.controller == gene, newgene, self.controller)
 
-    def build_elements(self):
+    def build_elements(self, sim, tree, cubes, lowest):
         '''
+        Take the tree and boxes from the aggregate and construct the elements.
         '''
-    
-        raise NotImplementedError("build_elements function is not written")
+        
+        for parent in tree:
+            #modify parent coordinates to match real-space
+            rparent = parent[:2] + (float(format(parent[2] - lowest + .5, '.2f')),)
+            for child in tree[parent]:
+                #modify child coordinates to match real-space
+                rchild = child[:2]+ (float(format(child[2] - lowest + .5, '.2f')),)
+                self.send_element(sim, cubes[rchild], cubes[rparent], [rchild, rparent])
 
     def send_element(self):
         '''
@@ -177,14 +184,7 @@ class TwoWeightAmplitude(ELEMENT):
         '''
         Take the tree and boxes from the aggregate and construct the elements.
         '''
-        
-        for parent in tree:
-            #modify parent coordinates to match real-space
-            rparent = parent[:2] + (float(format(parent[2] - lowest + .5, '.2f')),)
-            for child in tree[parent]:
-                #modify child coordinates to match real-space
-                rchild = child[:2]+ (float(format(child[2] - lowest + .5, '.2f')),)
-                self.send_element(sim, cubes[rchild], cubes[rparent], [rchild, rparent])
+        super().build_elements(sim, tree, cubes, lowest)
 
     def send_element(self, sim, box, parent, coords):
         '''
@@ -217,6 +217,61 @@ class TwoWeightAmplitude(ELEMENT):
             for m in MN:
                 sim.send_synapse(source_neuron_id = SN[s], target_neuron_id=MN[m], weight=self.controller[s,m])
 
+class FixedWeightPhaseOffset(ELEMENT):
+
+    def __init__(self, weight):
+        '''
+        Create an element, with its single weight set to a fixed value
+        '''
+        self.id = getSeqNumber()
+        
+        self.controller = [weight]
+        
+        self.scores = []
+        self.fitness = 0
+        self.age = 0
+    
+    def build_elements(self, sim, tree, cubes, lowest):
+        '''
+        Take the tree and boxes from the aggregate and construct the elements.
+        '''
+        
+        super().build_elements(sim, tree, cubes, lowest)
+
+    def send_element(self, sim, box, parent, coords):
+        '''
+        Use the current box being modified, the box it's being attached to, and the coordinates of those boxes (in that order) to build class-specific  joints, sensors, motors, etc on box.
+        Attach controller to that network.
+        '''
+
+        joints = self.build_universal_hinge(sim, box, parent, coords)
+
+        actuators = {}
+        for j in joints:
+            actuators[j] = sim.send_rotary_actuator(joint_id = joints[j])
+
+        sin1 = np.linspace(0 + self.controller[0]*math.pi, 2*math.pi + self.controller[0]*math.pi, 200)
+        sin1 = np.sin(sin1)
+        sin2 = np.linspace(0, 2*math.pi, 200)
+        sin2 = np.sin(sin2)
+        cpg1 = sim.send_user_neuron(input_values = sin1)
+        cpg2 = sim.send_user_neuron(input_values = sin2)
+
+        #manually build network
+        #add input neurons
+        SN = {}
+        SN[0] = cpg1
+        SN[1] = cpg2
+        
+        #build the motors
+        MN = {}
+        for a in actuators:
+            MN[a] = sim.send_motor_neuron(motor_id=actuators[a], tau=.3)
+        
+        #add synapses
+        for s in SN:
+            sim.send_synapse(source_neuron_id = SN[s], target_neuron_id=MN[s], weight=1)
+
 class OneWeightPhaseOffset(ELEMENT):
 
     def __init__(self):
@@ -230,13 +285,7 @@ class OneWeightPhaseOffset(ELEMENT):
         Take the tree and boxes from the aggregate and construct the elements.
         '''
         
-        for parent in tree:
-            #modify parent coordinates to match real-space
-            rparent = parent[:2] + (float(format(parent[2] - lowest + .5, '.2f')),)
-            for child in tree[parent]:
-                #modify child coordinates to match real-space
-                rchild = child[:2]+ (float(format(child[2] - lowest + .5, '.2f')),)
-                self.send_element(sim, cubes[rchild], cubes[rparent], [rchild, rparent])
+        super().build_elements(sim, tree, cubes, lowest)
 
     def send_element(self, sim, box, parent, coords):
         '''
@@ -258,7 +307,7 @@ class OneWeightPhaseOffset(ELEMENT):
         cpg2 = sim.send_user_neuron(input_values = sin2)
 
         #manually build network
-        #add sensor neuron
+        #add input neurons
         SN = {}
         SN[0] = cpg1
         SN[1] = cpg2
@@ -272,47 +321,36 @@ class OneWeightPhaseOffset(ELEMENT):
         for s in SN:
             sim.send_synapse(source_neuron_id = SN[s], target_neuron_id=MN[s], weight=1)
 
-class FourWeightPhaseOffsetAmplitude(ELEMENT):
+class ThreeWeightPhaseOffsetFrequency(ELEMENT):
     
     def __init__(self):
-       '''
-       Create an element. Initialization does not differ from superclass.
-       '''
-       super().__init__((2,2))
-   
+    
+        super().__init__((3,1))
+        
     def build_elements(self, sim, tree, cubes, lowest):
-       '''
-       Take the tree and boxes from the aggregate and construct the elements.
-       '''
-       
-       for parent in tree:
-           #modify parent coordinates to match real-space
-           rparent = parent[:2] + (float(format(parent[2] - lowest + .5, '.2f')),)
-           for child in tree[parent]:
-               #modify child coordinates to match real-space
-               rchild = child[:2]+ (float(format(child[2] - lowest + .5, '.2f')),)
-               self.send_element(sim, cubes[rchild], cubes[rparent], [rchild, rparent])
-
+    
+        super().build_elements(sim, tree, cubes, lowest)
+        
     def send_element(self, sim, box, parent, coords):
-        '''
-        Use the current box being modified, the box it's being attached to, and the coordinates of those boxes (in that order) to build class-specific  joints, sensors, motors, etc on box.
-        Attach controller to that network.
-        '''
-
+        
         joints = self.build_universal_hinge(sim, box, parent, coords)
 
         actuators = {}
         for j in joints:
             actuators[j] = sim.send_rotary_actuator(joint_id = joints[j])
 
-        #input neurons
-        SN = {}
-        sin1 = np.linspace(0+self.controller[0,0]*math.pi, 2*math.pi+self.controller[0,0]*math.pi, 200)
-        sin2 = np.linspace(0+self.controller[1,0]*math.pi, 2*math.pi+self.controller[1,0]*math.pi, 200)
+        sin1 = np.linspace(0 + self.controller[0][0]*math.pi, 2*math.pi + self.controller[0][0]*math.pi, 200*(self.controller[1][0]+1))
         sin1 = np.sin(sin1)
+        sin2 = np.linspace(0, 2*math.pi, 200*(self.controller[2][0]+1))
         sin2 = np.sin(sin2)
-        SN[0] = sim.send_user_neuron(input_values = sin1)
-        SN[1] = sim.send_user_neuron(input_values = sin2)
+        cpg1 = sim.send_user_neuron(input_values = sin1)
+        cpg2 = sim.send_user_neuron(input_values = sin2)
+
+        #manually build network
+        #add input neurons
+        SN = {}
+        SN[0] = cpg1
+        SN[1] = cpg2
         
         #build the motors
         MN = {}
@@ -321,4 +359,4 @@ class FourWeightPhaseOffsetAmplitude(ELEMENT):
         
         #add synapses
         for s in SN:
-            sim.send_synapse(source_neuron_id = SN[s], target_neuron_id=MN[s], weight=self.controller[s,1])
+            sim.send_synapse(source_neuron_id = SN[s], target_neuron_id=MN[s], weight=1)
