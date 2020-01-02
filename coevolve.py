@@ -1,6 +1,7 @@
 from parallelpy.utils import Work, Letter
 from parallelpy import parallel_evaluate
 
+import math
 import constants as c
 import numpy as np
 import pyrosim
@@ -49,9 +50,7 @@ class COEVOLVE:
     elmts    : POPULATION instance
         Population of element objects
     '''
-
-    COOPERATIVE_MODE = 0
-    COMPETITIVE_MODE = 1
+    
     DT = 0.01
     TIME_STEPS = 1000
     def __init__(self, aggrs, elmts):
@@ -76,15 +75,8 @@ class COEVOLVE:
                 sim = pyrosim.Simulator(eval_steps=COEVOLVE.TIME_STEPS, play_blind=True, play_paused=False, dt=COEVOLVE.DT)
                 fit = aggr.evaluate(sim, self.elmts.p[i], idNum = [i,j])
                 self.elmts.p[j].scores.append(fit)
-        
-        for i in range(len(self.elmts.p)):
-            fit = np.mean(self.elmts.p[i].scores)
-            if c.DEBUG:
-                print("Element scores:",self.elmts.p[i].scores)
-                print("Element mean:",fit)
-            if (np.isnan(fit) or np.isinf(fit)):
-                fit = 0
-            self.elmts.p[i].fitness = fit
+                
+        self.calculate_fitness()
 
     def exhaustive(self):
         '''
@@ -113,15 +105,7 @@ class COEVOLVE:
 
             self.elmts.p[elmt_key].scores.append(fit)
 
-        print("averaging element fitnesses")
-        for i in range(len(self.elmts.p)):
-            fit = np.mean(self.elmts.p[i].scores)
-            if c.DEBUG:
-                print("Element scores:",self.elmts.p[i].scores)
-                print("Element mean:",fit)
-            if (np.isnan(fit) or np.isinf(fit)):
-                fit = 0
-            self.elmts.p[i].fitness = fit
+        self.calculate_fitness()
 
                 
     def random_subset(self, p=0.1):
@@ -166,20 +150,24 @@ class COEVOLVE:
             if (np.isnan(fit) or np.isinf(fit)):
                 fit = 0
             self.aggrs.p[j].fitness = fit
-            
-        #fitness of 0 if not selected at all (unlikely)    
+                
+    def calculate_fitness(self):
+        """
+        Each element's fitness is set to the average of the 5th percentile of its scores. If there are too few scores to take a 5th percentile, take the closest to it.
+        """
+    
         for i in range(len(self.elmts.p)):
             try:
-                fit = np.mean(self.elmts.p[i].scores)
-                if self.evolution_mode == COEVOLVE.COOPERATIVE_MODE:
-                    pass
-                elif self.evolution_mode == COEVOLVE.COMPETITIVE_MODE:
-                    fit *= -1
-                if (np.isnan(fit) or np.isinf(fit)):
-                    fit = 0
-                self.elmts.p[i].fitness = fit
-            except:
-                self.aggrs.p[i].fitness = 0
+                 self.elmts.p[i].scores.sort()
+                 fpi = math.ceil(len(self.elmts.p[i].scores)*.05)
+                 fit = sum(self.elmts.p[i].scores[0:fpi])
+                 if (np.isnan(fit) or np.isinf(fit)):
+                     fit = 0
+                 self.elmts.p[i].fitness = fit
+            except Exception as e:
+                print(e)
+                raise(e)
+                self.elmts.p[i].fitness = 0
                 
     def print_fitness(self):
         '''
