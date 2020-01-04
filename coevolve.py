@@ -30,7 +30,7 @@ class SIM(Work):
 
         sim = pyrosim.Simulator(eval_steps=COEVOLVE.TIME_STEPS, play_blind=True, play_paused=False, dt=COEVOLVE.DT)
         print("Simulating aggregate", self.aggregate_key, "with element", self.element_key)
-        self.fitness = self.aggregate.evaluate(sim, self.element, idNum=self.keys, debug=True)
+        self.fitness = self.aggregate.evaluate(sim, self.element, idNum=self.keys, debug=False)
         print("fitness of aggregate", self.aggregate_key, "and element", self.element_key, "retrieved")
 
     def write_letter(self):
