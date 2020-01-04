@@ -55,4 +55,4 @@ def main():
     # TODO: switch to use binary search. It will be much faster
     coevolve, gen = load_last_gen(pathToSavedGens, fileName)
 
-    coevolve[0].playback(play_all=True)
+    coevolve[0].playback(play_all=False)
