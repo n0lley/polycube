@@ -339,9 +339,9 @@ class ThreeWeightPhaseOffsetFrequency(ELEMENT):
         for j in joints:
             actuators[j] = sim.send_rotary_actuator(joint_id = joints[j])
 
-        sin1 = np.linspace(0 + self.controller[0][0]*math.pi, 2*math.pi + self.controller[0][0]*math.pi, 200*(self.controller[1][0]+1))
+        sin1 = np.linspace(0 + self.controller[0][0]*math.pi, 2*math.pi + self.controller[0][0]*math.pi, 200+(150*self.controller[1][0]))
         sin1 = np.sin(sin1)
-        sin2 = np.linspace(0, 2*math.pi, 200*(self.controller[2][0]+1))
+        sin2 = np.linspace(0, 2*math.pi, 200+(150*self.controller[2][0]))
         sin2 = np.sin(sin2)
         cpg1 = sim.send_user_neuron(input_values = sin1)
         cpg2 = sim.send_user_neuron(input_values = sin2)
