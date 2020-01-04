@@ -93,7 +93,7 @@ fig = plt.figure()
 ax = fig.add_subplot(1,1,1)
 plt.title("Average Fitness of Controllers for Fixed-Size Polycubes")
 
-colors = [np.random.random(size=3), np.random.random(size=3)]
+colors = [np.random.random(size=3), np.random.random(size=3), np.random.random(size=3), np.random.random(size=3)]
 avs = {}
 
 i=0
@@ -102,7 +102,6 @@ for eval in best:
     avs[eval] = np.empty((15, len(best[eval][111])))
     x = np.arange(len(best[eval][111]))
     print(best[eval][111][-1])
-    best[eval][111] -= c.SCALE/2
     best[eval][111]/=times[eval]
     print(best[eval][111][-1])
     best[eval][111]/=c.SCALE
