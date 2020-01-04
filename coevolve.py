@@ -195,18 +195,13 @@ class COEVOLVE:
         '''
 
         fit = 0
-        fit2 = -1
         eindex = 0
-        eindex2 = 0
         for j in range(len(self.elmts.p)):
             if abs(self.elmts.p[j].fitness) > abs(fit):
                 print("fit")
                 print(j)
                 fit = self.elmts.p[j].fitness
                 eindex = j
-            elif abs(self.elmts.p[j].fitness) > abs(fit2):
-                fit2 = self.elmts.p[j].fitness
-                eindex2 = j
 
         if play_all:
             for a in self.aggrs.p:
@@ -219,20 +214,17 @@ class COEVOLVE:
                     print("error")
                     pass
         else:
-
-            fit = 0
-            index = 0
             
-            for e in range(len(self.elmts.p)):
-                if self.elmts.p[e].fitness > fit:
-                    index = e
-                    fit = self.elmts.p[index].fitness
+            fit = 99999
+            aindex = -1
+            elmt = self.elmts.p[eindex]
+            
+            for i in range(len(elmt.scores)):
+                if elmt.scores[i] < fit:
+                    fit = elmt.scores[i]
+                    aindex = i
 
             aggr = self.aggrs.p[aindex]
-            aggr2 = self.aggrs.p[aindex2]
-            print(aindex, aindex2, index)
-            elmt = self.elmts.p[index]
-            sim = pyrosim.Simulator(eval_steps=1000, play_blind=False, play_paused=True, dt=.01, use_textures=False)
-            aggr.evaluate(sim, elmt, debug=True)
-            sim2 = pyrosim.Simulator(eval_steps=1000, play_blind=False, play_paused=True, dt=.01, use_textures=False)
-            aggr2.evaluate(sim2, elmt, debug=True)
+            print(aindex, eindex)
+            sim = pyrosim.Simulator(eval_steps=1000, play_blind=False, play_paused=True, dt=.01, use_textures=True)
+            aggr.evaluate(sim, elmt, debug=False)
