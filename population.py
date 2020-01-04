@@ -210,16 +210,16 @@ class FIXEDAGGPOP(POPULATION):
         #print(self.num_cubes)
         
         #load structures, if not already created
-        if os.path.exists("~/polycube/fixed_morphologies/%dcube.p"%num_cubes):
-            f = open("~/polycube/fixed_morphologies/%dcube.p"%num_cubes, 'rb')
+        if os.path.exists("../%dcube.p"%num_cubes):
+            print("population preloaded")
+            f = open("../%dcube.p"%num_cubes, 'rb')
             self.morph_list = pickle.load(f)
             f.close()
             
         else:
-            if not os.path.exists("~/polycube/fixed_morphologies/"):
-                os.makedirs("~/polycube/fixed_morphologies/")
+            print("enumerating population")
             self.morph_list = ep.get_polycubes_of_size(num_cubes)
-            f = open("~/polycube/fixed_morphologies/%dcube.p"%num_cubes, 'wb')
+            f = open("../%dcube.p"%num_cubes, 'wb')
             pickle.dump(self.morph_list, f)
             f.close()
         
