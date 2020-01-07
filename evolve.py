@@ -75,9 +75,12 @@ else:
     coevolve.print_fitness()
 
 for g in range(latestGen, GENS+1):
-
+    
     #create a child population
     parent = deepcopy(coevolve.elmts)
+    #reset all fitness values
+    coevolve.reset()
+    #mutate child population
     for i in range(len(coevolve.elmts.p)):
         coevolve.elmts.p[i].mutate()
     
@@ -87,13 +90,12 @@ for g in range(latestGen, GENS+1):
     #coevolve.non_MPI_exhaustive()
     t1 = time()
     
-    #Parents retake their children's place if they failed to outperform
+    #Simple hillclimber selection
     coevolve.elmts.hillclimber_selection(parent)
-
-    print('GENERATION %d' % g)
-    print("Simulation took: %.2f"%(t1-t0))
     
     #report fitness values
+    print('GENERATION %d' % g)
+    print("Simulation took: %.2f"%(t1-t0))
     coevolve.print_fitness()
 
     try:
@@ -109,8 +111,5 @@ for g in range(latestGen, GENS+1):
     
     except:
         print ("Error saving generation", g, "to file.")
-    
-    #resets all fitness values
-    coevolve.reset()
 
 parallel_evaluate.cleanup()
