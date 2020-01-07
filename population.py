@@ -181,7 +181,7 @@ class POPULATION:
     def Print(self):
         
         for i in range(len(self.p)):
-            print("[%d: %.4f]"%(i, self.p[i].fitness))
+            print("[%d: %f]"%(i, self.p[i].fitness), self.p[i].scores)
 
 class FIXEDAGGPOP(POPULATION):
     """
