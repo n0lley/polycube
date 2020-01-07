@@ -153,7 +153,7 @@ class COEVOLVE:
                 
     def calculate_fitness(self):
         """
-        Each element's fitness is set to the average of the 5th percentile of its scores. If there are too few scores to take a 5th percentile, take the closest to it.
+        Each element's fitness is set to the sum of the 5th percentile of its scores. If there are too few scores to take a 5th percentile, take the lowest.
         """
     
         for i in range(len(self.elmts.p)):
@@ -161,7 +161,7 @@ class COEVOLVE:
                  self.elmts.p[i].scores.sort()
                  fpi = math.ceil(len(self.elmts.p[i].scores)*.05)
                  fit = sum(self.elmts.p[i].scores[0:fpi])
-                 if (np.isnan(fit) or np.isinf(fit)):
+                 if (np.isnan(fit) or np.isinf(fit) or len(self.elmts.p[i].scores)==0):
                      fit = 0
                  self.elmts.p[i].fitness = fit
             except Exception as e:
@@ -175,7 +175,13 @@ class COEVOLVE:
         '''
 
         print('Best Element of',len(self.elmts.p),':')
-        print('\n', self.elmts.p[0].fitness)
+        best = 0
+        besti = 0
+        for i in range(len(self.elmts.p)):
+            if self.elmts.p[i].fitness > best:
+                best = self.elmts.p[i].fitness
+                besti = 0
+        print(besti, ":", best, self.elmts.p[besti].scores)
 
     def reset(self):
         '''
