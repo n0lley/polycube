@@ -94,12 +94,10 @@ ax = fig.add_subplot(1,1,1)
 plt.title("Average Fitness of Controllers for Fixed-Size Polycubes")
 
 colors = [np.random.random(size=3), np.random.random(size=3), np.random.random(size=3), np.random.random(size=3)]
-avs = {}
 
 i=0
 for eval in best:
     print(eval)
-    avs[eval] = np.empty((15, len(best[eval][111])))
     x = np.arange(len(best[eval][111]))
     print(best[eval][111][-1])
     best[eval][111]/=times[eval]
@@ -113,4 +111,3 @@ ax.set_ylabel("Displacement (cube lengths per minute)")
 ax.set_xlabel("Generations")
 ax.legend()
 plt.show()
-
