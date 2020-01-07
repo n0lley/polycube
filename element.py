@@ -38,7 +38,7 @@ class ELEMENT(INDIVIDUAL):
         '''
         reset fitness list
         '''
-        
+        self.fitness = 0
         self.scores = []
     
     def generate_random(self, dimensions):
