@@ -32,6 +32,7 @@ def find_best_fits(coevolve):
     for j in coevolve.elmts.p:
         if j.fitness > fit:
             fit = j.fitness
+            print(j.scores)
     best = fit
 
     return best
@@ -40,6 +41,7 @@ def coallate_best_fits(path, r=None):
     """
     Open up run r, return the highest fitnesses of each generation as a pair of lists
     """
+    print(path)
 
     currGen = 1
     runNumber = "run_%s"
@@ -93,7 +95,7 @@ fig = plt.figure()
 ax = fig.add_subplot(1,1,1)
 plt.title("Average Fitness of Controllers for Fixed-Size Polycubes")
 
-colors = [np.random.random(size=3), np.random.random(size=3), np.random.random(size=3), np.random.random(size=3)]
+colors = ["red", "blue", "green", "purple"]
 
 i=0
 for eval in best:
