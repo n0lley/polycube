@@ -67,7 +67,7 @@ if os.path.exists("./saved_generations/gen%d.p"%latestGen):
 else:
     print('GENERATION %d' % 0)
     t0 = time()
-    coevolve.exhaustive()
+    coevolve.non_MPI_exhaustive()
     t1 = time()
     print("Simulation took: %.2f" % (t1 - t0))
 
@@ -83,7 +83,7 @@ for g in range(latestGen, GENS+1):
     #evaluation
     t0 = time()
     #coevolve.exhaustive()
-    coevolve.exhaustive()
+    coevolve.non_MPI_exhaustive()
     t1 = time()
     
     #Parents retake their children's place if they failed to outperform
@@ -105,10 +105,10 @@ for g in range(latestGen, GENS+1):
         saveState[1] = np.random.get_state()
         pickle.dump(saveState, f)
         f.close()
-        
+    
     except:
         print ("Error saving generation", g, "to file.")
-
+    
     #resets all fitness values
     coevolve.reset()
 
