@@ -360,3 +360,43 @@ class ThreeWeightPhaseOffsetFrequency(ELEMENT):
         #add synapses
         for s in SN:
             sim.send_synapse(source_neuron_id = SN[s], target_neuron_id=MN[s], weight=1)
+
+class FiveWeightPhaseFrequencyAmplitude(ELEMENT):
+        
+    def __init__(self):
+
+        super().__init__((5,1))
+        
+    def build_elements(self, sim, tree, cubes, lowest):
+
+        super().build_elements(sim, tree, cubes, lowest)
+        
+    def send_element(self, sim, box, parent, coords):
+        
+        joints = self.build_universal_hinge(sim, box, parent, coords)
+
+        actuators = {}
+        for j in joints:
+            actuators[j] = sim.send_rotary_actuator(joint_id = joints[j])
+
+        sin1 = np.linspace(0 + self.controller[0][0]*math.pi, 2*math.pi + self.controller[0][0]*math.pi, 200+(150*self.controller[1][0]))
+        sin1 = np.sin(sin1)
+        sin2 = np.linspace(0, 2*math.pi, 200+(150*self.controller[2][0]))
+        sin2 = np.sin(sin2)
+        cpg1 = sim.send_user_neuron(input_values = sin1)
+        cpg2 = sim.send_user_neuron(input_values = sin2)
+
+        #manually build network
+        #add input neurons
+        SN = {}
+        SN[0] = cpg1
+        SN[1] = cpg2
+        
+        #build the motors
+        MN = {}
+        for a in actuators:
+            MN[a] = sim.send_motor_neuron(motor_id=actuators[a], tau=.3)
+        
+        #add synapses
+        for s in SN:
+            sim.send_synapse(source_neuron_id = SN[s], target_neuron_id=MN[s], weight=self.controller[3+s][0])
