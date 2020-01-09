@@ -93,7 +93,7 @@ best, times = analyze_data(datapath)
 
 fig = plt.figure()
 ax = fig.add_subplot(1,1,1)
-plt.title("Average Fitness of Controllers for Fixed-Size Polycubes")
+plt.title("Fitness of Controllers for Fixed-Size Polycubes")
 
 colors = ["red", "blue", "green", "purple"]
 
