@@ -64,7 +64,7 @@ if os.path.exists("./saved_generations/gen%d.p"%latestGen):
     np.random.set_state(seed)
     f.close()
     print("Beginning at Generation", latestGen-1)
-timetotal = time()
+
 else:
     print('GENERATION %d' % 0)
     t0 = time()
@@ -74,6 +74,8 @@ else:
     print("Simulation took: %.2f" % (t1 - t0))
 
     coevolve.print_fitness()
+
+timetotal = time()
 
 for g in range(latestGen, GENS+1):
     
