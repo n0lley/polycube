@@ -64,7 +64,7 @@ if os.path.exists("./saved_generations/gen%d.p"%latestGen):
     np.random.set_state(seed)
     f.close()
     print("Beginning at Generation", latestGen-1)
-
+timetotal = time()
 else:
     print('GENERATION %d' % 0)
     t0 = time()
@@ -114,3 +114,4 @@ for g in range(latestGen, GENS+1):
         print ("Error saving generation", g, "to file.")
 
 parallel_evaluate.cleanup()
+print("total runtime:", time()-timetotal)
