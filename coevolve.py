@@ -73,7 +73,7 @@ class COEVOLVE:
             for i in range(len(self.aggrs.p)):
                 aggr = self.aggrs.p[i]
                 sim = pyrosim.Simulator(eval_steps=COEVOLVE.TIME_STEPS, play_blind=True, play_paused=False, dt=COEVOLVE.DT)
-                fit = aggr.evaluate(sim, self.elmts.p[i], idNum = [i,j])
+                fit = aggr.evaluate(sim, self.elmts.p[j], idNum = [i,j])
                 self.elmts.p[j].scores.append(fit)
                 
         self.calculate_fitness()
