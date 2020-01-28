@@ -78,23 +78,18 @@ else:
 timetotal = time()
 
 for g in range(latestGen, GENS+1):
+
+    #afpo selection
+    coevolve.elmts.afpo_selection()
     
-    #create a child population
-    parent = deepcopy(coevolve.elmts)
-    #reset all fitness values
+    #reset fitnesses
     coevolve.reset()
-    #mutate child population
-    for i in range(len(coevolve.elmts.p)):
-        coevolve.elmts.p[i].mutate()
     
-    #evaluation
+    #evaluation of new pop
     t0 = time()
     coevolve.exhaustive()
     #coevolve.non_MPI_exhaustive()
     t1 = time()
-    
-    #Simple hillclimber selection
-    coevolve.elmts.hillclimber_selection(parent)
     
     #report fitness values
     print('GENERATION %d' % g)
