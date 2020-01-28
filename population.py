@@ -7,7 +7,14 @@ import networkx as nx #for enumerating polycube trees
 import enumeratePolycubes as ep
 
 from individual import INDIVIDUAL
+    
+def dominates(a, b):
+    if a.fitness < b.fitness or a.age > b.age:
+        return False
 
+    if a.fitness > b.fitness or a.age < b.age:
+        return True
+        
 class POPULATION:
     """
     Handles evolutionary methods for the given object
@@ -121,7 +128,9 @@ class POPULATION:
         #replace current pop with new pop
         self.p = deepcopy(newpop)
         del newpop
-                
+
+        return a.id < b.id
+        
     def afpo_selection(self):
         """
         AFPO for genetic evolution
@@ -151,7 +160,7 @@ class POPULATION:
         # expand the population
         initial_size = len(self.p)
         while len(self.p) < self.popSize:
-            parent_index = np.random.randrange(0, initial_size)
+            parent_index = np.random.randint(0, initial_size)
             new_indv = deepcopy(self.p[parent_index])
             new_indv.mutate()
             self.p.append(new_indv)
@@ -168,15 +177,6 @@ class POPULATION:
             if not dominated:
                 dom_ind.append(self.p[s])
         return sorted(dom_ind, key=lambda x: x.age)
-
-    def dominates(a, b):
-        if a.fitness < b.fitness or a.age > b.age:
-            return False
-
-        if a.fitness > b.fitness or a.age < b.age:
-            return True
-
-        return a.id < b.id
         
     def Print(self):
         
