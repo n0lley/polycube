@@ -9,11 +9,11 @@ import enumeratePolycubes as ep
 from individual import INDIVIDUAL
     
 def dominates(a, b):
-    if a.fitness < b.fitness or a.age > b.age:
-        return False
-
-    if a.fitness > b.fitness or a.age < b.age:
+    if a.fitness > b.fitness and a.age < b.age:
         return True
+    
+    else:
+        return False
         
 class POPULATION:
     """
