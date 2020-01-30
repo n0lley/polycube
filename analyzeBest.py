@@ -32,7 +32,6 @@ def find_best_fits(coevolve):
     for j in coevolve.elmts.p:
         if j.fitness > fit:
             fit = j.fitness
-            print(j.scores)
     best = fit
 
     return best
@@ -99,13 +98,10 @@ colors = ["red", "blue", "green", "purple"]
 
 i=0
 for eval in best:
-    print(eval)
+    print(eval, best[eval][111][-1])
     x = np.arange(len(best[eval][111]))
-    print(best[eval][111][-1])
     best[eval][111]/=times[eval]
-    print(best[eval][111][-1])
     best[eval][111]/=c.SCALE
-    print(best[eval][111][-1])
     ax.plot(x, best[eval][111], color=colors[i], label=eval)
     i += 1
 
