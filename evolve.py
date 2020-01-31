@@ -64,7 +64,6 @@ if os.path.exists("./saved_generations/gen%d.p"%latestGen):
     np.random.set_state(seed)
     f.close()
     print("Beginning at Generation", latestGen-1)
-
 else:
     print('GENERATION %d' % 0)
     t0 = time()
@@ -78,18 +77,24 @@ else:
 timetotal = time()
 
 for g in range(latestGen, GENS+1):
-
-    #afpo selection
-    coevolve.elmts.afpo_selection()
     
-    #reset fitnesses
+    #create a parent population
+    parent = deepcopy(coevolve.elmts)
+    
+    #reset children's fitness values
     coevolve.reset()
+    #mutate child population
+    for i in range(len(coevolve.elmts.p)):
+        coevolve.elmts.p[i].mutate()
     
-    #evaluation of new pop
+    #evaluation
     t0 = time()
     coevolve.exhaustive()
     #coevolve.non_MPI_exhaustive()
     t1 = time()
+    
+    #Simple hillclimber selection
+    coevolve.elmts.hillclimber_selection(parent)
     
     #report fitness values
     print('GENERATION %d' % g)
