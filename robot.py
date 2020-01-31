@@ -7,20 +7,27 @@ from aggregate import AGGREGATE
 import element
 import population
 
-#np.random.seed(0)
+np.random.seed(111)
 
-elements = population.POPULATION(element.OneWeightPhaseOffset)
-
-apop = population.FIXEDAGGPOP(AGGREGATE, 3)
-apop.initialize()
-elements.initialize()
-
-sim = pyrosim.Simulator(eval_steps = 1000, play_blind=True, play_paused=False, dt=.01)
-
-f = open("data/3cube/saved_generations/gen200.p", 'rb')
+f = open("data/afpo/5WPFA/2cube/saved_generations/gen200.p", 'rb')
 gen = pickle.load(f)
 f.close()
 co = gen[0]
-co.non_MPI_exhaustive()
 
-#print(sim.get_debug_output())
+fit = 0
+beste = None
+for e in co.elmts.p:
+    if e.fitness > fit:
+        fit = e.fitness
+        beste = e
+        
+scores = []
+for a in co.aggrs.p:
+    sim = pyrosim.Simulator(eval_steps = 1000, play_blind=True, play_paused=False, dt=.01)
+    scores.append(a.evaluate(sim, beste, [0,0]))
+    print(len(scores))
+    
+scores.sort()
+fpi = math.ceil(len(scores)*.05)
+print(scores[0:fpi])
+print(beste.scores[0:fpi])
