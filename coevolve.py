@@ -158,14 +158,13 @@ class COEVOLVE:
     
         for i in range(len(self.elmts.p)):
             try:
-                 self.elmts.p[i].scores.sort()
+                 print(self.elmts.p[i].scores)
                  fpi = math.ceil(len(self.elmts.p[i].scores)*.05)
                  fit = sum(self.elmts.p[i].scores[0:fpi])/float(fpi)
                  if (np.isnan(fit) or np.isinf(fit) or len(self.elmts.p[i].scores)==0):
                      fit = 0
                  self.elmts.p[i].fitness = fit
-                 if [self.elmts.p[i].fitness] != self.elmts.p[i].scores[0:fpi]:
-                    print(fit, self.elmts.p[i].scores[0:fpi])
+                 print(fit, self.elmts.p[i].scores)
             except Exception as e:
                 print(e)
                 raise(e)

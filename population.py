@@ -95,7 +95,9 @@ class POPULATION:
         hill climber selection for genetic evolution
         :return: None
         """
-        
+        parent.Print()
+        print("_____________________________________________________")
+        self.Print()
         for i in range(len(parent.p)):
             if parent.p[i].fitness > self.p[i].fitness:
                 self.p[i] = deepcopy(parent.p[i])
