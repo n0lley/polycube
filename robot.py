@@ -9,7 +9,7 @@ import population
 
 np.random.seed(111)
 
-f = open("data/afpo/5WPFA/2cube/saved_generations/gen200.p", 'rb')
+f = open("saved_generations/gen20.p", 'rb')
 gen = pickle.load(f)
 f.close()
 co = gen[0]
@@ -29,5 +29,5 @@ for a in co.aggrs.p:
     
 scores.sort()
 fpi = math.ceil(len(scores)*.05)
-print(scores[0:fpi])
-print(beste.scores[0:fpi])
+print(scores)
+print(beste.scores)
