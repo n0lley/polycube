@@ -17,6 +17,7 @@ co = gen[0]
 fit = 0
 beste = None
 for e in co.elmts.p:
+    print(e.scores)
     if e.fitness > fit:
         fit = e.fitness
         beste = e
