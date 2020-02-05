@@ -25,4 +25,10 @@ co.exhaustive()
 
 co.elmts.Print()
 
+co.reset()
+
+co.non_MPI_exhaustive()
+
+co.elmts.Print()
+
 parallel_evaluate.cleanup()
