@@ -9,6 +9,8 @@ import population
 
 np.random.seed(111)
 
+parallel_evaluate.setup(parallel_evaluate.PARALLEL_MODE_MPI_INTER)
+
 f = open("saved_generations/gen200.p", 'rb')
 gen = pickle.load(f)
 f.close()
@@ -21,3 +23,5 @@ co.reset()
 co.exhaustive()
 
 co.elmts.Print()
+
+parallel_evaluate.cleanup()
