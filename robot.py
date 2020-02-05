@@ -14,10 +14,10 @@ gen = pickle.load(f)
 f.close()
 co = gen[0]
 
-co.elmts.p.Print()
+co.elmts.Print()
 
 co.reset()
 
 co.exhaustive()
 
-co.elmts.p.Print()
+co.elmts.Print()
