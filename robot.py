@@ -6,6 +6,7 @@ import constants as c
 from aggregate import AGGREGATE
 import element
 import population
+from parallelpy import parallel_evaluate
 
 np.random.seed(111)
 
