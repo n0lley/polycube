@@ -17,8 +17,8 @@ from time import time
 #Comment out whichever element types are not in use
 elementTypes = [
     #element.OneWeightPhaseOffset
-    element.ThreeWeightPhaseOffsetFrequency
-    #element.FiveWeightPhaseFrequencyAmplitude
+    #element.ThreeWeightPhaseOffsetFrequency
+    element.FiveWeightPhaseFrequencyAmplitude
     ]
 
 N = c.POPSIZE
