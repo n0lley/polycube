@@ -29,10 +29,10 @@ def find_best_fits(coevolve):
     find the fitnesses of the most fit aggregate and element in a population
     """
     fit = 0
+    beste = None
     for j in coevolve.elmts.p:
         if j.fitness > fit:
             fit = j.fitness
-            print(j.scores)
     best = fit
 
     return best
