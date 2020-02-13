@@ -10,8 +10,8 @@ from individual import INDIVIDUAL
     
 def dominates(a, b):
     if a.fitness > b.fitness and a.age < b.age:
+        print(a.fitness, a.scores, "dominates", b.fitness, b.scores)
         return True
-    
     else:
         return False
         
@@ -145,9 +145,9 @@ class POPULATION:
         """
         # increment ages
         for i in range(len(self.p)):
-            print(self.p[i].age, end='->')
+            #print(self.p[i].age, end='->')
             self.p[i].increment_age()
-            print(self.p[i].age)
+            #print(self.p[i].age)
 
         # contract the population to non-dominated individuals
         dom_ind = []
