@@ -95,10 +95,17 @@ class POPULATION:
         hill climber selection for genetic evolution
         :return: None
         """
-        
+        print("Parents:")
+        parent.Print()
+        print("_____________________________________________________")
+        print("Children:")
+        self.Print()
         for i in range(len(parent.p)):
             if parent.p[i].fitness > self.p[i].fitness:
                 self.p[i] = deepcopy(parent.p[i])
+                print(i, "failed to outperform its parent")
+        print("New Pop:")
+        self.Print()
           
     def tournament_selection(self):
         """
@@ -181,6 +188,7 @@ class POPULATION:
     def Print(self):
         
         for i in range(len(self.p)):
+            self.p[i].scores.sort()
             print("[%d: %f]"%(i, self.p[i].fitness), self.p[i].scores)
 
 class FIXEDAGGPOP(POPULATION):
