@@ -29,9 +29,9 @@ class SIM(Work):
     def compute_work(self, serial=False):
 
         sim = pyrosim.Simulator(eval_steps=COEVOLVE.TIME_STEPS, play_blind=True, play_paused=False, dt=COEVOLVE.DT)
-        print("Simulating aggregate", self.aggregate_key, "with element", self.element_key)
+        #print("Simulating aggregate", self.aggregate_key, "with element", self.element_key)
         self.fitness = self.aggregate.evaluate(sim, self.element, idNum=self.keys, debug=False)
-        print("fitness of aggregate", self.aggregate_key, "and element", self.element_key, "retrieved")
+        #print("fitness of aggregate", self.aggregate_key, "and element", self.element_key, "retrieved")
 
     def write_letter(self):
         return Letter((self.fitness, self.aggregate_key, self.element_key), None)
@@ -95,7 +95,7 @@ class COEVOLVE:
         print("Simulating %d robots" % len(work_to_complete))
         parallel_evaluate.batch_complete_work(work_to_complete)
         
-        print("appending fitnesses")
+        #print("appending fitnesses")
         for work in work_to_complete:
             aggr_key = work.aggregate_key
             elmt_key = work.element_key
@@ -160,12 +160,11 @@ class COEVOLVE:
             try:
                  self.elmts.p[i].scores.sort()
                  fpi = math.ceil(len(self.elmts.p[i].scores)*.05)
-                 fit = sum(self.elmts.p[i].scores[0:fpi])/float(fpi)
+                 fit = sum(self.elmts.p[i].scores[0:fpi])/fpi
                  if (np.isnan(fit) or np.isinf(fit) or len(self.elmts.p[i].scores)==0):
                      fit = 0
                  self.elmts.p[i].fitness = fit
-                 if [self.elmts.p[i].fitness] != self.elmts.p[i].scores[0:fpi]:
-                    print(fit, self.elmts.p[i].scores[0:fpi])
+                 print(fit, self.elmts.p[i].scores)
             except Exception as e:
                 print(e)
                 raise(e)
