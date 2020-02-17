@@ -5,12 +5,14 @@ from copy import deepcopy
 import os
 import networkx as nx #for enumerating polycube trees
 import enumeratePolycubes as ep
+import math
 
 from individual import INDIVIDUAL
     
 def dominates(a, b):
     if a.fitness > b.fitness and a.age < b.age:
-        print(a.fitness, a.scores, "dominates", b.fitness, b.scores)
+        fpi = math.ceil(len(a.scores)*.05)
+        print(a.fitness, a.scores[0:fpi], "dominates", b.fitness, b.scores[0:fpi])
         return True
     else:
         return False
@@ -145,9 +147,9 @@ class POPULATION:
         """
         # increment ages
         for i in range(len(self.p)):
-            #print(self.p[i].age, end='->')
+            print(self.p[i].age, end='->')
             self.p[i].increment_age()
-            #print(self.p[i].age)
+            print(self.p[i].age)
 
         # contract the population to non-dominated individuals
         dom_ind = []
@@ -159,9 +161,9 @@ class POPULATION:
                     break
             if not dominated:
                 dom_ind.append(self.p[s])
-        self.p = dom_ind
+        self.p = deepcopy(dom_ind)
 
-        # add new RANDOM student
+        # add new RANDOM individual
         self.p.append(self.ind())
 
         # expand the population

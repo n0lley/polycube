@@ -182,7 +182,9 @@ class COEVOLVE:
             if self.elmts.p[i].fitness > best:
                 best = self.elmts.p[i].fitness
                 besti = i
-        print(besti, ":", best, self.elmts.p[besti].scores)
+        
+        fpi = math.ceil(len(self.elmts.p[besti].scores)*.05)
+        print(besti, ":", best, self.elmts.p[besti].scores[0:fpi])
 
     def reset(self):
         '''
