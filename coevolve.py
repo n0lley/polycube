@@ -160,9 +160,9 @@ class COEVOLVE:
         for i in range(len(self.elmts.p)):
             try:
                  self.elmts.p[i].scores.sort()
-                 fifth_percentile = scores[0:self.fpi]
+                 fifth_percentile = self.elmts.p[i].scores[0:self.fpi]
                  while len(fifth_percentile) != self.fpi:
-                    fifth_percentile = scores[0:self.fpi]
+                    fifth_percentile = self.elmts.p[i].scores[0:self.fpi]
                  fit = sum(fifth_percentile)/self.fpi
                  if (np.isnan(fit) or np.isinf(fit) or len(self.elmts.p[i].scores)==0):
                      fit = 0
