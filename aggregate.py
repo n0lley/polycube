@@ -128,7 +128,7 @@ class AGGREGATE(INDIVIDUAL):
         if c.DEBUG:
             print("Cube added at", child)
         
-    def evaluate(self, sim, elmt, idNum=[0,0], debug=False, secondChance=True):
+    def evaluate(self, sim, elmt, idNum=[0,0], debug=False):
         '''
         calls send_to_sim and
             calculate_displacement
@@ -139,18 +139,17 @@ class AGGREGATE(INDIVIDUAL):
             self.send_to_sim(sim, elmt)
             if debug:
                 print(idNum, "sent to sim")
+            simcopy = sim
             sim.start(idNum=idNum)
             sim.wait_to_finish()
             if debug:
                 print(idNum, "sim complete")
             return self.calculate_displacement(sim)
         except Exception as e:
-            if secondChance:
-                return self.evaluate(self, sim=sim, elmt=elmt, idNum=idNum, debug=debug, secondChance=False)
             if debug:
                 print(e)
                 raise e
-            return 0
+            return self.evaluate(self, sim=simcopy, elmt=elmt, idNum=idNum, debug=debug)
         
     def reset(self):
         '''
