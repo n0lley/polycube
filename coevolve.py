@@ -24,14 +24,14 @@ class SIM(Work):
         self.element = element
         self.element_key = element_key
         self.keys = [aggregate_key,element_key]
-        self.fitness = None
+        self.fitness = -1
 
     def compute_work(self, serial=False):
-
-        sim = pyrosim.Simulator(eval_steps=COEVOLVE.TIME_STEPS, play_blind=True, play_paused=False, dt=COEVOLVE.DT)
-        #print("Simulating aggregate", self.aggregate_key, "with element", self.element_key)
-        self.fitness = self.aggregate.evaluate(sim, self.element, idNum=self.keys, debug=False)
-        #print("fitness of aggregate", self.aggregate_key, "and element", self.element_key, "retrieved")
+        while self.fitness < 0:
+          sim = pyrosim.Simulator(eval_steps=COEVOLVE.TIME_STEPS, play_blind=True, play_paused=False, dt=COEVOLVE.DT)
+          #print("Simulating aggregate", self.aggregate_key, "with element", self.element_key)
+          self.fitness = self.aggregate.evaluate(sim, self.element, idNum=self.keys, debug=False)
+          #print("fitness of aggregate", self.aggregate_key, "and element", self.element_key, "retrieved")
 
     def write_letter(self):
         return Letter((self.fitness, self.aggregate_key, self.element_key), None)

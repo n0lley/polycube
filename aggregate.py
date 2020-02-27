@@ -136,7 +136,6 @@ class AGGREGATE(INDIVIDUAL):
         if debug:
             print(type(elmt))
         try:
-            simcopy = sim
             self.send_to_sim(sim, elmt)
             if debug:
                 print(idNum, "sent to sim")
@@ -144,14 +143,14 @@ class AGGREGATE(INDIVIDUAL):
             sim.wait_to_finish()
             if debug:
                 print(idNum, "sim complete")
-            1 - "asdf" + []
-            return self.calculate_displacement(sim)
+            fit = self.calculate_displacement(sim)
+            return fit
         except Exception as e:
             print(e)
             if debug:
                 print(e)
                 raise e
-            return self.evaluate(self, sim=simcopy, elmt=elmt, idNum=idNum, debug=debug)
+            return -1
         
     def reset(self):
         '''
