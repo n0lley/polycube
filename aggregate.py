@@ -146,6 +146,7 @@ class AGGREGATE(INDIVIDUAL):
                 print(idNum, "sim complete")
             return self.calculate_displacement(sim)
         except Exception as e:
+            print(e)
             if debug:
                 print(e)
                 raise e
