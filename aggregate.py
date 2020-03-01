@@ -143,12 +143,14 @@ class AGGREGATE(INDIVIDUAL):
             sim.wait_to_finish()
             if debug:
                 print(idNum, "sim complete")
-            return self.calculate_displacement(sim)
+            fit = self.calculate_displacement(sim)
+            return fit
         except Exception as e:
+            print(e)
             if debug:
                 print(e)
                 raise e
-            return 0
+            return -1
         
     def reset(self):
         '''
