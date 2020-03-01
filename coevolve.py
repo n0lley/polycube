@@ -24,14 +24,14 @@ class SIM(Work):
         self.element = element
         self.element_key = element_key
         self.keys = [aggregate_key,element_key]
-        self.fitness = None
+        self.fitness = -1
 
     def compute_work(self, serial=False):
-
-        sim = pyrosim.Simulator(eval_steps=COEVOLVE.TIME_STEPS, play_blind=True, play_paused=False, dt=COEVOLVE.DT)
-        #print("Simulating aggregate", self.aggregate_key, "with element", self.element_key)
-        self.fitness = self.aggregate.evaluate(sim, self.element, idNum=self.keys, debug=False)
-        #print("fitness of aggregate", self.aggregate_key, "and element", self.element_key, "retrieved")
+        while self.fitness < 0:
+          sim = pyrosim.Simulator(eval_steps=COEVOLVE.TIME_STEPS, play_blind=True, play_paused=False, dt=COEVOLVE.DT)
+          #print("Simulating aggregate", self.aggregate_key, "with element", self.element_key)
+          self.fitness = self.aggregate.evaluate(sim, self.element, idNum=self.keys, debug=False)
+          #print("fitness of aggregate", self.aggregate_key, "and element", self.element_key, "retrieved")
 
     def write_letter(self):
         return Letter((self.fitness, self.aggregate_key, self.element_key), None)
@@ -60,6 +60,7 @@ class COEVOLVE:
         
         self.aggrs = aggrs
         self.elmts = elmts
+        self.fpi = math.ceil(len(self.aggrs.p)*.05)
         
     def non_MPI_exhaustive(self):
         """
@@ -159,12 +160,14 @@ class COEVOLVE:
         for i in range(len(self.elmts.p)):
             try:
                  self.elmts.p[i].scores.sort()
-                 fpi = math.ceil(len(self.elmts.p[i].scores)*.05)
-                 fit = sum(self.elmts.p[i].scores[0:fpi])/fpi
+                 fifth_percentile = self.elmts.p[i].scores[0:self.fpi]
+                 while len(fifth_percentile) != self.fpi:
+                    fifth_percentile = self.elmts.p[i].scores[0:self.fpi]
+                 fit = sum(fifth_percentile)/self.fpi
                  if (np.isnan(fit) or np.isinf(fit) or len(self.elmts.p[i].scores)==0):
                      fit = 0
                  self.elmts.p[i].fitness = fit
-                 print(fit, self.elmts.p[i].scores)
+                 print(fit, fifth_percentile)
             except Exception as e:
                 print(e)
                 raise(e)
@@ -182,7 +185,9 @@ class COEVOLVE:
             if self.elmts.p[i].fitness > best:
                 best = self.elmts.p[i].fitness
                 besti = i
-        print(besti, ":", best, self.elmts.p[besti].scores)
+        
+        fpi = math.ceil(len(self.elmts.p[besti].scores)*.05)
+        print(besti, ":", best, self.elmts.p[besti].scores[0:fpi])
 
     def reset(self):
         '''
