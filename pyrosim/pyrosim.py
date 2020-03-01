@@ -272,7 +272,7 @@ class Simulator(_body.Mixin,
         
         self._send_simulator_parameters()
         i=0
-        self.outFileName = "/outfile%d%d.txt"%(idNum[0], idNum[1])
+        self.outFileName = "/outfile%d-%d.txt"%(idNum[0], idNum[1])
         
             
         f = open(self._simulator_path + self.outFileName, 'w')
