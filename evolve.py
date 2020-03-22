@@ -5,8 +5,8 @@ from element import ELEMENT
 import constants as c
 import element
 
-from parallelpy import parallel_evaluate
 import numpy as np
+import random
 import pickle
 import os
 import sys
@@ -29,6 +29,7 @@ assert len(sys.argv) > 3, "Please run as python evolve.py <SEED> <NUM_CUBES> <NA
 try:
     seed = int(sys.argv[1])
     np.random.seed(seed)
+    random.seed(seed)
     
 except:
     raise Exception("Please give a seed as an int.")
@@ -38,8 +39,6 @@ try:
     
 except:
     raise Exception("Please give the polycube size as an int")
-    
-parallel_evaluate.setup(parallel_evaluate.PARALLEL_MODE_MPI_INTER)
 
 def GetNewElement():
     return np.random.choice(elementTypes)
@@ -60,41 +59,33 @@ if os.path.exists("./saved_generations/gen%d.p"%latestGen):
     f = open("./saved_generations/gen%d.p"%(latestGen-1), 'rb')
     saveState = pickle.load(f)
     coevolve = saveState[0]
-    seed = saveState[1]
-    np.random.set_state(seed)
+    npseed = saveState[1]
+    np.random.set_state(npseed)
+    rseed = saveState[2]
+    random.getstate(rseed)
     f.close()
     print("Beginning at Generation", latestGen-1)
-
-else:
-    print('GENERATION %d' % 0)
-    t0 = time()
-    coevolve.exhaustive()
-    #coevolve.non_MPI_exhaustive()
-    t1 = time()
-    print("Simulation took: %.2f" % (t1 - t0))
-
-    coevolve.print_fitness()
 
 timetotal = time()
 
 for g in range(latestGen, GENS+1):
 
-    #afpo selection
-    coevolve.elmts.afpo_selection()
-    
-    #reset fitnesses
-    coevolve.reset()
-    
     #evaluation of new pop
     t0 = time()
     coevolve.exhaustive()
-    #coevolve.non_MPI_exhaustive()
     t1 = time()
+
+    #afpo selection
+    coevolve.elmts.afpo_selection()
     
     #report fitness values
     print('GENERATION %d' % g)
     print("Simulation took: %.2f"%(t1-t0))
     coevolve.print_fitness()
+    
+    #reset fitnesses
+    coevolve.reset()
+    
 
     try:
         if not os.path.exists('./saved_generations/'):
@@ -104,11 +95,11 @@ for g in range(latestGen, GENS+1):
         saveState = {}
         saveState[0] = coevolve
         saveState[1] = np.random.get_state()
+        saveState[2] = random.getstate()
         pickle.dump(saveState, f)
         f.close()
     
     except:
         print ("Error saving generation", g, "to file.")
 
-parallel_evaluate.cleanup()
 print("total runtime:", time()-timetotal)

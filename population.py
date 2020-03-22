@@ -55,6 +55,7 @@ class POPULATION:
         self.ind = ind
         self.popSize = pop_size
         self.unique = unique
+        self.pfront = []
 
         self.p = [None] * self.popSize
         self.fits = {}
@@ -74,15 +75,6 @@ class POPULATION:
             else:
                 self.p[i] = deepcopy(self.p[0])
                 self.p[i].mutate()
-                
-    def evaluate(self):
-        """
-        evaluates each individual in the population
-        :return: None
-        """
-        for i in range(len(self.p)):
-            self.p[i].evaluate()
-            self.fits[i] = self.p[i].fitness
             
     def reset(self):
         """
@@ -145,32 +137,41 @@ class POPULATION:
         AFPO for genetic evolution
         :return: None
         """
-        # increment ages
+        # increment ages in child and pareto front pops
         for i in range(len(self.p)):
-            print(self.p[i].age, end='->')
+            #print(self.p[i].age, end='->')
             self.p[i].increment_age()
-            print(self.p[i].age)
+            #print(self.p[i].age)
+        
+        for i in range(len(self.pfront)):
+            #print(self.p[i].age, end='->')
+            self.pfront[i].increment_age()
+            #print(self.p[i].age)
 
-        # contract the population to non-dominated individuals
         dom_ind = []
-        for s in range(len(self.p)):
+        #combine existing front pop with child pop, determine new front
+        wholepop = self.p + self.pfront
+        for s in range(len(wholepop)):
             dominated = False
-            for t in range(len(self.p)):
-                if dominates(self.p[t], self.p[s]):
+            for t in range(len(wholepop)):
+                if dominates(wholepop[t], wholepop[s]):
                     dominated = True
                     break
             if not dominated:
-                dom_ind.append(self.p[s])
-        self.p = deepcopy(dom_ind)
+                dom_ind.append(wholepop[s])
+        #save new pareto front and clear the child population
+        self.pfront = deepcopy(dom_ind)
+        self.p = []
 
         # add new RANDOM individual
         self.p.append(self.ind())
 
         # expand the population
-        initial_size = len(self.p)
+        initial_size = len(self.pfront)
         while len(self.p) < self.popSize:
+            #pick a random dominant individual. Copy, mutate, and add to the child population
             parent_index = np.random.randint(0, initial_size)
-            new_indv = deepcopy(self.p[parent_index])
+            new_indv = deepcopy(self.pfront[parent_index])
             new_indv.mutate()
             self.p.append(new_indv)
 
