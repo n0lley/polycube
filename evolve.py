@@ -69,6 +69,9 @@ if os.path.exists("./saved_generations/gen%d.p"%latestGen):
 timetotal = time()
 
 for g in range(latestGen, GENS+1):
+    
+    #reset fitnesses
+    coevolve.reset()
 
     #evaluation of new pop
     t0 = time()
@@ -82,10 +85,6 @@ for g in range(latestGen, GENS+1):
     print('GENERATION %d' % g)
     print("Simulation took: %.2f"%(t1-t0))
     coevolve.print_fitness()
-    
-    #reset fitnesses
-    coevolve.reset()
-    
 
     try:
         if not os.path.exists('./saved_generations/'):
