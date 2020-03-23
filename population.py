@@ -10,7 +10,7 @@ import math
 from individual import INDIVIDUAL
     
 def dominates(a, b):
-    if a.fitness > b.fitness and a.age < b.age:
+    if a.fitness > b.fitness and a.age <= b.age:
         fpi = math.ceil(len(a.scores)*.05)
         print(a.fitness, a.scores[0:fpi], "dominates", b.fitness, b.scores[0:fpi])
         return True
