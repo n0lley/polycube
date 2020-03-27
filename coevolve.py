@@ -12,7 +12,7 @@ class SIM(Work):
     Wrapper for a simulation instance which allows us to parallelize the simulation of aggregates and elements
     across a cluster of computers.
     """
-    def __init__(self, aggregate, aggregate_key, element, element_key):
+    def __init__(self, aggregate, aggregate_key, element, element_key, seed):
         """
         :param aggregate: The instance of the aggregate
         :param aggregate_key: The key of the aggregate in the dict of elements.
@@ -23,7 +23,7 @@ class SIM(Work):
         self.aggregate_key = aggregate_key
         self.element = element
         self.element_key = element_key
-        self.keys = [aggregate_key,element_key]
+        self.keys = [aggregate_key,element_key,seed]
         self.fitness = -1
 
     def compute_work(self, serial=False):
@@ -53,7 +53,7 @@ class COEVOLVE:
     
     DT = 0.01
     TIME_STEPS = 1000
-    def __init__(self, aggrs, elmts, mode):
+    def __init__(self, aggrs, elmts, mode, seed):
         '''
         initializes the two populations 
         '''
@@ -62,6 +62,7 @@ class COEVOLVE:
         self.elmts = elmts
         self.mode = mode #1 for robustness, 0 for max fitness
         self.fpi = math.ceil(len(self.aggrs.p)*.05)
+        self.seed = seed
         
     def non_MPI_exhaustive(self):
         """
@@ -92,7 +93,7 @@ class COEVOLVE:
         for j in range(len(self.aggrs.p)):
             aggr = self.aggrs.p[j]
             for i in range(len(self.elmts.p)):
-                work_to_complete[work_index] = SIM(aggr, j, self.elmts.p[i], i)
+                work_to_complete[work_index] = SIM(aggr, j, self.elmts.p[i], i, seed)
                 work_index += 1
         print("Simulating %d robots" % len(work_to_complete))
         parallel_evaluate.batch_complete_work(work_to_complete)

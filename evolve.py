@@ -30,6 +30,7 @@ assert len(sys.argv) > 3, "Please run as python evolve.py <SEED> <NUM_CUBES> <NA
 try:
     seed = int(sys.argv[1])
     np.random.seed(seed)
+    print("random seed set to", seed)
     
 except:
     raise Exception("Please give a seed as an int.")
@@ -55,7 +56,7 @@ elements = POPULATION(GetNewElement(), pop_size=N, unique=True)
 aggregates.initialize()
 elements.initialize()
 
-coevolve = COEVOLVE(aggregates, elements, EVO_MODE)
+coevolve = COEVOLVE(aggregates, elements, EVO_MODE, seed)
 
 latestGen = 1
 if os.path.exists("./saved_generations/gen%d.p"%latestGen):
