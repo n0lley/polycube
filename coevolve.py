@@ -60,7 +60,7 @@ class COEVOLVE:
         
         self.aggrs = aggrs
         self.elmts = elmts
-        self.evo_mode = mode #1 for robustness, 0 for max fitness
+        self.mode = mode #1 for robustness, 0 for max fitness
         self.fpi = math.ceil(len(self.aggrs.p)*.05)
         
     def non_MPI_exhaustive(self):
