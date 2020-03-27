@@ -53,13 +53,14 @@ class COEVOLVE:
     
     DT = 0.01
     TIME_STEPS = 1000
-    def __init__(self, aggrs, elmts):
+    def __init__(self, aggrs, elmts, mode):
         '''
         initializes the two populations 
         '''
         
         self.aggrs = aggrs
         self.elmts = elmts
+        self.evo_mode = mode #1 for robustness, 0 for max fitness
         self.fpi = math.ceil(len(self.aggrs.p)*.05)
         
     def non_MPI_exhaustive(self):
@@ -77,7 +78,7 @@ class COEVOLVE:
                 fit = aggr.evaluate(sim, self.elmts.p[j], idNum = [i,j])
                 self.elmts.p[j].scores.append(fit)
                 
-        self.calculate_fitness()
+        self.calculate_fitness(self.mode)
 
     def exhaustive(self):
         '''
@@ -107,71 +108,37 @@ class COEVOLVE:
             self.elmts.p[elmt_key].scores.append(fit)
 
         self.calculate_fitness()
-
-                
-    def random_subset(self, p=0.1):
-        '''
-        Selects subsets of proportion p from aggregate 
-            and proportion q from elements for evaluation
-        '''
-        assert 0 <= p <= 1, print('Input needs to be a valid proportion')
-        
-        N = len(self.elmts.p)
-        #k = int(N*p) //Switched out for constant k
-        k = 10
-        
-        # pre allocate work_array to avoid need to expand array upon append.
-        work_to_complete = [None]*(k*(len(self.aggrs.p)+len(self.elmts.p)))
-        work_index = 0 # keep track of which index in the array we are at.
-        for j in range(len(self.aggrs.p)):
-            aggr = self.aggrs.p[j]
-            for i in np.random.choice(range(N), size=k, replace=False):
-                elmt = self.elmts.p[i]
-                work_to_complete[work_index] = SIM(aggr, j, elmt, i)
-                work_index += 1
-        for j in range(len(self.elmts.p)):
-            elmt = self.elmts.p[j]
-            for i in np.random.choice(range(N), size=k, replace=False):
-                aggr = self.aggrs.p[i]
-                work_to_complete[work_index] = SIM(aggr, i, elmt, j)
-                work_index += 1
-        print("Simulating %d robots" % len(work_to_complete))
-        parallel_evaluate.batch_complete_work(work_to_complete)
-
-        for work in work_to_complete:
-            aggr_key = work.aggregate_key
-            elmt_key = work.element_key
-            fit = work.fitness
-
-            self.aggrs.p[aggr_key].scores.append(fit)
-            self.elmts.p[elmt_key].scores.append(fit)
-
-        for j in range(len(self.aggrs.p)):
-            fit = np.mean(self.aggrs.p[j].scores)
-            if (np.isnan(fit) or np.isinf(fit)):
-                fit = 0
-            self.aggrs.p[j].fitness = fit
                 
     def calculate_fitness(self):
         """
         Each element's fitness is set to the sum of the 5th percentile of its scores. If there are too few scores to take a 5th percentile, take the lowest.
         """
-    
-        for i in range(len(self.elmts.p)):
-            try:
-                 self.elmts.p[i].scores.sort()
-                 fifth_percentile = self.elmts.p[i].scores[0:self.fpi]
-                 while len(fifth_percentile) != self.fpi:
-                    fifth_percentile = self.elmts.p[i].scores[0:self.fpi]
-                 fit = sum(fifth_percentile)/self.fpi
-                 if (np.isnan(fit) or np.isinf(fit) or len(self.elmts.p[i].scores)==0):
-                     fit = 0
-                 self.elmts.p[i].fitness = fit
-                 print(fit, fifth_percentile)
-            except Exception as e:
-                print(e)
-                raise(e)
-                self.elmts.p[i].fitness = 0
+        if self.mode == 1:
+            for i in range(len(self.elmts.p)):
+                try:
+                     self.elmts.p[i].scores.sort()
+                     fifth_percentile = self.elmts.p[i].scores[0:self.fpi]
+                     while len(fifth_percentile) != self.fpi:
+                        fifth_percentile = self.elmts.p[i].scores[0:self.fpi]
+                     fit = sum(fifth_percentile)/self.fpi
+                     if (np.isnan(fit) or np.isinf(fit) or len(self.elmts.p[i].scores)==0):
+                         fit = 0
+                     self.elmts.p[i].fitness = fit
+                     print(fit, fifth_percentile)
+                except Exception as e:
+                    print(e)
+                    raise(e)
+                    self.elmts.p[i].fitness = 0
+        elif self.mode == 0:
+            for i in range(len(self.elmts.p)):
+                try:
+                    self.elmts.p[i].scores.sort()
+                    fit = self.elmts.p[i].scores[-1]
+                    self.elmts.p[i].fitness = fit
+                
+                except Exception as e:
+                    print(e)
+                    raise(e)
                 
     def print_fitness(self):
         '''

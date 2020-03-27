@@ -23,6 +23,7 @@ elementTypes = [
 
 N = c.POPSIZE
 GENS = c.GENS
+EVO_MODE = c.MODE
 
 assert len(sys.argv) > 3, "Please run as python evolve.py <SEED> <NUM_CUBES> <NAME>"
 
@@ -41,6 +42,11 @@ except:
     
 parallel_evaluate.setup(parallel_evaluate.PARALLEL_MODE_MPI_INTER)
 
+if EVO_MODE == 1:
+    print("evolving for robustness")
+else:
+    print("evolving for maximum fitness")
+
 def GetNewElement():
     return np.random.choice(elementTypes)
 aggregates = FIXEDAGGPOP(AGGREGATE, num_cubes=num_cubes)
@@ -49,7 +55,7 @@ elements = POPULATION(GetNewElement(), pop_size=N, unique=True)
 aggregates.initialize()
 elements.initialize()
 
-coevolve = COEVOLVE(aggregates, elements)
+coevolve = COEVOLVE(aggregates, elements, EVO_MODE)
 
 latestGen = 1
 if os.path.exists("./saved_generations/gen%d.p"%latestGen):
