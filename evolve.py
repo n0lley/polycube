@@ -123,5 +123,6 @@ for g in range(latestGen, GENS+1):
     except:
         print ("Error saving generation", g, "to file.")
 
-parallel_evaluate.cleanup()
 print("total runtime:", time()-timetotal)
+
+parallel_evaluate.cleanup()
