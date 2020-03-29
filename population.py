@@ -107,7 +107,7 @@ class POPULATION:
             else:
                 newpop.append(deepcopy(self.p[i]))
                 print(i, "failed to outperform its parent")
-        self.p[i] = deepcopy(newpop)
+        self.p = deepcopy(newpop)
         #print("New Pop:")
         #self.Print()
           
