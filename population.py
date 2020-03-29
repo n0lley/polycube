@@ -105,7 +105,7 @@ class POPULATION:
             if parent.p[i].fitness >= self.p[i].fitness:
                 newpop.append(deepcopy(parent.p[i]))
             else:
-                newpop.append(deepcopy(self.p[i])
+                newpop.append(deepcopy(self.p[i]))
                 print(i, "failed to outperform its parent")
         self.p[i] = deepcopy(newpop)
         #print("New Pop:")
