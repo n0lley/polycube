@@ -95,17 +95,21 @@ class POPULATION:
         hill climber selection for genetic evolution
         :return: None
         """
-        print("Parents:")
-        parent.Print()
-        print("_____________________________________________________")
-        print("Children:")
-        self.Print()
+        #print("Parents:")
+        #parent.Print()
+        #print("_____________________________________________________")
+        #print("Children:")
+        #self.Print()
+        newpop = []
         for i in range(len(parent.p)):
-            if parent.p[i].fitness > self.p[i].fitness:
-                self.p[i] = deepcopy(parent.p[i])
+            if parent.p[i].fitness >= self.p[i].fitness:
+                newpop.append(deepcopy(parent.p[i]))
+            else:
+                newpop.append(deepcopy(self.p[i])
                 print(i, "failed to outperform its parent")
-        print("New Pop:")
-        self.Print()
+        self.p[i] = deepcopy(newpop)
+        #print("New Pop:")
+        #self.Print()
           
     def tournament_selection(self):
         """
