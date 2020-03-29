@@ -146,7 +146,7 @@ class AGGREGATE(INDIVIDUAL):
             fit = self.calculate_displacement(sim)
             return fit
         except Exception as e:
-            print(e)
+            print(idNum, e)
             if debug:
                 print(e)
                 raise e
