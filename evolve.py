@@ -14,6 +14,8 @@ from copy import deepcopy
 
 from time import time
 
+parallel_evaluate.setup(parallel_evaluate.PARALLEL_MODE_MPI_INTER)
+
 #Comment out whichever element types are not in use
 elementTypes = [
     #element.OneWeightPhaseOffset
@@ -41,7 +43,6 @@ try:
 except:
     raise Exception("Please give the polycube size as an int")
     
-parallel_evaluate.setup(parallel_evaluate.PARALLEL_MODE_MPI_INTER)
 
 if EVO_MODE == 1:
     print("evolving for robustness")
