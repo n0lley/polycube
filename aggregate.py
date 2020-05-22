@@ -128,7 +128,7 @@ class AGGREGATE(INDIVIDUAL):
         if c.DEBUG:
             print("Cube added at", child)
         
-    def evaluate(self, sim, elmt, debug=False):
+    def evaluate(self, sim, elmt, idNum=[0,0,0], debug=False):
         '''
         calls send_to_sim and
             calculate_displacement
@@ -137,16 +137,20 @@ class AGGREGATE(INDIVIDUAL):
             print(type(elmt))
         try:
             self.send_to_sim(sim, elmt)
-            print("sent to sim")
-            sim.start()
+            if debug:
+                print(idNum, "sent to sim")
+            sim.start(idNum=idNum)
             sim.wait_to_finish()
-            print("sim complete")
-            return self.calculate_displacement(sim)
+            if debug:
+                print(idNum, "sim complete")
+            fit = self.calculate_displacement(sim)
+            return fit
         except Exception as e:
+            print(idNum, e)
             if debug:
                 print(e)
                 raise e
-            return 0
+            return -1
         
     def reset(self):
         '''
@@ -204,8 +208,7 @@ class AGGREGATE(INDIVIDUAL):
                  collision_group = "body")
         
         self.positions[coord] = [sim.send_position_x_sensor(body_id = box),
-                                 sim.send_position_y_sensor(body_id = box),
-                                 sim.send_position_z_sensor(body_id = box)]
+                                 sim.send_position_y_sensor(body_id = box)]
         
         return box, float(format(coord[2] - lowest + .5, '.2f'))
 
@@ -297,8 +300,7 @@ class AGGREGATE(INDIVIDUAL):
             dx = dx[-1]
             dx -= coord[0]
             dy = sim.get_sensor_data(sensor_id = p[1])[-1] - coord[1]
-            dz = sim.get_sensor_data(sensor_id = p[2])[-1] - coord[2]
-            d = dx**2 + dy**2 + dz**2
+            d = dx**2 + dy**2
             deltas.append(d**0.5)
         
         return min(deltas)

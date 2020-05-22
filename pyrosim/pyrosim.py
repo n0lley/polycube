@@ -257,7 +257,7 @@ class Simulator(_body.Mixin,
 
         self._send_parameter('NetworkUpdate', steps_between_evals )
 
-    def start(self):
+    def start(self, idNum=[0,0]):
         """Start the simulation"""
 
         assert(self._play_blind is False or self._eval_steps > 0), (
@@ -272,16 +272,14 @@ class Simulator(_body.Mixin,
         
         self._send_simulator_parameters()
         i=0
-        self.outFileName = "/outfile%d.txt"%i
-        while os.path.exists(self._simulator_path + self.outFileName):
-            i += 1
-            self.outFileName = "/outfile%d.txt"%i
+        self.outFileName = "/outfile%d-%d-%d.txt"%(idNum[0], idNum[1], idNum[2])
+        
             
         f = open(self._simulator_path + self.outFileName, 'w')
         f.write(self._strings_to_send)
         f.write("Done\n")
         f.close()
-        print(self._simulator_path + self.outFileName)
+        #print(self._simulator_path + self.outFileName)
         
         commands = [self._simulator_path + '/sim.sh', self._simulator_path + self.outFileName]
         if self._play_blind:

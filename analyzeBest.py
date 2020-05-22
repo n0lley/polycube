@@ -3,6 +3,7 @@ from population import POPULATION
 from aggregate import AGGREGATE
 from element import ELEMENT
 import constants as c
+import math
 import pickle
 import os
 import sys
@@ -23,51 +24,88 @@ def try_load_generation(fileName, debug=False):
 
 def GetNewElement():
     raise NotImplementedError
-
-def find_best_fits(coevolve):
+    
+def find_best_avg(coevolve):
     """
     find the fitnesses of the most fit aggregate and element in a population
     """
     fit = 0
+    beste = None
     for j in coevolve.elmts.p:
         if j.fitness > fit:
             fit = j.fitness
-    best = fit
+            beste = j
+            
+    avg = sum(beste.scores)/len(beste.scores)
 
-    return best
+    return avg
+    
+def find_best_score(coevolve):
+    """
+    find the fitnesses of the most fit aggregate and element in a population
+    """
+    fit = 0
+    beste = None
+    for j in coevolve.elmts.p:
+        if j.fitness > fit:
+            fit = j.fitness
+            beste = j
+            
+    beste.scores.sort()
+    high = beste.scores[-1]
+
+    return high
+
+def find_best_agn(coevolve):
+    """
+    find the fitnesses of the most fit aggregate and element in a population
+    """
+    fit = 0
+    beste = None
+    for j in coevolve.elmts.p:
+        if j.fitness > fit:
+            fit = j.fitness
+            beste = j
+            
+    fpi = math.ceil(len(beste.scores)*.05)
+    beste.scores.sort()
+    fpi_avg = sum(beste.scores[0:fpi])
+    fpi_avg/=fpi
+
+    return fpi_avg
 
 def coallate_best_fits(path, r=None):
     """
     Open up run r, return the highest fitnesses of each generation as a pair of lists
     """
+    #print(path)
 
     currGen = 1
     runNumber = "run_%s"
     coevolve = None
-    
-    tmp = try_load_generation(path + runNumber%(r) + "/saved_generations/" + fileName%currGen)
-    
-    if tmp is not None:
-        elmtFit = find_best_fits(tmp)
-        best = np.array([elmtFit])
+    tmp = try_load_generation(path + "/saved_generations/" + fileName%currGen)
+    #print (path + "/saved_generations/" + fileName%currGen)
+    x = find_best_agn(tmp[0])
+    #x = find_best_avg(tmp[0])
+    #x = find_best_score(tmp[0])
+    best = np.array([x])
     
     while tmp is not None:
         currGen += 1
-        tmp = try_load_generation(path + runNumber%(r) + "/saved_generations/" + fileName%currGen)
-        
+        tmp = try_load_generation(path + "/saved_generations/" + fileName%currGen)
         if tmp is not None:
-            elmtFit = find_best_fits(tmp)
-            best = np.append(best, [elmtFit], axis=0)
-            time = tmp.DT * tmp.TIME_STEPS / 60
+            x = find_best_agn(tmp[0])
+            #x = find_best_avg(tmp[0])
+            #x = find_best_score(tmp[0])
+            best = np.append(best, [x], axis=0)
+            time = tmp[0].DT * tmp[0].TIME_STEPS / 60
 
     return best, time
 
 def evaluate_runs(path):
-    evalBest = {}
-    for run in os.listdir(path):
-        if os.path.isdir(os.path.join(path, run)):
-            tmp, time = coallate_best_fits(path+"/", run.split("_")[1])
-            evalBest[int(run.split("_")[1])] = tmp
+    evalBest = []
+    tmp, time = coallate_best_fits(path)
+    evalBest = tmp
 
     return evalBest, time
 
@@ -95,35 +133,47 @@ best, times = analyze_data(datapath)
 
 fig = plt.figure()
 ax = fig.add_subplot(1,1,1)
+plt.title("Controller Agnosticism in Polycubes Size n = 5\n Agnostic (More Data Pending)")
 
-colors = [np.random.random(size=3), np.random.random(size=3), np.random.random(size=3)]
-avs = {}
+colors = ["red", "blue", "green", "purple", "black"]
 
 i=0
 for eval in best:
-    avs[eval] = np.empty((15, len(best[eval][111])))
-    x = np.arange(len(best[eval][111]))
-    ax.plot(x, best[eval][111]/c.SCALE/times[eval], alpha=.1, color=colors[i])
-    avs[eval][0] = best[eval][111]
-
-for i in range(112,126):
+    x = np.arange(len(best[eval]))
+    best[eval] = best[eval]/times[eval]
+    best[eval] = best[eval]/c.SCALE
+    if i==0:
+        tmpeval = eval
+        ax.plot(x, best[eval], color=colors[1], alpha=.4, label="Individual Run Fitnesses")
+    else:
+        ax.plot(x, best[eval], color=colors[1], alpha=.4)
+    i += 1
+    avgs = [0]*len(x)
+    err = [0]*len(x)
     
-    q = 0
-    for eval in best:
-        x = np.arange(len(best[eval][i]))
-        ax.plot(x, (best[eval][i]/c.SCALE)/times[eval], color=colors[q], alpha=.1)
-        avs[eval][i-111] = best[eval][i]
-        q += 1
-
-i=0
 for eval in best:
-    avs[eval] = np.mean(avs[eval], axis=0)
-    x = np.arange(len(avs[eval]))
-    ax.plot(x, (avs[eval]/c.SCALE)/times[eval], color=colors[i], label=eval)
-    i+=1
+    for j in range(len(best[eval])):
+        avgs[j] += best[eval][j]
+
+for j in range(len(avgs)):
+    avgs[j] = avgs[j]/i
+
+for j in range(len(avgs)):
+    tmperr = 0
+    for eval in best:
+        tmp = best[eval][j] - avgs[j]
+        tmperr += tmp**2
+    tmperr /= (i - 1)
+    err[j] = tmperr**.5
+
+
+f = open(datapath+"/average.p",'wb')
+pickle.dump((avgs, err), f)
+f.close()
+
+ax.errorbar(x, avgs, yerr=err, color=colors[0], ecolor="black", label="Average Fitness", errorevery=15)
 
 ax.set_ylabel("Displacement (cube lengths per minute)")
-ax.set_xlabel("Generations")
+ax.set_xlabel("Generation")
 ax.legend()
 plt.show()
-
