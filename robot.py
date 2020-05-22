@@ -6,29 +6,80 @@ import constants as c
 from aggregate import AGGREGATE
 import element
 import population
-from parallelpy import parallel_evaluate
+import matplotlib.pyplot as plt
 
-np.random.seed(111)
+cubes = 5
 
-parallel_evaluate.setup(parallel_evaluate.PARALLEL_MODE_MPI_INTER)
-
-f = open("saved_generations/gen200.p", 'rb')
+f = open("data/hillclimber/max_fit/5WPFA/%dcube/run_111/saved_generations/gen200.p"%cubes,'rb')
 gen = pickle.load(f)
 f.close()
 co = gen[0]
 
-co.elmts.Print()
+fit = 0
+beste = None
+for e in co.elmts.p:
+    if e.fitness > fit:
+        fit = e.fitness
+        beste = e
 
-co.reset()
+fit = 0
+besta = None
+for a in co.aggrs.p:
+    sim = pyrosim.Simulator(eval_steps=1000, dt=.01, play_blind=True, play_paused=False)
+    f = a.evaluate(sim, beste)
+    if f > fit:
+        fit = f
+        besta = a
+        
+sim1 = pyrosim.Simulator(eval_steps=1000, dt=.01, play_blind=False, play_paused=True, use_textures=False)
+besta.evaluate(sim1, beste)
+"""
+colors = ["blue", "red", "green", "orange"]
 
-co.exhaustive()
+cubes = 5
 
-co.elmts.Print()
+f = open("data/hillclimber/agnostic/5WPFA/%dcube/averagemax.p"%cubes,'rb')
+agn = pickle.load(f)
+f.close()
 
-co.reset()
+f = open("data/hillclimber/max_fit/5WPFA/%dcube/averagemax.p"%cubes,'rb')
+max = pickle.load(f)
+f.close()
 
-co.non_MPI_exhaustive()
+x = np.arange(len(agn[0]))
+plt.errorbar(x, agn[0], yerr=agn[1], errorevery=15, ecolor="grey", color=colors[0], label="agnostic")
+plt.errorbar(x, max[0], yerr=max[1], errorevery=15, ecolor="black", color=colors[1], label="max-fitness")
 
-co.elmts.Print()
+plt.title("Comparison of Maximum Scores\n%d-cube"%cubes)
+plt.legend()
+plt.xlabel("Generation")
+plt.ylabel("Average Displacement (Cube Lengths per Minute)")
+plt.show()
 
-parallel_evaluate.cleanup()
+#for cubes in range(2,6):
+    
+f = open("data/hillclimber/agnostic/1WP/%dcube/average.p"%cubes,'rb')
+avg = pickle.load(f)
+f.close()
+x = np.arange(len(avg[0]))
+plt.errorbar(x, avg[0], yerr=avg[1], errorevery=15, ecolor="grey", color=colors[0], label="1-weight")
+
+f = open("data/hillclimber/agnostic/3WPF/%dcube/average.p"%cubes,'rb')
+avg = pickle.load(f)
+f.close()
+x = np.arange(len(avg[0]))
+plt.errorbar(x, avg[0], yerr=avg[1], errorevery=15, ecolor="black", color=colors[1], label="3-weight")
+
+f = open("data/hillclimber/agnostic/5WPFA/%dcube/average.p"%cubes,'rb')
+avg = pickle.load(f)
+f.close()
+x = np.arange(len(avg[0]))
+plt.errorbar(x, avg[0], yerr=avg[1], errorevery=15, ecolor="black", color=colors[2], label="5-weight")
+
+plt.title("Compared Controller Agnosticism\n%d-cube"%cubes)
+plt.legend()
+plt.xlabel("Generation")
+plt.ylabel("Average Displacement (Cube Lengths per Minute)")
+plt.show()
+
+"""
