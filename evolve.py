@@ -1,9 +1,9 @@
 from coevolve import COEVOLVE
 from population import POPULATION, FIXEDAGGPOP
 from aggregate import AGGREGATE
-from element import ELEMENT
+from controller import CONTROLLER
 import constants as c
-import element
+import controller
 
 from parallelpy import parallel_evaluate
 import numpy as np
@@ -16,11 +16,11 @@ from time import time
 
 parallel_evaluate.setup(parallel_evaluate.PARALLEL_MODE_MPI_INTER)
 
-#Comment out whichever element types are not in use
-elementTypes = [
-    #element.OneWeightPhaseOffset
-    #element.ThreeWeightPhaseOffsetFrequency
-    element.FiveWeightPhaseFrequencyAmplitude
+#Comment out whichever controller types are not in use
+controllerTypes = [
+    #controller.OneWeightPhaseOffset
+    #controller.ThreeWeightPhaseOffsetFrequency
+    controller.FiveWeightPhaseFrequencyAmplitude
     ]
 
 N = c.POPSIZE
@@ -49,15 +49,15 @@ if EVO_MODE == 1:
 else:
     print("evolving for maximum fitness")
 
-def GetNewElement():
-    return np.random.choice(elementTypes)
+def GetNewController():
+    return np.random.choice(controllerTypes)
 aggregates = FIXEDAGGPOP(AGGREGATE, num_cubes=num_cubes)
-elements = POPULATION(GetNewElement(), pop_size=N, unique=True)
+controllers = POPULATION(GetNewController(), pop_size=N, unique=True)
 
 aggregates.initialize()
-elements.initialize()
+controllers.initialize()
 
-coevolve = COEVOLVE(aggregates, elements, EVO_MODE, seed)
+coevolve = COEVOLVE(aggregates, controllers, EVO_MODE, seed)
 
 latestGen = 1
 if os.path.exists("./saved_generations/gen%d.p"%latestGen):
@@ -73,7 +73,7 @@ if os.path.exists("./saved_generations/gen%d.p"%latestGen):
     f.close()
     print("Beginning at Generation", latestGen-1)
 else:
-    print('GENERATION %d' % 0)
+    print('GENERATION 0')
     t0 = time()
     coevolve.exhaustive()
     #coevolve.non_MPI_exhaustive()
@@ -87,13 +87,13 @@ timetotal = time()
 for g in range(latestGen, GENS+1):
     
     #create a parent population
-    parent = deepcopy(coevolve.elmts)
+    parent = deepcopy(coevolve.contrs)
     
     #reset children's fitness values
     coevolve.reset()
     #mutate child population
-    for i in range(len(coevolve.elmts.p)):
-        coevolve.elmts.p[i].mutate()
+    for i in range(len(coevolve.contrs.p)):
+        coevolve.contrs.p[i].mutate()
     
     #evaluation
     t0 = time()
@@ -102,7 +102,7 @@ for g in range(latestGen, GENS+1):
     t1 = time()
     
     #Simple hillclimber selection
-    coevolve.elmts.hillclimber_selection(parent)
+    coevolve.contrs.hillclimber_selection(parent)
     
     #report fitness values
     print('GENERATION %d' % g)

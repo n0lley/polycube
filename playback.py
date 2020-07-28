@@ -1,14 +1,14 @@
 from coevolve import COEVOLVE
 from population import POPULATION
 from aggregate import AGGREGATE
-from element import ELEMENT
-import element
+from controller import CONTROLLER
+import controller
 import math
 import pickle
 import os
 import sys
 
-def GetNewElement():
+def GetNewController():
     raise NotImplementedError
 
 def try_load_generation(fileName, debug=False):

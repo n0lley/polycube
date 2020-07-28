@@ -9,60 +9,60 @@ from copy import deepcopy
 
 class SIM(Work):
     """
-    Wrapper for a simulation instance which allows us to parallelize the simulation of aggregates and elements
+    Wrapper for a simulation instance which allows us to parallelize the simulation of aggregates and controllers
     across a cluster of computers.
     """
-    def __init__(self, aggregate, aggregate_key, element, element_key, seed):
+    def __init__(self, aggregate, aggregate_key, controller, controller_key, seed):
         """
         :param aggregate: The instance of the aggregate
-        :param aggregate_key: The key of the aggregate in the dict of elements.
-        :param element: The instance of the element
-        :param element_key: The key of the element in the dict of elements
+        :param aggregate_key: The key of the aggregate in the dict of controllers.
+        :param controller: The instance of the controller
+        :param controller_key: The key of the controller in the dict of controllers
         """
         self.aggregate = aggregate
         self.aggregate_key = aggregate_key
-        self.element = element
-        self.element_key = element_key
-        self.keys = [aggregate_key,element_key,seed]
+        self.controller = controller
+        self.controller_key = controller_key
+        self.keys = [aggregate_key,controller_key,seed]
         self.fitness = -1
 
     def compute_work(self, serial=False):
         for i in range(10):
           sim = pyrosim.Simulator(eval_steps=COEVOLVE.TIME_STEPS, play_blind=True, play_paused=False, dt=COEVOLVE.DT)
-          #print("Simulating aggregate", self.aggregate_key, "with element", self.element_key)
-          self.fitness = self.aggregate.evaluate(sim, self.element, idNum=self.keys, debug=False)
+          #print("Simulating aggregate", self.aggregate_key, "with controller", self.controller_key)
+          self.fitness = self.aggregate.evaluate(sim, self.controller, idNum=self.keys, debug=False)
           if self.fitness > -1:
             break
-          #print("fitness of aggregate", self.aggregate_key, "and element", self.element_key, "retrieved")
+          #print("fitness of aggregate", self.aggregate_key, "and controller", self.controller_key, "retrieved")
         if self.fitness < 0: self.fitness = 0
 
     def write_letter(self):
-        return Letter((self.fitness, self.aggregate_key, self.element_key), None)
+        return Letter((self.fitness, self.aggregate_key, self.controller_key), None)
 
     def open_letter(self, letter):
         self.fitness, _, _ = letter.get_data()
 
 class COEVOLVE:
     '''
-    handles co-evolutionary methods for AGGREGATE and ELEMENT classes
+    handles co-evolutionary methods for AGGREGATE and CONTROLLER classes
         
     Attributes
     ----------
     aggrs    : POPULATION instance
         Population of aggregate objects
-    elmts    : POPULATION instance
-        Population of element objects
+    contrs    : POPULATION instance
+        Population of controller objects
     '''
     
     DT = 0.01
     TIME_STEPS = 1000
-    def __init__(self, aggrs, elmts, mode, seed):
+    def __init__(self, aggrs, contrs, mode, seed):
         '''
         initializes the two populations 
         '''
         
         self.aggrs = aggrs
-        self.elmts = elmts
+        self.contrs = contrs
         self.mode = mode #1 for robustness, 0 for max fitness
         self.fpi = math.ceil(len(self.aggrs.p)*.05)
         self.seed = seed
@@ -72,31 +72,29 @@ class COEVOLVE:
         non-parallel exhaustive evaluation
         """
         
-        parent = deepcopy(self.elmts.p)
-        
-        for j in range(len(self.elmts.p)):
-            elmt = self.elmts.p[j]
+        for j in range(len(self.contrs.p)):
+            contr = self.contrs.p[j]
             for i in range(len(self.aggrs.p)):
                 aggr = self.aggrs.p[i]
                 sim = pyrosim.Simulator(eval_steps=COEVOLVE.TIME_STEPS, play_blind=True, play_paused=False, dt=COEVOLVE.DT)
-                fit = aggr.evaluate(sim, self.elmts.p[j], idNum = [i,j])
-                self.elmts.p[j].scores.append(fit)
+                fit = aggr.evaluate(sim, self.contrs.p[j], idNum = [i,j,0])
+                self.contrs.p[j].scores.append(fit)
                 
-        self.calculate_fitness(self.mode)
+        self.calculate_fitness()
 
     def exhaustive(self):
         '''
         Evaluates every single aggregate composed with 
-            every single element 
+            every single controller
         '''
 
         # pre allocate work_array to avoid need to expand array upon append.
-        work_to_complete = [None]*(len(self.aggrs.p)*len(self.elmts.p))
+        work_to_complete = [None]*(len(self.aggrs.p)*len(self.contrs.p))
         work_index = 0 # keep track of which index in the array we are at.
         for j in range(len(self.aggrs.p)):
             aggr = self.aggrs.p[j]
-            for i in range(len(self.elmts.p)):
-                work_to_complete[work_index] = SIM(aggr, j, self.elmts.p[i], i, self.seed)
+            for i in range(len(self.contrs.p)):
+                work_to_complete[work_index] = SIM(aggr, j, self.contrs.p[i], i, self.seed)
                 work_index += 1
         print("Simulating %d robots" % len(work_to_complete))
         parallel_evaluate.batch_complete_work(work_to_complete)
@@ -104,41 +102,41 @@ class COEVOLVE:
         #print("appending fitnesses")
         for work in work_to_complete:
             aggr_key = work.aggregate_key
-            elmt_key = work.element_key
+            elmt_key = work.controller_key
             fit = work.fitness
             if c.DEBUG:
                 print("Sim fit:",fit)
 
-            self.elmts.p[elmt_key].scores.append(fit)
+            self.contrs.p[elmt_key].scores.append(fit)
 
         self.calculate_fitness()
                 
     def calculate_fitness(self):
         """
-        Each element's fitness is set to the sum of the 5th percentile of its scores. If there are too few scores to take a 5th percentile, take the lowest.
+        Each controller's fitness is set to the sum of the 5th percentile of its scores. If there are too few scores to take a 5th percentile, take the lowest.
         """
         if self.mode == 1:
-            for i in range(len(self.elmts.p)):
+            for i in range(len(self.contrs.p)):
                 try:
-                     self.elmts.p[i].scores.sort()
-                     fifth_percentile = self.elmts.p[i].scores[0:self.fpi]
+                     self.contrs.p[i].scores.sort()
+                     fifth_percentile = self.contrs.p[i].scores[0:self.fpi]
                      while len(fifth_percentile) != self.fpi:
-                        fifth_percentile = self.elmts.p[i].scores[0:self.fpi]
+                        fifth_percentile = self.contrs.p[i].scores[0:self.fpi]
                      fit = sum(fifth_percentile)/self.fpi
-                     if (np.isnan(fit) or np.isinf(fit) or len(self.elmts.p[i].scores)==0):
+                     if (np.isnan(fit) or np.isinf(fit) or len(self.contrs.p[i].scores)==0):
                          fit = 0
-                     self.elmts.p[i].fitness = fit
+                     self.contrs.p[i].fitness = fit
                      print(fit, fifth_percentile)
                 except Exception as e:
                     print(e)
                     raise(e)
-                    self.elmts.p[i].fitness = 0
+                    self.contrs.p[i].fitness = 0
         elif self.mode == 0:
-            for i in range(len(self.elmts.p)):
+            for i in range(len(self.contrs.p)):
                 try:
-                    self.elmts.p[i].scores.sort()
-                    fit = self.elmts.p[i].scores[-1]
-                    self.elmts.p[i].fitness = fit
+                    self.contrs.p[i].scores.sort()
+                    fit = self.contrs.p[i].scores[-1]
+                    self.contrs.p[i].fitness = fit
                 
                 except Exception as e:
                     print(e)
@@ -146,50 +144,50 @@ class COEVOLVE:
                 
     def print_fitness(self):
         '''
-        prints the top element fitness
+        prints the top controller fitness
         '''
 
-        print('Best Element of',len(self.elmts.p),':')
+        print('Best Controller of',len(self.contrs.p),':')
         best = 0
         besti = 0
-        for i in range(len(self.elmts.p)):
-            if self.elmts.p[i].fitness > best:
-                best = self.elmts.p[i].fitness
+        for i in range(len(self.contrs.p)):
+            if self.contrs.p[i].fitness > best:
+                best = self.contrs.p[i].fitness
                 besti = i
         
-        fpi = math.ceil(len(self.elmts.p[besti].scores)*.05)
-        print(besti, ":", best, self.elmts.p[besti].scores[0:fpi])
+        fpi = math.ceil(len(self.contrs.p[besti].scores)*.05)
+        print(besti, ":", best, self.contrs.p[besti].scores[0:fpi])
 
     def reset(self):
         '''
         calls reset on both populations
         '''
-        self.elmts.reset()
+        self.contrs.reset()
         
     def selection(self):
         '''
-        calls selection on elements
+        calls selection on controllers
         '''
-        self.elmts.selection()
+        self.contrs.selection()
         
     def playback(self, play_all=False):
         '''
-        for review purposes, plays the best aggregate and element, with play_blind off
+        for review purposes, plays the best aggregate and controller, with play_blind off
         '''
 
         fit = 0
         eindex = 0
-        for j in range(len(self.elmts.p)):
-            if abs(self.elmts.p[j].fitness) > abs(fit):
+        for j in range(len(self.contrs.p)):
+            if abs(self.contrs.p[j].fitness) > abs(fit):
                 print("fit")
                 print(j)
-                fit = self.elmts.p[j].fitness
+                fit = self.contrs.p[j].fitness
                 eindex = j
 
         if play_all:
             for a in self.aggrs.p:
                 aggr = a
-                elmt = self.elmts.p[eindex]
+                elmt = self.contrs.p[eindex]
                 sim = pyrosim.Simulator(eval_steps=1000, play_blind=False, play_paused=False, dt=.01)
                 try:
                     print(aggr.evaluate(sim, elmt, debug=True))
@@ -200,7 +198,7 @@ class COEVOLVE:
             
             fit = 99999
             aindex = -1
-            elmt = self.elmts.p[eindex]
+            elmt = self.contrs.p[eindex]
             
             for i in range(len(elmt.scores)):
                 if elmt.scores[i] < fit:

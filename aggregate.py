@@ -131,7 +131,7 @@ class AGGREGATE(INDIVIDUAL):
     def evaluate(self, sim, elmt, idNum=[0,0,0], debug=False):
         '''
         calls send_to_sim and
-            calculate_displacement
+        calculate_displacement
         '''
         if debug:
             print(type(elmt))
@@ -159,9 +159,9 @@ class AGGREGATE(INDIVIDUAL):
         
         self.scores = []
 
-    def send_to_sim(self, sim, element):
+    def send_to_sim(self, sim, controller):
         '''
-        Construct a body using the provided body tree. Call the element's build function to add joints, neurons, and synapses.
+        Construct a body using the provided body tree. Call the controller's build function to add joints, neurons, and synapses.
         '''
         
         self.body = {}
@@ -184,14 +184,14 @@ class AGGREGATE(INDIVIDUAL):
         if c.DEBUG:
             print(self.body)
         
-        #Send the aggregate's information to the element for construction of the network.
-        element.build_elements(sim, self.tree, self.body, lowest)
+        #Send the aggregate's information to the controller for construction of the network.
+        controller.build_controllers(sim, self.tree, self.body, lowest)
     
     
     def send_cube(self, sim, coord, lowest, rgb=(0,0,0)):
         '''
         Sends cube to the simulator at the specified coordinate, 
-            with the specified element's properties
+            with the specified controller's properties
         '''
         if rgb == (0,0,0):
             colors = np.random.random(size=3)

@@ -1,7 +1,7 @@
 from coevolve import COEVOLVE
 from population import POPULATION
 from aggregate import AGGREGATE
-from element import ELEMENT
+from controller import CONTROLLER
 import constants as c
 import math
 import pickle
@@ -21,13 +21,10 @@ def try_load_generation(fileName, debug=False):
         if debug:
             print(e)
         return None
-
-def GetNewElement():
-    raise NotImplementedError
     
 def find_best_avg(coevolve):
     """
-    find the fitnesses of the most fit aggregate and element in a population
+    find the fitnesses of the most fit aggregate and controller in a population
     """
     fit = 0
     beste = None
@@ -42,34 +39,34 @@ def find_best_avg(coevolve):
     
 def find_best_score(coevolve):
     """
-    find the fitnesses of the most fit aggregate and element in a population
+    find the fitnesses of the most fit aggregate and controller in a population
     """
     fit = 0
-    beste = None
-    for j in coevolve.elmts.p:
+    bestc = None
+    for j in coevolve.contrs.p:
         if j.fitness > fit:
             fit = j.fitness
-            beste = j
+            bestc = j
             
-    beste.scores.sort()
-    high = beste.scores[-1]
+    bestc.scores.sort()
+    high = bestc.scores[-1]
 
     return high
 
 def find_best_agn(coevolve):
     """
-    find the fitnesses of the most fit aggregate and element in a population
+    find the fitnesses of the most fit aggregate and controller in a population
     """
     fit = 0
-    beste = None
-    for j in coevolve.elmts.p:
+    bestc = None
+    for j in coevolve.contrs.p:
         if j.fitness > fit:
             fit = j.fitness
-            beste = j
+            bestc = j
             
-    fpi = math.ceil(len(beste.scores)*.05)
-    beste.scores.sort()
-    fpi_avg = sum(beste.scores[0:fpi])
+    fpi = math.ceil(len(bestc.scores)*.05)
+    bestc.scores.sort()
+    fpi_avg = sum(bestc.scores[0:fpi])
     fpi_avg/=fpi
 
     return fpi_avg

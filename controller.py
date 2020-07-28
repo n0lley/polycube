@@ -17,7 +17,7 @@ def getSeqNumber():
     sequenceNumber += 1
     return sequenceNumber
 
-class ELEMENT(INDIVIDUAL):
+class CONTROLLER(INDIVIDUAL):
 
     def __init__(self, dimensions):
         '''
@@ -50,7 +50,7 @@ class ELEMENT(INDIVIDUAL):
 
     def mutate(self):
         '''
-        Randomly modify a weight in the element's genome
+        Randomly modify a weight in the controller's genome
         '''
         dimensions = self.controller.shape
         index = 0
@@ -73,9 +73,9 @@ class ELEMENT(INDIVIDUAL):
         
         self.controller = np.where(self.controller == gene, newgene, self.controller)
 
-    def build_elements(self, sim, tree, cubes, lowest):
+    def build_controllers(self, sim, tree, cubes, lowest):
         '''
-        Take the tree and boxes from the aggregate and construct the elements.
+        Take the tree and boxes from the aggregate and construct the controllers.
         '''
         
         for parent in tree:
@@ -84,13 +84,13 @@ class ELEMENT(INDIVIDUAL):
             for child in tree[parent]:
                 #modify child coordinates to match real-space
                 rchild = child[:2]+ (float(format(child[2] - lowest + .5, '.2f')),)
-                self.send_element(sim, cubes[rchild], cubes[rparent], [rchild, rparent])
+                self.send_controller(sim, cubes[rchild], cubes[rparent], [rchild, rparent])
 
-    def send_element(self):
+    def send_controller(self):
         '''
         
         '''
-        raise NotImplementedError("send_element function is not written")
+        raise NotImplementedError("send_controller function is not written")
 
     def find_joint_position(self, coord1, coord2):
         '''
@@ -172,21 +172,21 @@ class ELEMENT(INDIVIDUAL):
 
         return joints
         
-class TwoWeightAmplitude(ELEMENT):
+class TwoWeightAmplitude(CONTROLLER):
 
     def __init__(self):
         '''
-        Create an element. Initialization does not differ from superclass.
+        Create an controller. Initialization does not differ from superclass.
         '''
         super().__init__((1,2))
     
-    def build_elements(self, sim, tree, cubes, lowest):
+    def build_controllers(self, sim, tree, cubes, lowest):
         '''
-        Take the tree and boxes from the aggregate and construct the elements.
+        Take the tree and boxes from the aggregate and construct the controllers.
         '''
-        super().build_elements(sim, tree, cubes, lowest)
+        super().build_controllers(sim, tree, cubes, lowest)
 
-    def send_element(self, sim, box, parent, coords):
+    def send_controller(self, sim, box, parent, coords):
         '''
         Use the current box being modified, the box it's being attached to, and the coordinates of those boxes (in that order) to build class-specific  joints, sensors, motors, etc on box.
         Attach controller to that network.
@@ -217,11 +217,11 @@ class TwoWeightAmplitude(ELEMENT):
             for m in MN:
                 sim.send_synapse(source_neuron_id = SN[s], target_neuron_id=MN[m], weight=self.controller[s,m])
 
-class FixedWeightPhaseOffset(ELEMENT):
+class FixedWeightPhaseOffset(CONTROLLER):
 
     def __init__(self, weight):
         '''
-        Create an element, with its single weight set to a fixed value
+        Create an controller, with its single weight set to a fixed value
         '''
         self.id = getSeqNumber()
         
@@ -231,14 +231,14 @@ class FixedWeightPhaseOffset(ELEMENT):
         self.fitness = 0
         self.age = 0
     
-    def build_elements(self, sim, tree, cubes, lowest):
+    def build_controllers(self, sim, tree, cubes, lowest):
         '''
-        Take the tree and boxes from the aggregate and construct the elements.
+        Take the tree and boxes from the aggregate and construct the controllers.
         '''
         
-        super().build_elements(sim, tree, cubes, lowest)
+        super().build_controllers(sim, tree, cubes, lowest)
 
-    def send_element(self, sim, box, parent, coords):
+    def send_controller(self, sim, box, parent, coords):
         '''
         Use the current box being modified, the box it's being attached to, and the coordinates of those boxes (in that order) to build class-specific  joints, sensors, motors, etc on box.
         Attach controller to that network.
@@ -272,22 +272,22 @@ class FixedWeightPhaseOffset(ELEMENT):
         for s in SN:
             sim.send_synapse(source_neuron_id = SN[s], target_neuron_id=MN[s], weight=1)
 
-class OneWeightPhaseOffset(ELEMENT):
+class OneWeightPhaseOffset(CONTROLLER):
 
     def __init__(self):
         '''
-        Create an element. Initialization does not differ from superclass.
+        Create an controller. Initialization does not differ from superclass.
         '''
         super().__init__((1,1))
 
-    def build_elements(self, sim, tree, cubes, lowest):
+    def build_controllers(self, sim, tree, cubes, lowest):
         '''
-        Take the tree and boxes from the aggregate and construct the elements.
+        Take the tree and boxes from the aggregate and construct the controllers.
         '''
         
-        super().build_elements(sim, tree, cubes, lowest)
+        super().build_controllers(sim, tree, cubes, lowest)
 
-    def send_element(self, sim, box, parent, coords):
+    def send_controller(self, sim, box, parent, coords):
         '''
         Use the current box being modified, the box it's being attached to, and the coordinates of those boxes (in that order) to build class-specific  joints, sensors, motors, etc on box.
         Attach controller to that network.
@@ -321,17 +321,17 @@ class OneWeightPhaseOffset(ELEMENT):
         for s in SN:
             sim.send_synapse(source_neuron_id = SN[s], target_neuron_id=MN[s], weight=1)
 
-class ThreeWeightPhaseOffsetFrequency(ELEMENT):
+class ThreeWeightPhaseOffsetFrequency(CONTROLLER):
     
     def __init__(self):
     
         super().__init__((3,1))
         
-    def build_elements(self, sim, tree, cubes, lowest):
+    def build_controllers(self, sim, tree, cubes, lowest):
     
-        super().build_elements(sim, tree, cubes, lowest)
+        super().build_controllers(sim, tree, cubes, lowest)
         
-    def send_element(self, sim, box, parent, coords):
+    def send_controller(self, sim, box, parent, coords):
         
         joints = self.build_universal_hinge(sim, box, parent, coords)
 
@@ -361,17 +361,17 @@ class ThreeWeightPhaseOffsetFrequency(ELEMENT):
         for s in SN:
             sim.send_synapse(source_neuron_id = SN[s], target_neuron_id=MN[s], weight=1)
 
-class FiveWeightPhaseFrequencyAmplitude(ELEMENT):
+class FiveWeightPhaseFrequencyAmplitude(CONTROLLER):
         
     def __init__(self):
 
         super().__init__((5,1))
         
-    def build_elements(self, sim, tree, cubes, lowest):
+    def build_controllers(self, sim, tree, cubes, lowest):
 
-        super().build_elements(sim, tree, cubes, lowest)
+        super().build_controllers(sim, tree, cubes, lowest)
         
-    def send_element(self, sim, box, parent, coords):
+    def send_controller(self, sim, box, parent, coords):
         
         joints = self.build_universal_hinge(sim, box, parent, coords)
 
